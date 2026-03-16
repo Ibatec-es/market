@@ -3,8 +3,8 @@ import { Field, useField } from 'formik'
 import FileInfoDetails from './Info'
 import UrlInput from '../URLInput'
 import Input, { InputProps } from '@shared/FormInput'
-import { getFileInfo, checkValidProvider } from '@utils/provider'
-import { LoggerInstance, FileInfo } from '@oceanprotocol/lib'
+import { getFileInfo, checkValidProvider, StorageType } from '@utils/provider'
+import { LoggerInstance, FileInfo, S3FileObject } from '@oceanprotocol/lib'
 import { useAsset } from '@context/Asset'
 import styles from './index.module.css'
 import { useChainId } from 'wagmi'
@@ -46,7 +46,7 @@ export default function FilesInput(props: FilesInputProps): ReactElement {
   const providerUrl =
     props.form?.values?.services?.[0]?.providerUrl?.url ||
     asset?.credentialSubject?.services?.[0]?.serviceEndpoint
-  const storageType = field.value?.[0]?.type
+  const storageType: StorageType = field.value?.[0]?.type || 'url'
   const urlValue = field.value?.[0]?.url?.toString().trim() || ''
   const query = field.value?.[0]?.query || undefined
   const abi = field.value?.[0]?.abi || undefined
@@ -88,7 +88,19 @@ export default function FilesInput(props: FilesInputProps): ReactElement {
       setIsLoading(true)
       onValidationLoadingChange?.(true)
 
-      if (storageType !== 's3' && isUrl(url) && isGoogleUrl(url)) {
+      if (storageType === 'ftp') {
+        const isValidFtp = url.startsWith('ftp://') || url.startsWith('ftps://')
+        if (!isValidFtp) {
+          throw Error('Invalid FTP URL. Must start with ftp:// or ftps://')
+        }
+      }
+
+      if (
+        storageType !== 's3' &&
+        storageType !== 'ftp' &&
+        isUrl(url) &&
+        isGoogleUrl(url)
+      ) {
         throw Error(
           'Google Drive is not supported. Use another hosting service.'
         )
@@ -101,24 +113,30 @@ export default function FilesInput(props: FilesInputProps): ReactElement {
 
       if (storageType === 's3') {
         const s3Url = `s3://${bucket}/${objectKey}`
-        checkedFile = await getFileInfo(
-          s3Url,
-          providerUrl,
-          storageType,
-          query,
-          headers,
-          abi,
-          chainId,
-          method,
-          {
+
+        const s3FileObject: S3FileObject = {
+          type: 's3',
+          s3Access: {
             endpoint,
-            region,
+            region: region || 'us-east-1',
             bucket,
             objectKey,
             accessKeyId,
             secretAccessKey,
             forcePathStyle
           }
+        }
+
+        checkedFile = await getFileInfo(
+          s3Url,
+          providerUrl,
+          's3',
+          query,
+          headers,
+          abi,
+          chainId,
+          method,
+          s3FileObject
         )
       } else {
         checkedFile = await getFileInfo(
@@ -189,7 +207,6 @@ export default function FilesInput(props: FilesInputProps): ReactElement {
         props.name.startsWith('additionalLicense[')
 
       if (isLicenseField) {
-        // Create base mirrors array
         let mirrors = []
         if (storageType === 's3') {
           mirrors = [
@@ -208,7 +225,6 @@ export default function FilesInput(props: FilesInputProps): ReactElement {
           ]
         }
 
-        // Build the license document with proper structure
         const newDoc: any = {
           name: fileName,
           fileType: checkedFileInfo.contentType || checkedFileInfo.type || '',
@@ -231,7 +247,6 @@ export default function FilesInput(props: FilesInputProps): ReactElement {
           mirrors
         }
 
-        // Add S3-specific data if applicable
         if (storageType === 's3') {
           newDoc.s3Access = {
             endpoint,
@@ -331,6 +346,10 @@ export default function FilesInput(props: FilesInputProps): ReactElement {
       )
       return
     }
+    if (storageType === 'ftp') {
+      setDisabledButton(!providerUrl || !urlValue)
+      return
+    }
 
     setDisabledButton(!providerUrl || !urlValue)
 
@@ -393,129 +412,208 @@ export default function FilesInput(props: FilesInputProps): ReactElement {
 
           {props.innerFields && (
             <>
-              <div className={`${styles.textblock}`}>
-                {props.innerFields &&
-                  props.innerFields.map((innerField: any, i: number) => {
-                    let fieldName = `${field.name}[0].${innerField.value}`
-                    let fieldValue = field.value?.[0]?.[innerField.value]
-
-                    if (storageType === 's3') {
-                      if (innerField.type === 'checkbox') {
-                        fieldName = `${field.name}[0].s3Access.${innerField.value}`
-                        fieldValue =
-                          field.value?.[0]?.s3Access?.[innerField.value] ||
-                          false
-                      } else if (
-                        innerField.value === 'endpoint' ||
-                        innerField.value === 'region' ||
-                        innerField.value === 'bucket' ||
-                        innerField.value === 'objectKey' ||
-                        innerField.value === 'accessKeyId' ||
-                        innerField.value === 'secretAccessKey'
-                      ) {
-                        fieldName = `${field.name}[0].s3Access.${innerField.value}`
-                        fieldValue =
+              {storageType === 's3' ? (
+                <>
+                  <div className={styles.s3GridContainer}>
+                    {props.innerFields
+                      .filter(
+                        (innerField: any) => innerField.type !== 'checkbox'
+                      )
+                      .map((innerField: any, i: number) => {
+                        const fieldName = `${field.name}[0].s3Access.${innerField.value}`
+                        const fieldValue =
                           field.value?.[0]?.s3Access?.[innerField.value]
-                      }
-                    }
 
-                    return (
-                      <Field key={i} name={fieldName}>
-                        {({ field: formikField, form, meta }: any) => {
-                          if (innerField.type === 'checkbox') {
-                            return (
-                              <Input
-                                {...innerField}
-                                type="checkbox"
-                                name={fieldName}
-                                checked={fieldValue}
-                                value={fieldValue}
-                                disabled={isValidated}
-                                onChange={(
-                                  e: React.ChangeEvent<HTMLInputElement>
-                                ) => {
-                                  const newValue = e.target.checked
-                                  form.setFieldValue(fieldName, newValue)
-                                  const currentValue = field.value
-                                  if (currentValue?.[0]) {
-                                    if (!currentValue[0].s3Access) {
-                                      currentValue[0].s3Access = {}
+                        return (
+                          <div key={i}>
+                            <Field name={fieldName}>
+                              {({ field: formikField, form, meta }: any) => (
+                                <Input
+                                  {...innerField}
+                                  field={formikField}
+                                  form={form}
+                                  meta={meta}
+                                  name={fieldName}
+                                  value={fieldValue}
+                                  disabled={isValidated}
+                                />
+                              )}
+                            </Field>
+                          </div>
+                        )
+                      })}
+                  </div>
+
+                  <div className={styles.s3LastRow}>
+                    <div className={styles.s3CheckboxWrapper}>
+                      {props.innerFields
+                        .filter(
+                          (innerField: any) => innerField.type === 'checkbox'
+                        )
+                        .map((checkboxField: any, i: number) => {
+                          const fieldName = `${field.name}[0].s3Access.${checkboxField.value}`
+                          const fieldValue =
+                            field.value?.[0]?.s3Access?.[checkboxField.value] ||
+                            false
+
+                          return (
+                            <Field key={i} name={fieldName}>
+                              {({ field: formikField, form, meta }: any) => (
+                                <Input
+                                  {...checkboxField}
+                                  type="checkbox"
+                                  name={fieldName}
+                                  checked={fieldValue}
+                                  value={fieldValue}
+                                  disabled={isValidated}
+                                  onChange={(
+                                    e: React.ChangeEvent<HTMLInputElement>
+                                  ) => {
+                                    const newValue = e.target.checked
+                                    form.setFieldValue(fieldName, newValue)
+                                    const currentValue = field.value
+                                    if (currentValue?.[0]) {
+                                      if (!currentValue[0].s3Access) {
+                                        currentValue[0].s3Access = {}
+                                      }
+                                      currentValue[0].s3Access[
+                                        checkboxField.value
+                                      ] = newValue
+                                      helpers.setValue(currentValue)
                                     }
-                                    currentValue[0].s3Access[innerField.value] =
-                                      newValue
-                                    helpers.setValue(currentValue)
-                                  }
-                                }}
-                              />
-                            )
-                          } else if (innerField.type === 'headers') {
-                            return (
-                              <InputKeyValue
-                                {...innerField}
-                                field={formikField}
-                                form={form}
-                                meta={meta}
-                                name={fieldName}
-                                value={fieldValue}
-                                disabled={isValidated}
-                              />
-                            )
-                          } else {
-                            return (
-                              <Input
-                                {...innerField}
-                                field={formikField}
-                                form={form}
-                                meta={meta}
-                                name={fieldName}
-                                value={fieldValue}
-                                disabled={isValidated}
-                              />
-                            )
-                          }
-                        }}
-                      </Field>
-                    )
-                  })}
-              </div>
+                                  }}
+                                />
+                              )}
+                            </Field>
+                          )
+                        })}
+                    </div>
 
-              {isLoading ? (
-                <Button
-                  style="accent"
-                  className={styles.submitButton}
-                  disabled={true}
-                >
-                  <Loader variant="white" />
-                </Button>
+                    <div className={styles.s3ButtonWrapper}>
+                      {isLoading ? (
+                        <Button
+                          style="accent"
+                          className={styles.submitButton}
+                          disabled={true}
+                        >
+                          <Loader variant="white" />
+                        </Button>
+                      ) : (
+                        <>
+                          <PublishButton
+                            icon="validate"
+                            text="Submit S3 Configuration"
+                            buttonStyle="gradient"
+                            className={styles.s3SubmitButton}
+                            onClick={(e: React.SyntheticEvent) => {
+                              e.preventDefault()
+                              const s3Url = `s3://${bucket}/${objectKey}`
+                              handleValidation(e, s3Url)
+                            }}
+                            disabled={disabledButton || isValidated}
+                          />
+                          {isValidated && (
+                            <DeleteButton onClick={handleClose} />
+                          )}
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </>
               ) : (
-                <div
-                  style={{ display: 'flex', gap: '8px', alignItems: 'center' }}
-                >
-                  <PublishButton
-                    icon="validate"
-                    text={`Submit ${
-                      storageType === 'graphql'
-                        ? 'query'
-                        : storageType === 'smartcontract'
-                        ? 'abi'
-                        : storageType === 's3'
-                        ? 'S3 Configuration'
-                        : 'URL'
-                    }`}
-                    buttonStyle="gradient"
-                    onClick={(e: React.SyntheticEvent) => {
-                      e.preventDefault()
-                      if (storageType === 's3') {
-                        const s3Url = `s3://${bucket}/${objectKey}`
-                        handleValidation(e, s3Url)
-                      } else {
-                        handleValidation(e, field.value[0].url)
-                      }
-                    }}
-                    disabled={disabledButton || isValidated}
-                  />
-                  {isValidated && <DeleteButton onClick={handleClose} />}
-                </div>
+                <>
+                  <div className={`${styles.textblock}`}>
+                    {props.innerFields.map((innerField: any, i: number) => {
+                      const fieldName = `${field.name}[0].${innerField.value}`
+                      const fieldValue = field.value?.[0]?.[innerField.value]
+
+                      return (
+                        <Field key={i} name={fieldName}>
+                          {({ field: formikField, form, meta }: any) => {
+                            if (innerField.type === 'checkbox') {
+                              return (
+                                <Input
+                                  {...innerField}
+                                  type="checkbox"
+                                  name={fieldName}
+                                  checked={fieldValue}
+                                  value={fieldValue}
+                                  disabled={isValidated}
+                                  onChange={(
+                                    e: React.ChangeEvent<HTMLInputElement>
+                                  ) => {
+                                    const newValue = e.target.checked
+                                    form.setFieldValue(fieldName, newValue)
+                                  }}
+                                />
+                              )
+                            } else if (innerField.type === 'headers') {
+                              return (
+                                <InputKeyValue
+                                  {...innerField}
+                                  field={formikField}
+                                  form={form}
+                                  meta={meta}
+                                  name={fieldName}
+                                  value={fieldValue}
+                                  disabled={isValidated}
+                                />
+                              )
+                            } else {
+                              return (
+                                <Input
+                                  {...innerField}
+                                  field={formikField}
+                                  form={form}
+                                  meta={meta}
+                                  name={fieldName}
+                                  value={fieldValue}
+                                  disabled={isValidated}
+                                />
+                              )
+                            }
+                          }}
+                        </Field>
+                      )
+                    })}
+                  </div>
+
+                  {isLoading ? (
+                    <Button
+                      style="accent"
+                      className={styles.submitButton}
+                      disabled={true}
+                    >
+                      <Loader variant="white" />
+                    </Button>
+                  ) : (
+                    <div
+                      style={{
+                        display: 'flex',
+                        gap: '8px',
+                        alignItems: 'center'
+                      }}
+                    >
+                      <PublishButton
+                        icon="validate"
+                        text={`Submit ${
+                          storageType === 'graphql'
+                            ? 'query'
+                            : storageType === 'smartcontract'
+                            ? 'abi'
+                            : 'URL'
+                        }`}
+                        buttonStyle="gradient"
+                        onClick={(e: React.SyntheticEvent) => {
+                          e.preventDefault()
+                          handleValidation(e, field.value[0].url)
+                        }}
+                        disabled={disabledButton || isValidated}
+                      />
+                      {isValidated && <DeleteButton onClick={handleClose} />}
+                    </div>
+                  )}
+                </>
               )}
             </>
           )}

@@ -6,7 +6,15 @@ import {
   FormConsumerParameter,
   FormPublishData
 } from '@components/Publish/_types'
-import { Arweave, FileInfo, Ipfs, UrlFile } from '@oceanprotocol/lib'
+import {
+  ArweaveFileObject,
+  IpfsFileObject,
+  UrlFileObject,
+  S3FileObject,
+  FileInfo,
+  S3Object,
+  FtpFileObject
+} from '@oceanprotocol/lib'
 import { Asset } from 'src/@types/Asset'
 import { Service } from 'src/@types/ddo/Service'
 import { Option } from 'src/@types/ddo/Option'
@@ -16,7 +24,8 @@ import {
   Credential,
   CredentialPolicyBased
 } from 'src/@types/ddo/Credentials'
-import { S3FileInfo, S3AccessConfig, FormFileData } from 'src/@types/S3File'
+import { FormFileData } from 'src/@types/S3File'
+import { StorageType } from './provider'
 
 export function isValidDid(did: string): boolean {
   const regex = /^did:ope:[A-Za-z0-9]{64}$/
@@ -106,10 +115,15 @@ interface FileExtended extends FileInfo {
 }
 
 export function normalizeFile(
-  storageType: string,
+  storageType: StorageType,
   file: FormFileData | FormFileData[],
   _chainId: number
-): Ipfs | Arweave | UrlFile | S3FileInfo {
+):
+  | IpfsFileObject
+  | ArweaveFileObject
+  | UrlFileObject
+  | S3FileObject
+  | FtpFileObject {
   const fileData = Array.isArray(file) ? file[0] : file
   const headersProvider: Record<string, string> = {}
   const headers = fileData?.headers
@@ -125,19 +139,19 @@ export function normalizeFile(
       return {
         type: 'ipfs',
         hash: fileData?.url || ''
-      } as Ipfs
+      } as IpfsFileObject
     }
     case 'arweave': {
       return {
         type: 'arweave',
         transactionId: fileData?.url || fileData?.transactionId || ''
-      } as Arweave
+      } as ArweaveFileObject
     }
     case 's3': {
       if (!fileData.s3Access) {
         throw new Error('S3 configuration is required for S3 file type')
       }
-      const s3Access: S3AccessConfig = {
+      const s3Access: S3Object = {
         endpoint: fileData.s3Access.endpoint,
         region: fileData.s3Access.region || 'us-east-1',
         bucket: fileData.s3Access.bucket,
@@ -154,7 +168,13 @@ export function normalizeFile(
         valid: fileData.valid,
         method: fileData.method || 'GET',
         s3Access
-      } as S3FileInfo
+      } as S3FileObject
+    }
+    case 'ftp': {
+      return {
+        type: 'ftp',
+        url: fileData?.url || ''
+      } as FtpFileObject
     }
     default: {
       return {
@@ -163,7 +183,7 @@ export function normalizeFile(
         url: fileData?.url || null,
         headers: headersProvider,
         method: fileData?.method || 'get'
-      } as UrlFile
+      } as UrlFileObject
     }
   }
 }

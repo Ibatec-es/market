@@ -364,6 +364,18 @@
                 "required": true
               }
             ]
+          },
+          {
+            "value": "ftp",
+            "title": "FTP/FTPS",
+            "label": "FTP/FTPS URL",
+            "placeholder": "e.g. ftp://user:password@ftp.example.com:21/path/to/file.zip or ftps://user:password@secure.example.com:990/pub/data.csv",
+            "help": "This FTP/FTPS URL will be stored encrypted after publishing. Supports ftp:// and ftps:// protocols. May include credentials in the URL.",
+            "computeHelp": "For a compute dataset, your file should match the file type required by the algorithm, and should not exceed 1 GB in file size.",
+            "prominentHelp": true,
+            "type": "files",
+            "required": true,
+            "methods": false
           }
         ],
         "sortOptions": false,

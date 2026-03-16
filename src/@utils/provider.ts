@@ -1,14 +1,16 @@
 import {
-  Arweave,
+  ArweaveFileObject,
   ComputeAlgorithm,
   ComputeEnvironment,
   FileInfo,
-  Ipfs,
+  IpfsFileObject,
   LoggerInstance,
   ProviderInstance,
-  UrlFile,
+  UrlFileObject,
   UserCustomParameters,
-  getErrorMessage
+  getErrorMessage,
+  S3FileObject,
+  FtpFileObject
 } from '@oceanprotocol/lib'
 // if customProviderUrl is set, we need to call provider using this custom endpoint
 import { customProviderUrl } from '../../app.config.cjs'
@@ -23,12 +25,19 @@ import {
   PolicyServerInitiateActionData,
   PolicyServerInitiateComputeActionData
 } from 'src/@types/PolicyServer'
-import { S3AccessConfig } from 'src/@types/S3File'
-import { S3Client, HeadObjectCommand } from '@aws-sdk/client-s3'
 
-interface S3FileInfo extends FileInfo {
-  name?: string
-}
+export type KnownStorageType =
+  | 's3'
+  | 'ipfs'
+  | 'arweave'
+  | 'url'
+  | 'ftp'
+  | 'smartcontract'
+  | 'graphql'
+  | 'hidden'
+  | 'ftp'
+
+export type StorageType = KnownStorageType | (string & unknown)
 
 export async function initializeProviderForComputeMulti(
   datasets:
@@ -184,90 +193,30 @@ export async function getFileDidInfo(
   }
 }
 
-async function validateS3File(s3Config: S3AccessConfig): Promise<S3FileInfo[]> {
-  try {
-    const cleanBucket = s3Config.bucket.trim()
-    const cleanObjectKey = s3Config.objectKey.trim()
-
-    const client = new S3Client({
-      endpoint: s3Config.endpoint,
-      region: s3Config.region || 'us-east-1',
-      credentials: {
-        accessKeyId: s3Config.accessKeyId.trim(),
-        secretAccessKey: s3Config.secretAccessKey.trim()
-      },
-      forcePathStyle: s3Config.forcePathStyle || false
-    })
-
-    const command = new HeadObjectCommand({
-      Bucket: cleanBucket,
-      Key: cleanObjectKey
-    })
-
-    const response = await client.send(command)
-    const fileName = cleanObjectKey.split('/').pop() || cleanObjectKey
-
-    const fileInfo: S3FileInfo = {
-      type: 's3',
-      url: `s3://${cleanBucket}/${cleanObjectKey}`,
-      contentType: response.ContentType || 'application/octet-stream',
-      contentLength: response.ContentLength?.toString() || '0',
-      valid: true,
-      method: 'GET',
-      checksum: response.ETag?.replace(/"/g, ''),
-      name: fileName
-    }
-    return [fileInfo]
-  } catch (error: any) {
-    console.error('S3 validation error:', {
-      name: error.name,
-      message: error.message,
-      code: error.Code,
-      statusCode: error.$metadata?.httpStatusCode
-    })
-
-    if (error.name === 'NotFound' || error.$metadata?.httpStatusCode === 404) {
-      throw new Error(
-        `File not found: ${s3Config.bucket}/${s3Config.objectKey}`
-      )
-    }
-    if (
-      error.name === 'AccessDenied' ||
-      error.$metadata?.httpStatusCode === 403
-    ) {
-      throw new Error(
-        'Access denied. Check your credentials and bucket permissions'
-      )
-    }
-    throw error
-  }
-}
-
 export async function getFileInfo(
   file: string,
   providerUrl: string,
-  storageType: string,
+  storageType: StorageType,
   query?: string,
   headers?: KeyValuePair[],
   abi?: string,
   chainId?: number,
   method?: string,
-  s3Config?: S3AccessConfig,
+  s3Config?: S3FileObject,
   withChecksum = false
 ): Promise<FileInfo[]> {
-  let response
-  const headersProvider = {}
-  if (headers?.length > 0) {
-    headers.map((el) => {
+  let response: FileInfo[] = []
+  const headersProvider: { [key: string]: string } = {}
+  if (headers?.length) {
+    headers.forEach((el) => {
       headersProvider[el.key] = el.value
-      return el
     })
   }
 
   switch (storageType) {
     case 'ipfs': {
-      const fileIPFS: Ipfs = {
-        type: storageType,
+      const fileIPFS: IpfsFileObject = {
+        type: 'ipfs',
         hash: file
       }
       try {
@@ -276,7 +225,7 @@ export async function getFileInfo(
           providerUrl,
           withChecksum
         )
-      } catch (error) {
+      } catch (error: any) {
         const message = getErrorMessage(error.message)
         LoggerInstance.error('[Provider Get File info] Error:', message)
         toast.error(message)
@@ -284,8 +233,8 @@ export async function getFileInfo(
       break
     }
     case 'arweave': {
-      const fileArweave: Arweave = {
-        type: storageType,
+      const fileArweave: ArweaveFileObject = {
+        type: 'arweave',
         transactionId: file
       }
       try {
@@ -294,7 +243,7 @@ export async function getFileInfo(
           providerUrl,
           withChecksum
         )
-      } catch (error) {
+      } catch (error: any) {
         const message = getErrorMessage(error.message)
         LoggerInstance.error('[Provider Get File info] Error:', message)
         toast.error(message)
@@ -306,8 +255,12 @@ export async function getFileInfo(
         if (!s3Config) {
           throw new Error('S3 configuration is required for S3 file validation')
         }
-        response = await validateS3File(s3Config)
-      } catch (error) {
+        response = await ProviderInstance.getFileInfo(
+          s3Config,
+          providerUrl,
+          withChecksum
+        )
+      } catch (error: any) {
         const message = getErrorMessage(error.message)
         LoggerInstance.error('[S3 File Validation] Error:', message)
         toast.error(message)
@@ -315,21 +268,39 @@ export async function getFileInfo(
       }
       break
     }
+    case 'ftp': {
+      console.log('Getting FTP file info for:', file)
+      const fileFtp: FtpFileObject = {
+        type: 'ftp',
+        url: file
+      }
+      try {
+        response = await ProviderInstance.getFileInfo(
+          fileFtp,
+          providerUrl,
+          withChecksum
+        )
+      } catch (error: any) {
+        const message = getErrorMessage(error.message)
+        LoggerInstance.error('[Provider Get File info] Error:', message)
+        toast.error(message)
+      }
+      break
+    }
     default: {
-      const fileUrl: UrlFile = {
-        type: 'url',
-        index: 0,
+      const fileUrl: UrlFileObject = {
+        type: storageType === 'url' ? 'url' : storageType,
         url: file,
         headers: headersProvider,
-        method
-      }
+        method: method || 'get'
+      } as UrlFileObject
       try {
         response = await ProviderInstance.getFileInfo(
           fileUrl,
           providerUrl,
           withChecksum
         )
-      } catch (error) {
+      } catch (error: any) {
         const message = getErrorMessage(error.message)
         LoggerInstance.error('[Provider Get File info] Error:', message)
         toast.error(message)
