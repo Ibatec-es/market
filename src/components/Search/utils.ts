@@ -30,6 +30,32 @@ export function updateQueryStringParameter(
   }
 }
 
+export function buildSearchPageUrl(
+  pathname: string,
+  search: string,
+  page: number
+): string {
+  const parsed = queryString.parse(search, {
+    arrayFormat: 'separator',
+    arrayFormatSeparator: ','
+  })
+
+  parsed.page = String(page)
+
+  const query = queryString.stringify(parsed, {
+    arrayFormat: 'separator',
+    arrayFormatSeparator: ','
+  })
+
+  return query ? `${pathname}?${query}` : pathname
+}
+
+function normalizeSearchPage(page?: string): number {
+  const parsedPage = Number(page)
+
+  return Number.isFinite(parsedPage) && parsedPage > 0 ? parsedPage : 1
+}
+
 function getSearchQuery(
   chainIds: number[],
   text?: string,
@@ -172,15 +198,13 @@ function getSearchQuery(
     ['accessType', 'serviceType', 'filterSet', 'nodeUriIndex']
   )
   parseFilters(filtersList, filterSets).forEach((term) => filters.push(term))
-  const parsedPage = Number(page)
-  const normalizedPage =
-    Number.isFinite(parsedPage) && parsedPage > 0 ? parsedPage : 1
+  const normalizedPage = normalizeSearchPage(page)
 
   const baseQueryParams = {
     chainIds: effectiveChainIds,
     nestedQuery,
     esPaginationOptions: {
-      from: normalizedPage - 1,
+      from: normalizedPage,
       size: Number(offset) || 21
     },
     sortOptions: { sortBy: sort, sortDirection },
@@ -227,6 +251,7 @@ export async function getResults(
     nodeUriIndex
   } = params
 
+  const normalizedPage = normalizeSearchPage(page)
   const searchQuery = getSearchQuery(
     chainIds,
     text,
@@ -244,13 +269,21 @@ export async function getResults(
     nodeUriIndex
   )
   const queryResult = await queryMetadata(searchQuery, cancelToken)
-  return queryResult?.results?.length === 0
+
+  const normalizedQueryResult = queryResult
     ? {
         ...queryResult,
+        page: normalizedPage
+      }
+    : queryResult
+
+  return normalizedQueryResult?.results?.length === 0
+    ? {
+        ...normalizedQueryResult,
         totalPages: 0,
         totalResults: 0
       }
-    : queryResult
+    : normalizedQueryResult
 }
 
 export async function addExistingParamsToUrl(
