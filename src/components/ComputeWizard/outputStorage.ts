@@ -53,6 +53,7 @@ export function getOutputStorageValidationMessage(
       validationMessage =
         storage.s3Access?.endpoint?.trim() &&
         storage.s3Access?.bucket?.trim() &&
+        storage.s3Access?.objectKey?.trim() &&
         storage.s3Access?.accessKeyId?.trim() &&
         storage.s3Access?.secretAccessKey?.trim()
           ? null
@@ -108,7 +109,7 @@ export function buildRemoteStorageObject(
           endpoint: storage.s3Access?.endpoint?.trim(),
           region: storage.s3Access?.region?.trim() || 'us-east-1',
           bucket: storage.s3Access?.bucket?.trim(),
-          objectKey: storage.s3Access?.objectKey?.trim() || undefined,
+          objectKey: storage.s3Access?.objectKey?.trim(),
           accessKeyId: storage.s3Access?.accessKeyId?.trim(),
           secretAccessKey: storage.s3Access?.secretAccessKey?.trim(),
           forcePathStyle: Boolean(storage.s3Access?.forcePathStyle)
