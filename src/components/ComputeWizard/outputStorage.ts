@@ -87,7 +87,7 @@ export function buildRemoteStorageObject(
       const file: UrlFileObject = {
         type: 'url',
         url: storage.url?.trim(),
-        method: 'put'
+        method: 'get'
       }
       const headers = normalizeHeaders(storage.headers)
       if (Object.keys(headers).length > 0) {
