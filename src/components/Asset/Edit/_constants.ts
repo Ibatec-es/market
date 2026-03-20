@@ -463,7 +463,7 @@ export const getServiceInitialValues = (
         url: '',
         s3Access: {
           endpoint: '',
-          region: '',
+          region: 'us-east-1',
           bucket: '',
           objectKey: '',
           accessKeyId: '',
