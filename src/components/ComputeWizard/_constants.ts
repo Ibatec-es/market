@@ -59,7 +59,7 @@ export const initialValues: FormComputeData = {
     headers: [],
     s3Access: {
       endpoint: '',
-      region: 'us-east-1',
+      region: '',
       bucket: '',
       objectKey: '',
       accessKeyId: '',
