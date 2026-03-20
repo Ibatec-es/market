@@ -463,14 +463,12 @@ function OutputStorageSection({
                 </label>
                 <label className={styles.outputField}>
                   <span className={styles.outputLabel}>
-                    Folder
+                    Alias
                     <Tooltip
                       placement="top"
                       content={
                         <div className={styles.outputTooltipContent}>
-                          Object key (path within the bucket). Ensure the input
-                          value contains no spaces, as some S3 providers cannot
-                          process them
+                          Alias of the output file.
                         </div>
                       }
                     />
@@ -482,7 +480,7 @@ function OutputStorageSection({
                     onChange={(e) =>
                       updateS3Storage('objectKey', e.target.value)
                     }
-                    placeholder="e.g. path"
+                    placeholder="e.g. alias-name"
                   />
                 </label>
                 <label className={styles.outputField}>
