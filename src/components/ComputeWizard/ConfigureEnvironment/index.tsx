@@ -770,7 +770,7 @@ export default function ConfigureEnvironment({
             id="store-on-remote"
             checked={Boolean(values.outputStorageEnabled)}
             onChange={() => setFieldValue('outputStorageEnabled', true)}
-            label="Store the job results on a remote storage"
+            label="Store the job results on node and on a remote storage"
           />
         </div>
 
