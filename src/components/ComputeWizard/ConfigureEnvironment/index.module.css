@@ -9,6 +9,10 @@
   margin: 0 auto;
 }
 
+.storageContainer {
+  max-width: none;
+}
+
 .container h2 {
   margin: 0;
   color: var(--text-ink);
@@ -421,27 +425,6 @@ body .inputSmall {
   gap: 10px;
 }
 
-.outputToggleLabel {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  cursor: pointer;
-  user-select: none;
-}
-
-.outputToggle {
-  width: 18px;
-  height: 18px;
-  accent-color: var(--clr-amber);
-}
-
-.outputToggleText {
-  font-size: 16px;
-  line-height: 18px;
-  font-weight: var(--text-weight-bold);
-  color: var(--clr-slate-70);
-}
-
 .outputTooltipContent {
   max-width: 280px;
   font-size: 13px;
@@ -503,41 +486,6 @@ body .inputSmall {
   gap: 16px;
 }
 
-.outputField {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.outputLabel {
-  font-size: 14px;
-  line-height: 16px;
-  font-weight: var(--text-weight-bold);
-  color: var(--clr-slate-70);
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.outputInput,
-.outputSelect {
-  border: 1px solid var(--border-navy-soft);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-md);
-  background: var(--brand-white);
-  padding: 12px 16px;
-  font-size: 14px;
-  line-height: 16px;
-  color: var(--text-ink);
-  width: 100%;
-}
-
-.outputInput:focus,
-.outputSelect:focus {
-  outline: none;
-  border-color: var(--clr-navy);
-}
-
 .outputCheckboxLabel {
   display: inline-flex;
   align-items: center;
@@ -547,8 +495,28 @@ body .inputSmall {
   color: var(--clr-slate-70);
 }
 
+.outputCheckboxText {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
 .outputCheckbox {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  flex-shrink: 0;
   accent-color: var(--clr-amber);
+  cursor: pointer;
+}
+
+.outputCheckbox:focus-visible {
+  outline: 2px solid var(--navy-alpha-20);
+  outline-offset: 2px;
+}
+
+.outputGridFullWidth {
+  grid-column: 1 / -1;
 }
 
 .outputStorageHint {

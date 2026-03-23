@@ -11,21 +11,14 @@ import { Datatoken } from '@oceanprotocol/lib'
 import { ResourceType } from 'src/@types/ResourceType'
 import { useChainId } from 'wagmi'
 import StepTitle from '@shared/StepTitle'
+import Input from '@components/@shared/FormInput'
 import { FormComputeData } from '../_types'
 import { useProfile } from '@context/Profile'
 import styles from './index.module.css'
 import { useEthersSigner } from '@hooks/useEthersSigner'
-import Input from '@components/@shared/FormInput'
 import Decimal from 'decimal.js'
 import { MAX_DECIMALS } from '@utils/constants'
-import Tooltip from '@shared/atoms/Tooltip'
-import IconUrl from '@images/url.svg'
-import IconS3Storage from '@images/s3_storage.svg'
-import IconFtp from '@images/ftp.svg'
-import {
-  generateComputeOutputEncryptionKey,
-  getOutputStorageValidationMessage
-} from '../outputStorage'
+import OutputStorageSection from './OutputStorageSection'
 
 interface ResourceValues {
   cpu: number
@@ -53,6 +46,33 @@ interface ResourceRowProps {
   ) => void
   fee?: { prices?: { id: string; price: number }[] }
   tooltip?: string
+}
+
+function SectionRadioOption({
+  id,
+  checked,
+  label,
+  onChange
+}: {
+  id: string
+  checked: boolean
+  label: string
+  onChange: () => void
+}): ReactElement {
+  return (
+    <div className={styles.sectionHeader}>
+      <input
+        type="radio"
+        id={id}
+        checked={checked}
+        onChange={onChange}
+        className={styles.radioButton}
+      />
+      <label htmlFor={id} className={styles.sectionTitle}>
+        {label}
+      </label>
+    </div>
+  )
 }
 
 const hasGPUResource = (env: any): boolean => {
@@ -241,412 +261,6 @@ function ResourceRow({
             readOnly
             value={fee?.prices?.find((p) => p.id === resourceId)?.price ?? 0}
           />
-        </div>
-      )}
-    </div>
-  )
-}
-
-const outputStorageTabs = [
-  { type: 'url', label: 'URL', icon: IconUrl },
-  { type: 's3', label: 'S3', icon: IconS3Storage },
-  { type: 'ftp', label: 'FTP/FTPS', icon: IconFtp }
-] as const
-
-type OutputStorageType = (typeof outputStorageTabs)[number]['type']
-
-function OutputStorageSection({
-  values,
-  setFieldValue
-}: {
-  values: FormComputeData
-  setFieldValue: (
-    field: string,
-    value: any,
-    shouldValidate?: boolean
-  ) => Promise<any>
-}): ReactElement {
-  const storageType = (values.outputStorage?.type || 'url') as OutputStorageType
-  const outputStorageError = getOutputStorageValidationMessage(
-    values.outputStorageEnabled,
-    values.outputStorage
-  )
-  const [copyFeedback, setCopyFeedback] = useState<'idle' | 'copied' | 'error'>(
-    'idle'
-  )
-
-  useEffect(() => {
-    if (copyFeedback === 'idle') return
-
-    const timeout = window.setTimeout(() => {
-      setCopyFeedback('idle')
-    }, 2500)
-
-    return () => window.clearTimeout(timeout)
-  }, [copyFeedback])
-
-  const updateOutputStorage = (field: string, value: string | boolean) => {
-    setFieldValue(`outputStorage.${field}`, value)
-  }
-
-  const updateS3Storage = (field: string, value: string | boolean) => {
-    setFieldValue(`outputStorage.s3Access.${field}`, value)
-  }
-
-  const handleEncryptionToggle = (checked: boolean) => {
-    setFieldValue('outputStorage.useEncryption', checked)
-    if (!checked) {
-      setCopyFeedback('idle')
-    }
-  }
-
-  const handleEncryptionKeyChange = (value: string) => {
-    const sanitizedValue = value
-      .replace(/[^0-9a-f]/gi, '')
-      .slice(0, 64)
-      .toLowerCase()
-
-    updateOutputStorage('encryptionKey', sanitizedValue)
-    if (copyFeedback !== 'idle') {
-      setCopyFeedback('idle')
-    }
-  }
-
-  const handleGenerateEncryptionKey = () => {
-    updateOutputStorage('encryptionKey', generateComputeOutputEncryptionKey())
-    setCopyFeedback('idle')
-  }
-
-  const handleCopyEncryptionKey = async () => {
-    const encryptionKey = values.outputStorage?.encryptionKey?.trim()
-    if (!encryptionKey) return
-
-    try {
-      await navigator.clipboard.writeText(encryptionKey)
-      setCopyFeedback('copied')
-    } catch (error) {
-      setCopyFeedback('error')
-    }
-  }
-
-  return (
-    <div className={styles.outputStorageSection}>
-      <div className={styles.outputStorageHeader}>
-        <label className={styles.outputToggleLabel}>
-          <input
-            type="checkbox"
-            checked={Boolean(values.outputStorageEnabled)}
-            onChange={(e) =>
-              setFieldValue('outputStorageEnabled', e.target.checked)
-            }
-            className={styles.outputToggle}
-          />
-          <span className={styles.outputToggleText}>Enable output storage</span>
-        </label>
-        <Tooltip
-          placement="top"
-          content={
-            <div className={styles.outputTooltipContent}>
-              Store compute results in a remote destination.
-            </div>
-          }
-        />
-      </div>
-
-      {values.outputStorageEnabled && (
-        <div className={styles.outputStorageCard}>
-          <div className={styles.outputStorageTabs}>
-            {outputStorageTabs.map((tab) => {
-              const Icon = tab.icon
-              const isActive = storageType === tab.type
-
-              return (
-                <button
-                  key={tab.type}
-                  type="button"
-                  className={`${styles.outputStorageTab} ${
-                    isActive ? styles.outputStorageTabActive : ''
-                  }`}
-                  onClick={() => setFieldValue('outputStorage.type', tab.type)}
-                >
-                  <Icon className={styles.outputStorageTabIcon} />
-                  <span>{tab.label}</span>
-                </button>
-              )
-            })}
-          </div>
-
-          <div className={styles.outputStorageForm}>
-            {storageType === 'url' && (
-              <>
-                <label className={styles.outputField}>
-                  <span className={styles.outputLabel}>Destination URL</span>
-                  <input
-                    type="url"
-                    className={styles.outputInput}
-                    value={values.outputStorage?.url || ''}
-                    onChange={(e) => updateOutputStorage('url', e.target.value)}
-                    placeholder="https://storage.example.com/results/"
-                  />
-                </label>
-              </>
-            )}
-
-            {storageType === 's3' && (
-              <div className={styles.outputGrid}>
-                <label className={styles.outputField}>
-                  <span className={styles.outputLabel}>
-                    Endpoint URL
-                    <Tooltip
-                      placement="top"
-                      content={
-                        <div className={styles.outputTooltipContent}>
-                          S3 endpoint URL (e.g., https://s3.amazonaws.com for
-                          AWS S3, or your custom S3-compatible endpoint)
-                        </div>
-                      }
-                    />
-                  </span>
-                  <input
-                    type="text"
-                    className={styles.outputInput}
-                    value={values.outputStorage?.s3Access?.endpoint || ''}
-                    onChange={(e) =>
-                      updateS3Storage('endpoint', e.target.value)
-                    }
-                    placeholder="e.g. https://s3.amazonaws.com or https://nyc3.digitaloceanspaces.com"
-                  />
-                </label>
-                <label className={styles.outputField}>
-                  <span className={styles.outputLabel}>
-                    Region
-                    <Tooltip
-                      placement="top"
-                      content={
-                        <div className={styles.outputTooltipContent}>
-                          Region (e.g., us-east-1). Optional; defaults to
-                          us-east-1 if omitted. Ensure the input value contains
-                          no spaces, as some S3 providers cannot process them.
-                        </div>
-                      }
-                    />
-                  </span>
-                  <input
-                    type="text"
-                    className={styles.outputInput}
-                    value={values.outputStorage?.s3Access?.region || ''}
-                    onChange={(e) => updateS3Storage('region', e.target.value)}
-                    placeholder="e.g. us-east-1 (optional)"
-                  />
-                </label>
-                <label className={styles.outputField}>
-                  <span className={styles.outputLabel}>
-                    Bucket Name
-                    <Tooltip
-                      placement="top"
-                      content={
-                        <div className={styles.outputTooltipContent}>
-                          S3 bucket name where the file is stored. Ensure the
-                          input value contains no spaces, as some S3 providers
-                          cannot process them
-                        </div>
-                      }
-                    />
-                  </span>
-                  <input
-                    type="text"
-                    className={styles.outputInput}
-                    value={values.outputStorage?.s3Access?.bucket || ''}
-                    onChange={(e) => updateS3Storage('bucket', e.target.value)}
-                    placeholder="e.g. my-bucket"
-                  />
-                </label>
-                <label className={styles.outputField}>
-                  <span className={styles.outputLabel}>
-                    Name
-                    <Tooltip
-                      placement="top"
-                      content={
-                        <div className={styles.outputTooltipContent}>
-                          Name of the exported result. You can use a plain name
-                          for the root directory, a folder path, or a
-                          folder/name path.
-                        </div>
-                      }
-                    />
-                  </span>
-                  <input
-                    type="text"
-                    className={styles.outputInput}
-                    value={values.outputStorage?.s3Access?.objectKey || ''}
-                    onChange={(e) =>
-                      updateS3Storage('objectKey', e.target.value)
-                    }
-                    placeholder="e.g. testname or c2d/newalias"
-                  />
-                </label>
-                <label className={styles.outputField}>
-                  <span className={styles.outputLabel}>
-                    Access Key ID
-                    <Tooltip
-                      placement="top"
-                      content={
-                        <div className={styles.outputTooltipContent}>
-                          Access key for the S3-compatible API
-                        </div>
-                      }
-                    />
-                  </span>
-                  <input
-                    type="text"
-                    className={styles.outputInput}
-                    value={values.outputStorage?.s3Access?.accessKeyId || ''}
-                    onChange={(e) =>
-                      updateS3Storage('accessKeyId', e.target.value)
-                    }
-                    placeholder="e.g. AKIAIOSFODNN7EXAMPLE"
-                  />
-                </label>
-                <label className={styles.outputField}>
-                  <span className={styles.outputLabel}>
-                    Secret Access Key
-                    <Tooltip
-                      placement="top"
-                      content={
-                        <div className={styles.outputTooltipContent}>
-                          Secret key for the S3-compatible API
-                        </div>
-                      }
-                    />
-                  </span>
-                  <input
-                    type="password"
-                    className={styles.outputInput}
-                    value={
-                      values.outputStorage?.s3Access?.secretAccessKey || ''
-                    }
-                    onChange={(e) =>
-                      updateS3Storage('secretAccessKey', e.target.value)
-                    }
-                    placeholder="e.g. wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY"
-                  />
-                </label>
-                <label className={styles.outputCheckboxLabel}>
-                  <input
-                    type="checkbox"
-                    checked={Boolean(
-                      values.outputStorage?.s3Access?.forcePathStyle
-                    )}
-                    onChange={(e) =>
-                      updateS3Storage('forcePathStyle', e.target.checked)
-                    }
-                    className={styles.outputCheckbox}
-                  />
-                  <span>
-                    Use path-style addressing
-                    <Tooltip
-                      placement="top"
-                      content={
-                        <div className={styles.outputTooltipContent}>
-                          If true, use path-style addressing (e.g.,
-                          endpoint/bucket/key). Required for some S3-compatible
-                          services (e.g., MinIO). Default false (virtual-host
-                          style, standard for AWS S3).
-                        </div>
-                      }
-                    />
-                  </span>
-                </label>
-              </div>
-            )}
-
-            {storageType === 'ftp' && (
-              <label className={styles.outputField}>
-                <span className={styles.outputLabel}>FTP/FTPS URL</span>
-                <input
-                  type="url"
-                  className={styles.outputInput}
-                  value={values.outputStorage?.url || ''}
-                  onChange={(e) => updateOutputStorage('url', e.target.value)}
-                  placeholder="ftps://user:password@host/path"
-                />
-              </label>
-            )}
-
-            <label className={styles.outputCheckboxLabel}>
-              <input
-                type="checkbox"
-                checked={Boolean(values.outputStorage?.useEncryption)}
-                onChange={(e) => handleEncryptionToggle(e.target.checked)}
-                className={styles.outputCheckbox}
-              />
-              <span>Encrypt the exported job results</span>
-            </label>
-
-            {values.outputStorage?.useEncryption && (
-              <div className={styles.encryptionKeySection}>
-                <label className={styles.outputField}>
-                  <span className={styles.outputLabel}>Encryption Key</span>
-                  <input
-                    type="text"
-                    inputMode="text"
-                    autoComplete="off"
-                    spellCheck={false}
-                    maxLength={64}
-                    className={styles.outputInput}
-                    value={values.outputStorage?.encryptionKey || ''}
-                    onChange={(e) => handleEncryptionKeyChange(e.target.value)}
-                    placeholder="64 hex characters"
-                  />
-                </label>
-
-                <div className={styles.encryptionKeyActions}>
-                  <button
-                    type="button"
-                    className={styles.encryptionActionButton}
-                    onClick={handleGenerateEncryptionKey}
-                  >
-                    Generate
-                  </button>
-                  <button
-                    type="button"
-                    className={styles.encryptionActionButton}
-                    onClick={handleCopyEncryptionKey}
-                    disabled={!values.outputStorage?.encryptionKey?.trim()}
-                  >
-                    Copy
-                  </button>
-                  {copyFeedback === 'copied' && (
-                    <span className={styles.encryptionStatus}>Copied.</span>
-                  )}
-                  {copyFeedback === 'error' && (
-                    <span className={styles.encryptionStatusError}>
-                      Copy failed. Copy it manually.
-                    </span>
-                  )}
-                </div>
-
-                <p className={styles.encryptionKeyHint}>
-                  Provide a 32-byte key encoded as 64 hexadecimal characters.
-                </p>
-                <p className={styles.encryptionKeyHint}>
-                  Copy this key and store it safely. You will need the same
-                  32-byte key to decrypt the exported result later.
-                </p>
-              </div>
-            )}
-          </div>
-
-          <p className={styles.outputStorageHint}>
-            The compute provider writes the result to the selected destination.
-            For S3 destinations, the name can be a plain name, a folder path, or
-            a folder/name path. Enable encryption if you want the compute output
-            to include `ComputeOutput.encryption`.
-          </p>
-
-          {outputStorageError && (
-            <p className={styles.outputStorageError}>{outputStorageError}</p>
-          )}
         </div>
       )}
     </div>
@@ -1142,34 +756,22 @@ export default function ConfigureEnvironment({
 
   if (stepMode === 'storage') {
     return (
-      <div className={styles.container}>
+      <div className={`${styles.container} ${styles.storageContainer}`}>
         <StepTitle title="Job Results Storage" />
         <div className={styles.resourceSection}>
-          <div className={styles.sectionHeader}>
-            <input
-              type="radio"
-              id="store-on-node"
-              checked={!values.outputStorageEnabled}
-              onChange={() => setFieldValue('outputStorageEnabled', false)}
-              className={styles.radioButton}
-            />
-            <label htmlFor="store-on-node" className={styles.sectionTitle}>
-              Store the job results on the node
-            </label>
-          </div>
+          <SectionRadioOption
+            id="store-on-node"
+            checked={!values.outputStorageEnabled}
+            onChange={() => setFieldValue('outputStorageEnabled', false)}
+            label="Store the job results on the node"
+          />
 
-          <div className={styles.sectionHeader}>
-            <input
-              type="radio"
-              id="store-on-remote"
-              checked={Boolean(values.outputStorageEnabled)}
-              onChange={() => setFieldValue('outputStorageEnabled', true)}
-              className={styles.radioButton}
-            />
-            <label htmlFor="store-on-remote" className={styles.sectionTitle}>
-              Store the job results on a remote storage
-            </label>
-          </div>
+          <SectionRadioOption
+            id="store-on-remote"
+            checked={Boolean(values.outputStorageEnabled)}
+            onChange={() => setFieldValue('outputStorageEnabled', true)}
+            label="Store the job results on a remote storage"
+          />
         </div>
 
         {values.outputStorageEnabled ? (
@@ -1277,18 +879,12 @@ export default function ConfigureEnvironment({
 
       {freeAvailable && (
         <div className={styles.resourceSection}>
-          <div className={styles.sectionHeader}>
-            <input
-              type="radio"
-              id="free-resources"
-              checked={mode === 'free'}
-              onChange={() => setMode('free')}
-              className={styles.radioButton}
-            />
-            <label htmlFor="free-resources" className={styles.sectionTitle}>
-              Free compute resources
-            </label>
-          </div>
+          <SectionRadioOption
+            id="free-resources"
+            checked={mode === 'free'}
+            onChange={() => setMode('free')}
+            label="Free compute resources"
+          />
 
           <div className={styles.resourceContent}>
             <ResourceRow
@@ -1355,18 +951,12 @@ export default function ConfigureEnvironment({
       )}
 
       <div className={styles.resourceSection}>
-        <div className={styles.sectionHeader}>
-          <input
-            type="radio"
-            id="paid-resources"
-            checked={mode === 'paid'}
-            onChange={() => setMode('paid')}
-            className={styles.radioButton}
-          />
-          <label htmlFor="paid-resources" className={styles.sectionTitle}>
-            Paid compute resources
-          </label>
-        </div>
+        <SectionRadioOption
+          id="paid-resources"
+          checked={mode === 'paid'}
+          onChange={() => setMode('paid')}
+          label="Paid compute resources"
+        />
 
         <div className={styles.resourceContent}>
           <ResourceRow
