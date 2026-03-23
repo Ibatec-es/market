@@ -463,12 +463,14 @@ function OutputStorageSection({
                 </label>
                 <label className={styles.outputField}>
                   <span className={styles.outputLabel}>
-                    Alias
+                    Name
                     <Tooltip
                       placement="top"
                       content={
                         <div className={styles.outputTooltipContent}>
-                          Alias of the output file.
+                          Name of the exported result. You can use a plain name
+                          for the root directory, a folder path, or a
+                          folder/name path.
                         </div>
                       }
                     />
@@ -480,7 +482,7 @@ function OutputStorageSection({
                     onChange={(e) =>
                       updateS3Storage('objectKey', e.target.value)
                     }
-                    placeholder="e.g. alias-name"
+                    placeholder="e.g. testname or c2d/newalias"
                   />
                 </label>
                 <label className={styles.outputField}>
@@ -637,8 +639,9 @@ function OutputStorageSection({
 
           <p className={styles.outputStorageHint}>
             The compute provider writes the result to the selected destination.
-            Enable encryption if you want the compute output to include
-            `ComputeOutput.encryption`.
+            For S3 destinations, the name can be a plain name, a folder path, or
+            a folder/name path. Enable encryption if you want the compute output
+            to include `ComputeOutput.encryption`.
           </p>
 
           {outputStorageError && (
