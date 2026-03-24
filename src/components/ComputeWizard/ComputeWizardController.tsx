@@ -63,6 +63,7 @@ import {
   createComputeOutput,
   getOutputStorageValidationMessage
 } from './outputStorage'
+import { isComputeEnvironmentConfigured } from './stepCompletion'
 
 type ParamValue = string | number | boolean | undefined
 
@@ -1075,6 +1076,7 @@ export default function ComputeWizardController({
 
         const hasUserParamsStep = Boolean(values.isUserParameters)
         const computeStep = hasUserParamsStep ? 5 : 4
+        const configurationStep = computeStep + 1
         const storageStep = computeStep + 2
         const hasMissingRequiredDefaults =
           Array.isArray(values.userUpdatedParameters) &&
@@ -1101,12 +1103,16 @@ export default function ComputeWizardController({
             (values.user.stepCurrent === 2 &&
               !(values.serviceSelected || values.withoutDataset)) ||
             (values.user.stepCurrent === computeStep && !values.computeEnv) ||
+            (values.user.stepCurrent === configurationStep &&
+              !isComputeEnvironmentConfigured(values)) ||
             (values.user.stepCurrent === 4 && hasMissingRequiredDefaults) ||
             (values.user.stepCurrent === storageStep &&
               Boolean(outputStorageError))
           : (values.user.stepCurrent === 1 && !values.algorithm) ||
             (values.user.stepCurrent === computeStep && !values.computeEnv) ||
             (values.user.stepCurrent === 2 && !values.serviceSelected) ||
+            (values.user.stepCurrent === configurationStep &&
+              !isComputeEnvironmentConfigured(values)) ||
             (values.user.stepCurrent === 4 && hasMissingRequiredDefaults) ||
             (values.user.stepCurrent === storageStep &&
               Boolean(outputStorageError))

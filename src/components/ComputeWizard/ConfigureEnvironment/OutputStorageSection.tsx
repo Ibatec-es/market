@@ -1,4 +1,4 @@
-import { ChangeEvent, ReactElement, useEffect, useState } from 'react'
+import { ChangeEvent, ReactElement, useEffect, useId, useState } from 'react'
 import Tooltip from '@shared/atoms/Tooltip'
 import Input from '@shared/FormInput'
 import FormHelp from '@shared/FormInput/Help'
@@ -78,6 +78,8 @@ const s3FieldConfigs: StorageFieldConfig<S3StringFieldKey>[] = [
   }
 ]
 
+const s3FieldKeys: S3StringFieldKey[] = s3FieldConfigs.map(({ key }) => key)
+
 function StorageTypeTab({
   isActive,
   label,
@@ -114,24 +116,27 @@ function StorageCheckbox({
   help?: string
   onChange: (checked: boolean) => void
 }): ReactElement {
+  const inputId = useId()
+
   return (
-    <label className={styles.outputCheckboxLabel}>
-      <input
-        type="checkbox"
-        checked={checked}
-        onChange={(e) => onChange(e.target.checked)}
-        className={styles.outputCheckbox}
-      />
-      <span className={styles.outputCheckboxText}>
-        {label}
-        {help && (
-          <Tooltip
-            placement="top"
-            content={<div className={styles.outputTooltipContent}>{help}</div>}
-          />
-        )}
-      </span>
-    </label>
+    <div className={styles.outputCheckboxRow}>
+      <label htmlFor={inputId} className={styles.outputCheckboxLabel}>
+        <input
+          id={inputId}
+          type="checkbox"
+          checked={checked}
+          onChange={(e) => onChange(e.target.checked)}
+          className={styles.outputCheckbox}
+        />
+        <span className={styles.outputCheckboxText}>{label}</span>
+      </label>
+      {help && (
+        <Tooltip
+          placement="top"
+          content={<div className={styles.outputTooltipContent}>{help}</div>}
+        />
+      )}
+    </div>
   )
 }
 
@@ -172,6 +177,10 @@ export default function OutputStorageSection({
   const [copyFeedback, setCopyFeedback] = useState<'idle' | 'copied' | 'error'>(
     'idle'
   )
+  const storageStepKey =
+    values.user.stepCurrent <= 7
+      ? `step${values.user.stepCurrent}Completed`
+      : undefined
 
   useEffect(() => {
     if (copyFeedback === 'idle') return
@@ -183,11 +192,18 @@ export default function OutputStorageSection({
     return () => window.clearTimeout(timeout)
   }, [copyFeedback])
 
+  const resetStorageStepCompletion = () => {
+    if (!storageStepKey) return
+    setFieldValue(storageStepKey, false)
+  }
+
   const updateOutputStorage = (field: string, value: string | boolean) => {
+    resetStorageStepCompletion()
     setFieldValue(`outputStorage.${field}`, value)
   }
 
   const updateS3Storage = (field: string, value: string | boolean) => {
+    resetStorageStepCompletion()
     setFieldValue(`outputStorage.s3Access.${field}`, value)
   }
 
@@ -196,6 +212,7 @@ export default function OutputStorageSection({
   }
 
   const handleEncryptionToggle = (checked: boolean) => {
+    resetStorageStepCompletion()
     setFieldValue('outputStorage.useEncryption', checked)
     if (!checked) setCopyFeedback('idle')
   }
@@ -224,6 +241,22 @@ export default function OutputStorageSection({
     }
   }
 
+  const resetStorageDestinationFields = () => {
+    setFieldValue('outputStorage.url', '')
+    s3FieldKeys.forEach((fieldKey) => {
+      setFieldValue(`outputStorage.s3Access.${fieldKey}`, '')
+    })
+    setFieldValue('outputStorage.s3Access.forcePathStyle', false)
+  }
+
+  const handleStorageTypeChange = (nextType: OutputStorageType) => {
+    if (storageType === nextType) return
+
+    resetStorageStepCompletion()
+    resetStorageDestinationFields()
+    setFieldValue('outputStorage.type', nextType)
+  }
+
   return (
     <div className={styles.outputStorageSection}>
       <div className={styles.outputStorageCard}>
@@ -234,7 +267,7 @@ export default function OutputStorageSection({
               isActive={storageType === tab.type}
               label={tab.label}
               icon={tab.icon}
-              onClick={() => setFieldValue('outputStorage.type', tab.type)}
+              onClick={() => handleStorageTypeChange(tab.type)}
             />
           ))}
         </div>
@@ -253,15 +286,13 @@ export default function OutputStorageSection({
 
           {storageType === 's3' && (
             <div className={styles.outputGrid}>
-              {s3FieldConfigs.map((fieldConfig) => (
+              {s3FieldConfigs.map(({ key, ...fieldConfig }) => (
                 <StorageInputField
-                  key={fieldConfig.key}
+                  key={key}
                   {...fieldConfig}
-                  name={`outputStorage.s3Access.${fieldConfig.key}`}
-                  value={getS3FieldValue(fieldConfig.key)}
-                  onChange={(e) =>
-                    updateS3Storage(fieldConfig.key, e.target.value)
-                  }
+                  name={`outputStorage.s3Access.${key}`}
+                  value={getS3FieldValue(key)}
+                  onChange={(e) => updateS3Storage(key, e.target.value)}
                 />
               ))}
 

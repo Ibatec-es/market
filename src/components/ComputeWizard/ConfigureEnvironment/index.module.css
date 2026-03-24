@@ -22,6 +22,54 @@
   width: 100%;
 }
 
+.environmentSummaryCard {
+  width: 100%;
+  border: 1px solid var(--border-navy-soft);
+  border-radius: 24px;
+  background: var(--brand-white);
+  box-shadow: var(--shadow-md);
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.environmentSummaryHeader {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.environmentSummaryTitleGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.environmentSummaryEyebrow {
+  font-size: 12px;
+  line-height: 14px;
+  font-weight: var(--text-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--clr-slate-50);
+}
+
+.environmentSummaryTitle {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.2;
+  font-weight: var(--text-weight-bold);
+  color: var(--text-ink);
+}
+
+.environmentSummaryDescription {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--clr-slate-70);
+}
+
 /* Resource Sections */
 .resourceSection {
   display: flex;
@@ -480,6 +528,13 @@ body .inputSmall {
   gap: 16px;
 }
 
+.outputCheckboxRow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+}
+
 .outputCheckboxLabel {
   display: inline-flex;
   align-items: center;
@@ -487,12 +542,12 @@ body .inputSmall {
   font-size: 14px;
   line-height: 16px;
   color: var(--clr-slate-70);
+  cursor: pointer;
 }
 
 .outputCheckboxText {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
 }
 
 .outputCheckbox {

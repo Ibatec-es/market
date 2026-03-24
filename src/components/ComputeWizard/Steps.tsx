@@ -247,6 +247,7 @@ export default function Steps({
 
   const currentStep = values?.user?.stepCurrent ?? 1
   const hasUserParamsStep = Boolean(values.isUserParameters)
+  const showEnvironmentSummary = computeEnvs.length > 1
 
   function renderDatasetFlow() {
     switch (currentStep) {
@@ -276,6 +277,7 @@ export default function Steps({
           <SelectEnvironment
             computeEnvs={computeEnvs}
             providerUrl={service?.serviceEndpoint}
+            setAllResourceValues={setAllResourceValues}
           />
         )
       case 5:
@@ -283,6 +285,7 @@ export default function Steps({
           <SelectEnvironment
             computeEnvs={computeEnvs}
             providerUrl={service?.serviceEndpoint}
+            setAllResourceValues={setAllResourceValues}
           />
         ) : (
           <ConfigureEnvironment
@@ -290,6 +293,7 @@ export default function Steps({
             setAllResourceValues={setAllResourceValues}
             baseTokenAddress={baseTokenAddress}
             setBaseTokenAddress={setBaseTokenAddress}
+            showEnvironmentSummary={showEnvironmentSummary}
           />
         )
       case 6:
@@ -299,6 +303,7 @@ export default function Steps({
             setAllResourceValues={setAllResourceValues}
             baseTokenAddress={baseTokenAddress}
             setBaseTokenAddress={setBaseTokenAddress}
+            showEnvironmentSummary={showEnvironmentSummary}
           />
         ) : (
           <ConfigureEnvironment
@@ -306,6 +311,7 @@ export default function Steps({
             setAllResourceValues={setAllResourceValues}
             baseTokenAddress={baseTokenAddress}
             setBaseTokenAddress={setBaseTokenAddress}
+            showEnvironmentSummary={showEnvironmentSummary}
             stepMode="storage"
           />
         )
@@ -316,6 +322,7 @@ export default function Steps({
             setAllResourceValues={setAllResourceValues}
             baseTokenAddress={baseTokenAddress}
             setBaseTokenAddress={setBaseTokenAddress}
+            showEnvironmentSummary={showEnvironmentSummary}
             stepMode="storage"
           />
         ) : (
@@ -438,6 +445,7 @@ export default function Steps({
             <SelectEnvironment
               computeEnvs={computeEnvs}
               providerUrl={service?.serviceEndpoint}
+              setAllResourceValues={setAllResourceValues}
             />
           )
         case 3:
@@ -445,6 +453,7 @@ export default function Steps({
             <SelectEnvironment
               computeEnvs={computeEnvs}
               providerUrl={service?.serviceEndpoint}
+              setAllResourceValues={setAllResourceValues}
             />
           ) : (
             <ConfigureEnvironment
@@ -452,6 +461,7 @@ export default function Steps({
               setAllResourceValues={setAllResourceValues}
               baseTokenAddress={baseTokenAddress}
               setBaseTokenAddress={setBaseTokenAddress}
+              showEnvironmentSummary={showEnvironmentSummary}
             />
           )
         case 4:
@@ -461,6 +471,7 @@ export default function Steps({
               setAllResourceValues={setAllResourceValues}
               baseTokenAddress={baseTokenAddress}
               setBaseTokenAddress={setBaseTokenAddress}
+              showEnvironmentSummary={showEnvironmentSummary}
             />
           ) : (
             <ConfigureEnvironment
@@ -468,6 +479,7 @@ export default function Steps({
               setAllResourceValues={setAllResourceValues}
               baseTokenAddress={baseTokenAddress}
               setBaseTokenAddress={setBaseTokenAddress}
+              showEnvironmentSummary={showEnvironmentSummary}
               stepMode="storage"
             />
           )
@@ -478,6 +490,7 @@ export default function Steps({
               setAllResourceValues={setAllResourceValues}
               baseTokenAddress={baseTokenAddress}
               setBaseTokenAddress={setBaseTokenAddress}
+              showEnvironmentSummary={showEnvironmentSummary}
               stepMode="storage"
             />
           ) : (
@@ -610,6 +623,7 @@ export default function Steps({
           <SelectEnvironment
             computeEnvs={computeEnvs}
             providerUrl={service?.serviceEndpoint}
+            setAllResourceValues={setAllResourceValues}
           />
         )
       case 5:
@@ -617,6 +631,7 @@ export default function Steps({
           <SelectEnvironment
             computeEnvs={computeEnvs}
             providerUrl={service?.serviceEndpoint}
+            setAllResourceValues={setAllResourceValues}
           />
         ) : (
           <ConfigureEnvironment
@@ -624,6 +639,7 @@ export default function Steps({
             setAllResourceValues={setAllResourceValues}
             baseTokenAddress={baseTokenAddress}
             setBaseTokenAddress={setBaseTokenAddress}
+            showEnvironmentSummary={showEnvironmentSummary}
           />
         )
       case 6:
@@ -633,6 +649,7 @@ export default function Steps({
             setAllResourceValues={setAllResourceValues}
             baseTokenAddress={baseTokenAddress}
             setBaseTokenAddress={setBaseTokenAddress}
+            showEnvironmentSummary={showEnvironmentSummary}
           />
         ) : (
           <ConfigureEnvironment
@@ -640,6 +657,7 @@ export default function Steps({
             setAllResourceValues={setAllResourceValues}
             baseTokenAddress={baseTokenAddress}
             setBaseTokenAddress={setBaseTokenAddress}
+            showEnvironmentSummary={showEnvironmentSummary}
             stepMode="storage"
           />
         )
@@ -650,6 +668,7 @@ export default function Steps({
             setAllResourceValues={setAllResourceValues}
             baseTokenAddress={baseTokenAddress}
             setBaseTokenAddress={setBaseTokenAddress}
+            showEnvironmentSummary={showEnvironmentSummary}
             stepMode="storage"
           />
         ) : (

@@ -18,6 +18,7 @@ import styles from './index.module.css'
 import { useEthersSigner } from '@hooks/useEthersSigner'
 import Decimal from 'decimal.js'
 import { MAX_DECIMALS } from '@utils/constants'
+import { truncateDid } from '@utils/string'
 import OutputStorageSection from './OutputStorageSection'
 
 interface ResourceValues {
@@ -26,6 +27,12 @@ interface ResourceValues {
   disk: number
   gpu: number
   jobDuration: number
+}
+
+function hasStoredResourceValue(
+  value: number | undefined | null
+): value is number {
+  return typeof value === 'number'
 }
 
 type ComputeEnvResource = NonNullable<ComputeEnvironment['resources']>[number]
@@ -275,12 +282,14 @@ export default function ConfigureEnvironment({
   setAllResourceValues,
   baseTokenAddress,
   setBaseTokenAddress,
+  showEnvironmentSummary = false,
   stepMode = 'resources'
 }: {
   allResourceValues?: ResourceValueMap
   setAllResourceValues?: React.Dispatch<React.SetStateAction<ResourceValueMap>>
   baseTokenAddress: string
   setBaseTokenAddress: React.Dispatch<React.SetStateAction<string>>
+  showEnvironmentSummary?: boolean
   stepMode?: 'resources' | 'storage'
 }): ReactElement {
   const { values, setFieldValue } = useFormikContext<FormComputeData>()
@@ -368,6 +377,12 @@ export default function ConfigureEnvironment({
   )
 
   useEffect(() => {
+    if (!values.computeEnv?.free && mode !== 'paid') {
+      setMode('paid')
+    }
+  }, [mode, values.computeEnv])
+
+  useEffect(() => {
     setFieldValue('mode', mode)
   }, [mode, setFieldValue])
 
@@ -400,22 +415,22 @@ export default function ConfigureEnvironment({
       return {
         cpu: isFree
           ? envResourceValues?.cpu ?? 0
-          : envResourceValues?.cpu && envResourceValues.cpu > 0
+          : hasStoredResourceValue(envResourceValues?.cpu)
           ? envResourceValues.cpu
           : env.resources?.find((r) => r.id === 'cpu')?.min ?? 1,
         ram: isFree
           ? envResourceValues?.ram ?? 0
-          : envResourceValues?.ram && envResourceValues.ram > 0
+          : hasStoredResourceValue(envResourceValues?.ram)
           ? envResourceValues.ram
           : env.resources?.find((r) => r.id === 'ram')?.min ?? 1,
         disk: isFree
           ? envResourceValues?.disk ?? 0
-          : envResourceValues?.disk && envResourceValues.disk > 0
+          : hasStoredResourceValue(envResourceValues?.disk)
           ? envResourceValues.disk
           : env.resources?.find((r) => r.id === 'disk')?.min ?? 0,
         gpu: isFree
           ? envResourceValues?.gpu ?? 0
-          : envResourceValues?.gpu && envResourceValues.gpu > 0
+          : hasStoredResourceValue(envResourceValues?.gpu)
           ? envResourceValues.gpu
           : (() => {
               const source = isFree ? env.free?.resources : env.resources
@@ -426,7 +441,7 @@ export default function ConfigureEnvironment({
             })(),
         jobDuration: isFree
           ? envResourceValues?.jobDuration ?? 0
-          : envResourceValues?.jobDuration && envResourceValues.jobDuration > 0
+          : hasStoredResourceValue(envResourceValues?.jobDuration)
           ? envResourceValues.jobDuration
           : 1
       }
@@ -661,49 +676,39 @@ export default function ConfigureEnvironment({
     const paidEnvValues = getEnvResourceValues(false)
 
     const freeRaw = {
-      cpu:
-        freeExistingValues?.cpu && freeExistingValues.cpu > 0
-          ? freeExistingValues.cpu
-          : freeEnvValues.cpu,
-      ram:
-        freeExistingValues?.ram && freeExistingValues.ram > 0
-          ? freeExistingValues.ram
-          : freeEnvValues.ram,
-      disk:
-        freeExistingValues?.disk && freeExistingValues.disk > 0
-          ? freeExistingValues.disk
-          : freeEnvValues.disk,
-      gpu:
-        freeExistingValues?.gpu && freeExistingValues.gpu > 0
-          ? freeExistingValues.gpu
-          : freeEnvValues.gpu,
-      jobDuration:
-        freeExistingValues?.jobDuration && freeExistingValues.jobDuration > 0
-          ? freeExistingValues.jobDuration
-          : freeEnvValues.jobDuration
+      cpu: hasStoredResourceValue(freeExistingValues?.cpu)
+        ? freeExistingValues.cpu
+        : freeEnvValues.cpu,
+      ram: hasStoredResourceValue(freeExistingValues?.ram)
+        ? freeExistingValues.ram
+        : freeEnvValues.ram,
+      disk: hasStoredResourceValue(freeExistingValues?.disk)
+        ? freeExistingValues.disk
+        : freeEnvValues.disk,
+      gpu: hasStoredResourceValue(freeExistingValues?.gpu)
+        ? freeExistingValues.gpu
+        : freeEnvValues.gpu,
+      jobDuration: hasStoredResourceValue(freeExistingValues?.jobDuration)
+        ? freeExistingValues.jobDuration
+        : freeEnvValues.jobDuration
     }
 
     const paidRaw = {
-      cpu:
-        paidExistingValues?.cpu && paidExistingValues.cpu > 0
-          ? paidExistingValues.cpu
-          : paidEnvValues.cpu,
-      ram:
-        paidExistingValues?.ram && paidExistingValues.ram > 0
-          ? paidExistingValues.ram
-          : paidEnvValues.ram,
-      disk:
-        paidExistingValues?.disk && paidExistingValues.disk > 0
-          ? paidExistingValues.disk
-          : paidEnvValues.disk,
-      gpu:
-        paidExistingValues?.gpu && paidExistingValues.gpu > 0
-          ? paidExistingValues.gpu
-          : paidEnvValues.gpu,
-      jobDuration:
-        paidExistingValues?.jobDuration && paidExistingValues.jobDuration > 0
-          ? paidExistingValues.jobDuration
-          : paidEnvValues.jobDuration
+      cpu: hasStoredResourceValue(paidExistingValues?.cpu)
+        ? paidExistingValues.cpu
+        : paidEnvValues.cpu,
+      ram: hasStoredResourceValue(paidExistingValues?.ram)
+        ? paidExistingValues.ram
+        : paidEnvValues.ram,
+      disk: hasStoredResourceValue(paidExistingValues?.disk)
+        ? paidExistingValues.disk
+        : paidEnvValues.disk,
+      gpu: hasStoredResourceValue(paidExistingValues?.gpu)
+        ? paidExistingValues.gpu
+        : paidEnvValues.gpu,
+      jobDuration: hasStoredResourceValue(paidExistingValues?.jobDuration)
+        ? paidExistingValues.jobDuration
+        : paidEnvValues.jobDuration
     }
 
     const freeLimits = {
@@ -755,6 +760,13 @@ export default function ConfigureEnvironment({
     })
   }, [values.computeEnv, allResourceValues, getEnvResourceValues])
 
+  const resetCurrentStorageStepCompletion = useCallback(() => {
+    const currentStep = values.user.stepCurrent
+    if (currentStep <= 7) {
+      setFieldValue(`step${currentStep}Completed`, false)
+    }
+  }, [setFieldValue, values.user.stepCurrent])
+
   if (stepMode === 'storage') {
     return (
       <div className={`${styles.container} ${styles.storageContainer}`}>
@@ -763,14 +775,20 @@ export default function ConfigureEnvironment({
           <SectionRadioOption
             id="store-on-node"
             checked={!values.outputStorageEnabled}
-            onChange={() => setFieldValue('outputStorageEnabled', false)}
+            onChange={() => {
+              resetCurrentStorageStepCompletion()
+              setFieldValue('outputStorageEnabled', false)
+            }}
             label="Store the job results on the node"
           />
 
           <SectionRadioOption
             id="store-on-remote"
             checked={Boolean(values.outputStorageEnabled)}
-            onChange={() => setFieldValue('outputStorageEnabled', true)}
+            onChange={() => {
+              resetCurrentStorageStepCompletion()
+              setFieldValue('outputStorageEnabled', true)
+            }}
             label="Store the job results on node and on a remote storage"
           />
         </div>
@@ -854,6 +872,26 @@ export default function ConfigureEnvironment({
   return (
     <div className={styles.container}>
       <StepTitle title="C2D Environment Configuration" />
+
+      {showEnvironmentSummary && (
+        <div className={styles.environmentSummaryCard}>
+          <div className={styles.environmentSummaryHeader}>
+            <div className={styles.environmentSummaryTitleGroup}>
+              <span className={styles.environmentSummaryEyebrow}>
+                Selected environment
+              </span>
+              <h3 className={styles.environmentSummaryTitle}>
+                {truncateDid(env.id)}
+              </h3>
+            </div>
+          </div>
+
+          <p className={styles.environmentSummaryDescription}>
+            {env.description ||
+              'Workspace configured for testing and running C2D processes.'}
+          </p>
+        </div>
+      )}
 
       <Field
         label="Price Token"
@@ -1047,7 +1085,7 @@ export default function ConfigureEnvironment({
             <div className={styles.gpuWarning}>
               <div className={styles.gpuWarningIcon}>⚠️</div>
               <div className={styles.gpuWarningContent}>
-                <strong>Please Attention!.</strong> You selected an environment
+                <strong>Please Attention!</strong> You selected an environment
                 with allocated GPU units. Ensure the GPU type is compatible with
                 the GPU libraries used in the algorithm`s Docker image.
               </div>
