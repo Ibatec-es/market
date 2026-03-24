@@ -1,0 +1,26 @@
+{
+  "title": "Start monetizing your data assets today",
+  "description": "Join the future of data monetization",
+  "benefits": [
+    {
+      "icon": "💰",
+      "title": "Monetize your data",
+      "description": "Turn your data assets into revenue streams"
+    },
+    {
+      "icon": "🔐",
+      "title": "Enterprise security",
+      "description": "Institutional-grade protection for your assets"
+    },
+    {
+      "icon": "⚡",
+      "title": "Gasless transactions",
+      "description": "No need to hold crypto for transactions"
+    },
+    {
+      "icon": "👥",
+      "title": "Team collaboration",
+      "description": "Multi-signature wallets for organizations"
+    }
+  ]
+}

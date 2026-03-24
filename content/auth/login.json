@@ -1,0 +1,22 @@
+{
+  "title": "Enterprise Data Marketplace",
+  "description": "Monetize your data assets with institutional-grade security, gasless transactions, and organizational wallets.",
+  "features": [
+    {
+      "icon": "⛽",
+      "text": "Gasless transactions - No ETH/MATIC needed"
+    },
+    {
+      "icon": "🏢",
+      "text": "Organizational wallets for teams"
+    },
+    {
+      "icon": "🔒",
+      "text": "Enterprise-grade security with multisig"
+    },
+    {
+      "icon": "⚡",
+      "text": "Batched transactions for efficiency"
+    }
+  ]
+}
