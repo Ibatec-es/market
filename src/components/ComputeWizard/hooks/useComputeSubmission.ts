@@ -272,7 +272,6 @@ export function useComputeSubmission() {
 
         let response
         if (selectedResources.mode === 'paid') {
-          console.log('computeOutput:', computeOutput)
           response = await ProviderInstance.computeStart(
             providerEndpoint,
             signer,
