@@ -128,6 +128,18 @@ export function useComputeInitialization({
   const [initError, setInitError] = useState<string>()
   const lastEscrowDepositKey = useRef<string | null>(null)
 
+  const resetInitializationState = useCallback(() => {
+    setInitializedProviderResponse(undefined)
+    setDatasetProviderFee(null)
+    setAlgorithmProviderFee(null)
+    setDatasetProviderFees([])
+    setAlgorithmProviderFees(null)
+    setExtraFeesLoaded(false)
+    setIsInitLoading(false)
+    setInitError(undefined)
+    lastEscrowDepositKey.current = null
+  }, [])
+
   const initializePricingAndProvider = useCallback(
     async ({
       datasetsForProvider,
@@ -313,6 +325,7 @@ export function useComputeInitialization({
 
   return {
     initializePricingAndProvider,
+    resetInitializationState,
     initializedProviderResponse,
     datasetProviderFee,
     algorithmProviderFee,
