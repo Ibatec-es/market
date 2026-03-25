@@ -215,6 +215,48 @@ function resolveRerunEnvironment(
   return computeEnvs.find((env) => env.id === prefix)
 }
 
+function ReviewExitResetWatcher({
+  currentStep,
+  reviewStep,
+  credentialsVerified,
+  onReset,
+  setFieldValue
+}: {
+  currentStep: number
+  reviewStep: number
+  credentialsVerified: boolean
+  onReset: () => void
+  setFieldValue: (
+    field: string,
+    value: unknown,
+    shouldValidate?: boolean
+  ) => void
+}): null {
+  const previousStep = useRef<number>()
+
+  useEffect(() => {
+    if (previousStep.current === undefined) {
+      previousStep.current = currentStep
+      return
+    }
+
+    const leftReviewStep =
+      previousStep.current === reviewStep && currentStep !== reviewStep
+
+    previousStep.current = currentStep
+
+    if (!leftReviewStep) return
+
+    if (credentialsVerified) {
+      setFieldValue('credentialsVerified', false, false)
+    }
+
+    onReset()
+  }, [currentStep, reviewStep, credentialsVerified, onReset, setFieldValue])
+
+  return null
+}
+
 export default function ComputeWizardController({
   accountId,
   signer,
@@ -322,6 +364,7 @@ export default function ComputeWizardController({
   })
   const {
     initializePricingAndProvider,
+    resetInitializationState,
     datasetProviderFee,
     algorithmProviderFee,
     datasetProviderFees,
@@ -370,6 +413,13 @@ export default function ComputeWizardController({
   const [allResourceValues, setAllResourceValues] = useState<{
     [envId: string]: ResourceType
   }>({})
+
+  const resetComputedFeeState = useCallback(() => {
+    setDatasetOrderPriceAndFees(undefined)
+    setAlgoOrderPriceAndFees(undefined)
+    setIsBalanceSufficient(true)
+    resetInitializationState()
+  }, [resetInitializationState])
 
   useEffect(() => {
     if (!isAlgorithmFlow || !rerunConfig || hasAppliedRerunConfigRef.current)
@@ -505,6 +555,11 @@ export default function ComputeWizardController({
       setSvcIndex(selectedAlgorithmAsset?.serviceIndex)
     }
   }, [selectedAlgorithmAsset])
+
+  useEffect(() => {
+    if (!showSuccess) return
+    resetComputedFeeState()
+  }, [showSuccess, resetComputedFeeState])
 
   async function checkAssetDTBalance(algoAsset: AssetExtended | undefined) {
     try {
@@ -1170,6 +1225,13 @@ export default function ComputeWizardController({
           <div className={styles.containerOuter}>
             <Title flow={flow} asset={asset} service={service} />
             <Form className={styles.form}>
+              <ReviewExitResetWatcher
+                currentStep={values.user.stepCurrent}
+                reviewStep={stepNumbers.review}
+                credentialsVerified={Boolean(values.credentialsVerified)}
+                onReset={resetComputedFeeState}
+                setFieldValue={setFieldValue}
+              />
               <Navigation flow={flow} />
               <SectionContainer className={styles.container}>
                 {showSuccess ? (

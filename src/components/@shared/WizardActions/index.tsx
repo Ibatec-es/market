@@ -81,7 +81,6 @@ export default function WizardActions({
   onInitCompute
 }: WizardActionsProps): ReactElement {
   const {
-    isValid,
     values,
     isSubmitting,
     setFieldValue
@@ -116,11 +115,17 @@ export default function WizardActions({
   const isFirstStep = currentStep === 1
   const actionsClassName =
     isFirstStep && rightAlignFirstStep ? styles.actionsRight : styles.actions
+  const isReviewStepReady =
+    values.termsAndConditions &&
+    values.acceptPublishingLicense &&
+    values.credentialsVerified
+  const isFinalComputeActionDisabled =
+    disabled || !isReviewStepReady || isBalanceSufficient === false
 
   const PurchaseButton = () => (
     <ButtonBuy
       action={action}
-      disabled={disabled || !isValid || isBalanceSufficient === false}
+      disabled={isFinalComputeActionDisabled}
       hasPreviousOrder={hasPreviousOrder}
       hasDatatoken={hasDatatoken}
       btSymbol={btSymbol}
@@ -157,8 +162,9 @@ export default function WizardActions({
       return (
         <Button
           style="gradient"
+          type="button"
           onClick={onInitCompute}
-          disabled={isInitLoading || disabled || !isValid}
+          disabled={isInitLoading || isFinalComputeActionDisabled}
         >
           {isInitLoading ? 'Calculating...' : 'Calculate Extra Fees'}
         </Button>
@@ -170,13 +176,14 @@ export default function WizardActions({
   return (
     <footer className={actionsClassName}>
       {currentStep > 1 && (
-        <Button onClick={handlePrevious} disabled={isSubmitting}>
+        <Button type="button" onClick={handlePrevious} disabled={isSubmitting}>
           Back
         </Button>
       )}
       {!isLastStep ? (
         <Button
           style="accent"
+          type="button"
           onClick={handleNext}
           disabled={isContinueDisabled}
         >

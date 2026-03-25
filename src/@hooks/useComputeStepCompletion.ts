@@ -23,6 +23,7 @@ export function useComputeStepCompletion() {
     const agreementsChecked = Boolean(
       values.termsAndConditions && values.acceptPublishingLicense
     )
+    const credentialsVerified = Boolean(values.credentialsVerified)
     const stepKey = `step${step}Completed` as StepCompletedKey
     const explicitStepComplete = Boolean(values[stepKey])
 
@@ -52,7 +53,8 @@ export function useComputeStepCompletion() {
             (environmentSelected &&
               configSet &&
               outputStorageConfigured &&
-              agreementsChecked)
+              agreementsChecked &&
+              credentialsVerified)
         )
       default:
         return false
