@@ -1,15 +1,15 @@
-import { ReactElement, useState, useEffect, useCallback } from 'react'
+import { ReactElement, useState, useEffect, useCallback, useMemo } from 'react'
 import AssetList from '@shared/AssetList'
 import queryString from 'query-string'
 import Filter from './Filter'
 import Sort from './sort'
-import { getResults, updateQueryStringParameter } from './utils'
-import { useUserPreferences } from '@context/UserPreferences'
+import { buildSearchPageUrl, getResults } from './utils'
 import { useCancelToken } from '@hooks/useCancelToken'
 import styles from './index.module.css'
 import { useRouter } from 'next/router'
 import { useDebouncedCallback } from 'use-debounce'
 import SearchBar from '@components/Header/SearchBar'
+import { useMarketMetadata } from '@context/MarketMetadata'
 
 export default function SearchPage({
   setTotalResults,
@@ -20,31 +20,24 @@ export default function SearchPage({
 }): ReactElement {
   const router = useRouter()
   const [parsed, setParsed] = useState<queryString.ParsedQuery<string>>()
-  const { chainIds } = useUserPreferences()
+  const { validatedSupportedChains, isValidatingSupportedChains } =
+    useMarketMetadata()
   const [queryResult, setQueryResult] = useState<PagedAssets>()
   const [loading, setLoading] = useState<boolean>(true)
   const newCancelToken = useCancelToken()
 
   useEffect(() => {
+    if (!router.isReady) return
+
     const parsed = queryString.parse(location.search, {
       arrayFormat: 'separator'
     })
     setParsed(parsed)
-  }, [router])
+  }, [router.isReady, router.asPath])
 
   const updatePage = useCallback(
     (page: number) => {
-      const { pathname, query } = router
-      const newUrl = updateQueryStringParameter(
-        pathname +
-          '?' +
-          JSON.stringify(query)
-            .replace(/"|{|}/g, '')
-            .replace(/:/g, '=')
-            .replace(/,/g, '&'),
-        'page',
-        `${page}`
-      )
+      const newUrl = buildSearchPageUrl(router.pathname, location.search, page)
       return router.push(newUrl)
     },
     [router]
@@ -70,10 +63,20 @@ export default function SearchPage({
   }, [parsed, queryResult, updatePage])
 
   useEffect(() => {
-    if (!parsed || !chainIds) return
+    if (
+      !parsed ||
+      isValidatingSupportedChains ||
+      validatedSupportedChains.length === 0
+    )
+      return
 
-    fetchAssets(parsed, chainIds)
-  }, [parsed, chainIds, fetchAssets])
+    fetchAssets(parsed, validatedSupportedChains)
+  }, [
+    parsed,
+    validatedSupportedChains,
+    fetchAssets,
+    isValidatingSupportedChains
+  ])
 
   return (
     <div className={styles.container}>

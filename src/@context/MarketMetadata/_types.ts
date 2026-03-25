@@ -14,8 +14,6 @@ export interface OpcFee {
 
 export interface AppConfig {
   metadataCacheUri: string
-  chainIds: number[]
-  chainIdsSupported: number[]
   defaultDatatokenTemplateIndex: number
   marketFeeAddress: string
   publisherMarketOrderFee: string
@@ -92,4 +90,7 @@ export interface MarketMetadataProviderValue {
   appConfig: AppConfig
   getOpcFeeForToken: (tokenAddress: string, chainId: number) => string
   approvedBaseTokens: TokenInfo[]
+  validatedSupportedChains: number[]
+  isValidatingSupportedChains: boolean
+  supportedChainsValidationError?: string
 }

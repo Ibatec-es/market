@@ -15,6 +15,7 @@ import { getTokenInfo } from '@utils/wallet'
 import useEnterpriseFeeColletor from '@hooks/useEnterpriseFeeCollector'
 import { useEthersSigner } from '@hooks/useEthersSigner'
 import useAllowedTokenAddresses from '@hooks/useAllowedTokenAddresses'
+import useValidatedSupportedChains from '@hooks/useValidatedSupportedChains'
 
 const MarketMetadataContext = createContext({} as MarketMetadataProviderValue)
 
@@ -32,6 +33,11 @@ function MarketMetadataProvider({
   const [opcFees, setOpcFees] = useState<OpcFee[]>()
   const [approvedBaseTokens, setApprovedBaseTokens] = useState<TokenInfo[]>()
   const envAllowedAddresses = useAllowedTokenAddresses(chainId)
+  const {
+    validatedSupportedChains,
+    isValidatingSupportedChains,
+    supportedChainsValidationError
+  } = useValidatedSupportedChains()
 
   // ---------------------------
   // Load OPC Fee Data
@@ -41,14 +47,25 @@ function MarketMetadataProvider({
       // Safety check: Don't run if we don't have a signer yet
       if (!signer) return
 
-      const opcData = await getOpcData(appConfig.chainIdsSupported)
+      const opcData = await getOpcData(validatedSupportedChains)
       setOpcFees(opcData)
     }
 
-    if (!opcFees && signer && enterpriseFeeCollector) {
+    if (
+      !opcFees &&
+      signer &&
+      enterpriseFeeCollector &&
+      validatedSupportedChains.length > 0
+    ) {
       fetchData()
     }
-  }, [signer, getOpcData, enterpriseFeeCollector])
+  }, [
+    signer,
+    getOpcData,
+    enterpriseFeeCollector,
+    opcFees,
+    validatedSupportedChains
+  ])
 
   // ---------------------------
   // Get OPC fee for given token
@@ -128,7 +145,10 @@ function MarketMetadataProvider({
           siteContent,
           appConfig,
           getOpcFeeForToken,
-          approvedBaseTokens
+          approvedBaseTokens,
+          validatedSupportedChains,
+          isValidatingSupportedChains,
+          supportedChainsValidationError
         } as MarketMetadataProviderValue
       }
     >

@@ -1,10 +1,10 @@
 'use client'
 import { useMemo } from 'react'
 import { getAddress } from 'ethers'
-import { getOceanConfig } from '@utils/ocean'
+import { getAllowedErc20Map } from '@utils/runtimeConfig'
 /**
  * Returns a checksummed array of allowed token addresses for a given network.
- * Falls back to OCEAN token if no env addresses are found.
+ * Uses only addresses configured in NEXT_PUBLIC_ALLOWED_ERC20_ADDRESSES.
  * @param networkId Chain ID or network name
  */
 export default function useAllowedTokenAddresses(
@@ -12,9 +12,9 @@ export default function useAllowedTokenAddresses(
 ): string[] {
   return useMemo(() => {
     if (!networkId) return []
-
-    const oceanConfig = getOceanConfig(networkId)
-    const tokenAddresses = oceanConfig?.tokenAddresses || []
+    const normalizedNetworkId = Number(networkId)
+    const tokenAddresses =
+      getAllowedErc20Map()[normalizedNetworkId.toString()] || []
 
     if (!Array.isArray(tokenAddresses) || tokenAddresses.length === 0) {
       return []

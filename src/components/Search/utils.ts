@@ -30,6 +30,32 @@ export function updateQueryStringParameter(
   }
 }
 
+export function buildSearchPageUrl(
+  pathname: string,
+  search: string,
+  page: number
+): string {
+  const parsed = queryString.parse(search, {
+    arrayFormat: 'separator',
+    arrayFormatSeparator: ','
+  })
+
+  parsed.page = String(page)
+
+  const query = queryString.stringify(parsed, {
+    arrayFormat: 'separator',
+    arrayFormatSeparator: ','
+  })
+
+  return query ? `${pathname}?${query}` : pathname
+}
+
+function normalizeSearchPage(page?: string): number {
+  const parsedPage = Number(page)
+
+  return Number.isFinite(parsedPage) && parsedPage > 0 ? parsedPage : 1
+}
+
 function getSearchQuery(
   chainIds: number[],
   text?: string,
@@ -41,6 +67,7 @@ function getSearchQuery(
   sortDirection?: string,
   serviceType?: string | string[],
   accessType?: string | string[],
+  supportedBlockchain?: string | string[],
   filterSet?: string | string[],
   assetState?: string | string[],
   nodeUriIndex?: string | string[]
@@ -151,20 +178,33 @@ function getSearchQuery(
     }
   }
 
+  const selectedBlockchainIds = (
+    Array.isArray(supportedBlockchain)
+      ? supportedBlockchain
+      : supportedBlockchain
+      ? [supportedBlockchain]
+      : []
+  )
+    .map((chainId) => Number(chainId))
+    .filter((chainId) => Number.isFinite(chainId))
+
+  const effectiveChainIds =
+    selectedBlockchainIds.length > 0
+      ? chainIds.filter((chainId) => selectedBlockchainIds.includes(chainId))
+      : chainIds
+
   const filtersList = getInitialFilters(
     { accessType, serviceType, filterSet, nodeUriIndex },
     ['accessType', 'serviceType', 'filterSet', 'nodeUriIndex']
   )
   parseFilters(filtersList, filterSets).forEach((term) => filters.push(term))
-  const parsedPage = Number(page)
-  const normalizedPage =
-    Number.isFinite(parsedPage) && parsedPage > 0 ? parsedPage : 1
+  const normalizedPage = normalizeSearchPage(page)
 
   const baseQueryParams = {
-    chainIds,
+    chainIds: effectiveChainIds,
     nestedQuery,
     esPaginationOptions: {
-      from: normalizedPage - 1,
+      from: normalizedPage,
       size: Number(offset) || 21
     },
     sortOptions: { sortBy: sort, sortDirection },
@@ -187,6 +227,7 @@ export async function getResults(
     sortOrder?: string
     serviceType?: string | string[]
     accessType?: string | string[]
+    supportedBlockchain?: string | string[]
     filterSet?: string[]
     assetState?: string | string[]
     nodeUriIndex?: string | string[]
@@ -204,11 +245,13 @@ export async function getResults(
     sortOrder,
     serviceType,
     accessType,
+    supportedBlockchain,
     filterSet,
     assetState,
     nodeUriIndex
   } = params
 
+  const normalizedPage = normalizeSearchPage(page)
   const searchQuery = getSearchQuery(
     chainIds,
     text,
@@ -220,18 +263,27 @@ export async function getResults(
     sortOrder,
     serviceType,
     accessType,
+    supportedBlockchain,
     filterSet,
     assetState,
     nodeUriIndex
   )
   const queryResult = await queryMetadata(searchQuery, cancelToken)
-  return queryResult?.results?.length === 0
+
+  const normalizedQueryResult = queryResult
     ? {
         ...queryResult,
+        page: normalizedPage
+      }
+    : queryResult
+
+  return normalizedQueryResult?.results?.length === 0
+    ? {
+        ...normalizedQueryResult,
         totalPages: 0,
         totalResults: 0
       }
-    : queryResult
+    : normalizedQueryResult
 }
 
 export async function addExistingParamsToUrl(

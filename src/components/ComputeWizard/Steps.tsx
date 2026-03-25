@@ -247,6 +247,7 @@ export default function Steps({
 
   const currentStep = values?.user?.stepCurrent ?? 1
   const hasUserParamsStep = Boolean(values.isUserParameters)
+  const showEnvironmentSummary = true
 
   function renderDatasetFlow() {
     switch (currentStep) {
@@ -276,6 +277,7 @@ export default function Steps({
           <SelectEnvironment
             computeEnvs={computeEnvs}
             providerUrl={service?.serviceEndpoint}
+            setAllResourceValues={setAllResourceValues}
           />
         )
       case 5:
@@ -283,6 +285,7 @@ export default function Steps({
           <SelectEnvironment
             computeEnvs={computeEnvs}
             providerUrl={service?.serviceEndpoint}
+            setAllResourceValues={setAllResourceValues}
           />
         ) : (
           <ConfigureEnvironment
@@ -290,6 +293,7 @@ export default function Steps({
             setAllResourceValues={setAllResourceValues}
             baseTokenAddress={baseTokenAddress}
             setBaseTokenAddress={setBaseTokenAddress}
+            showEnvironmentSummary={showEnvironmentSummary}
           />
         )
       case 6:
@@ -299,6 +303,27 @@ export default function Steps({
             setAllResourceValues={setAllResourceValues}
             baseTokenAddress={baseTokenAddress}
             setBaseTokenAddress={setBaseTokenAddress}
+            showEnvironmentSummary={showEnvironmentSummary}
+          />
+        ) : (
+          <ConfigureEnvironment
+            allResourceValues={allResourceValues}
+            setAllResourceValues={setAllResourceValues}
+            baseTokenAddress={baseTokenAddress}
+            setBaseTokenAddress={setBaseTokenAddress}
+            showEnvironmentSummary={showEnvironmentSummary}
+            stepMode="storage"
+          />
+        )
+      case 7:
+        return hasUserParamsStep ? (
+          <ConfigureEnvironment
+            allResourceValues={allResourceValues}
+            setAllResourceValues={setAllResourceValues}
+            baseTokenAddress={baseTokenAddress}
+            setBaseTokenAddress={setBaseTokenAddress}
+            showEnvironmentSummary={showEnvironmentSummary}
+            stepMode="storage"
           />
         ) : (
           <Review
@@ -346,7 +371,7 @@ export default function Steps({
             setIsBalanceSufficient={setIsBalanceSufficient}
           />
         )
-      case 7:
+      case 8:
         return hasUserParamsStep ? (
           <Review
             flow="dataset"
@@ -420,6 +445,7 @@ export default function Steps({
             <SelectEnvironment
               computeEnvs={computeEnvs}
               providerUrl={service?.serviceEndpoint}
+              setAllResourceValues={setAllResourceValues}
             />
           )
         case 3:
@@ -427,6 +453,7 @@ export default function Steps({
             <SelectEnvironment
               computeEnvs={computeEnvs}
               providerUrl={service?.serviceEndpoint}
+              setAllResourceValues={setAllResourceValues}
             />
           ) : (
             <ConfigureEnvironment
@@ -434,6 +461,7 @@ export default function Steps({
               setAllResourceValues={setAllResourceValues}
               baseTokenAddress={baseTokenAddress}
               setBaseTokenAddress={setBaseTokenAddress}
+              showEnvironmentSummary={showEnvironmentSummary}
             />
           )
         case 4:
@@ -443,6 +471,27 @@ export default function Steps({
               setAllResourceValues={setAllResourceValues}
               baseTokenAddress={baseTokenAddress}
               setBaseTokenAddress={setBaseTokenAddress}
+              showEnvironmentSummary={showEnvironmentSummary}
+            />
+          ) : (
+            <ConfigureEnvironment
+              allResourceValues={allResourceValues}
+              setAllResourceValues={setAllResourceValues}
+              baseTokenAddress={baseTokenAddress}
+              setBaseTokenAddress={setBaseTokenAddress}
+              showEnvironmentSummary={showEnvironmentSummary}
+              stepMode="storage"
+            />
+          )
+        case 5:
+          return hasUserParamsStep ? (
+            <ConfigureEnvironment
+              allResourceValues={allResourceValues}
+              setAllResourceValues={setAllResourceValues}
+              baseTokenAddress={baseTokenAddress}
+              setBaseTokenAddress={setBaseTokenAddress}
+              showEnvironmentSummary={showEnvironmentSummary}
+              stepMode="storage"
             />
           ) : (
             <Review
@@ -494,7 +543,7 @@ export default function Steps({
               setIsBalanceSufficient={setIsBalanceSufficient}
             />
           )
-        case 5:
+        case 6:
           return hasUserParamsStep ? (
             <Review
               flow="algorithm"
@@ -574,6 +623,7 @@ export default function Steps({
           <SelectEnvironment
             computeEnvs={computeEnvs}
             providerUrl={service?.serviceEndpoint}
+            setAllResourceValues={setAllResourceValues}
           />
         )
       case 5:
@@ -581,6 +631,7 @@ export default function Steps({
           <SelectEnvironment
             computeEnvs={computeEnvs}
             providerUrl={service?.serviceEndpoint}
+            setAllResourceValues={setAllResourceValues}
           />
         ) : (
           <ConfigureEnvironment
@@ -588,6 +639,7 @@ export default function Steps({
             setAllResourceValues={setAllResourceValues}
             baseTokenAddress={baseTokenAddress}
             setBaseTokenAddress={setBaseTokenAddress}
+            showEnvironmentSummary={showEnvironmentSummary}
           />
         )
       case 6:
@@ -597,6 +649,27 @@ export default function Steps({
             setAllResourceValues={setAllResourceValues}
             baseTokenAddress={baseTokenAddress}
             setBaseTokenAddress={setBaseTokenAddress}
+            showEnvironmentSummary={showEnvironmentSummary}
+          />
+        ) : (
+          <ConfigureEnvironment
+            allResourceValues={allResourceValues}
+            setAllResourceValues={setAllResourceValues}
+            baseTokenAddress={baseTokenAddress}
+            setBaseTokenAddress={setBaseTokenAddress}
+            showEnvironmentSummary={showEnvironmentSummary}
+            stepMode="storage"
+          />
+        )
+      case 7:
+        return hasUserParamsStep ? (
+          <ConfigureEnvironment
+            allResourceValues={allResourceValues}
+            setAllResourceValues={setAllResourceValues}
+            baseTokenAddress={baseTokenAddress}
+            setBaseTokenAddress={setBaseTokenAddress}
+            showEnvironmentSummary={showEnvironmentSummary}
+            stepMode="storage"
           />
         ) : (
           <Review
@@ -633,7 +706,7 @@ export default function Steps({
             tokenInfo={tokenInfo}
           />
         )
-      case 7:
+      case 8:
         return hasUserParamsStep ? (
           <Review
             flow="algorithm"
