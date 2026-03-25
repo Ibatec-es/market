@@ -215,70 +215,44 @@ function resolveRerunEnvironment(
   return computeEnvs.find((env) => env.id === prefix)
 }
 
-function ComputePricingResetWatcher({
-  assetId,
-  serviceId,
-  values,
-  onReset
+function ReviewExitResetWatcher({
+  currentStep,
+  reviewStep,
+  credentialsVerified,
+  onReset,
+  setFieldValue
 }: {
-  assetId: string
-  serviceId: string
-  values: FormComputeData
+  currentStep: number
+  reviewStep: number
+  credentialsVerified: boolean
   onReset: () => void
+  setFieldValue: (
+    field: string,
+    value: unknown,
+    shouldValidate?: boolean
+  ) => void
 }): null {
-  const previousSelectionKey = useRef<string>()
-  const selectionKey = useMemo(
-    () =>
-      JSON.stringify({
-        assetId,
-        serviceId,
-        algorithm: values.algorithm ?? null,
-        dataset: values.dataset ?? null,
-        withoutDataset: Boolean(values.withoutDataset),
-        computeEnvId:
-          typeof values.computeEnv === 'string'
-            ? values.computeEnv
-            : values.computeEnv?.id ?? null,
-        mode: values.mode ?? 'free',
-        cpu: values.cpu ?? null,
-        gpu: values.gpu ?? null,
-        ram: values.ram ?? null,
-        disk: values.disk ?? null,
-        jobDuration: values.jobDuration ?? null,
-        baseToken: values.baseToken ?? null,
-        outputStorageEnabled: Boolean(values.outputStorageEnabled),
-        outputStorage: values.outputStorage ?? null
-      }),
-    [
-      assetId,
-      serviceId,
-      values.algorithm,
-      values.dataset,
-      values.withoutDataset,
-      values.computeEnv,
-      values.mode,
-      values.cpu,
-      values.gpu,
-      values.ram,
-      values.disk,
-      values.jobDuration,
-      values.baseToken,
-      values.outputStorageEnabled,
-      values.outputStorage
-    ]
-  )
+  const previousStep = useRef<number>()
 
   useEffect(() => {
-    if (previousSelectionKey.current === undefined) {
-      previousSelectionKey.current = selectionKey
+    if (previousStep.current === undefined) {
+      previousStep.current = currentStep
       return
     }
 
-    if (previousSelectionKey.current !== selectionKey) {
-      previousSelectionKey.current = selectionKey
-      onReset()
+    const leftReviewStep =
+      previousStep.current === reviewStep && currentStep !== reviewStep
+
+    previousStep.current = currentStep
+
+    if (!leftReviewStep) return
+
+    if (credentialsVerified) {
+      setFieldValue('credentialsVerified', false, false)
     }
-  }, [selectionKey, onReset])
+
+    onReset()
+  }, [currentStep, reviewStep, credentialsVerified, onReset, setFieldValue])
 
   return null
 }
@@ -1245,11 +1219,12 @@ export default function ComputeWizardController({
           <div className={styles.containerOuter}>
             <Title flow={flow} asset={asset} service={service} />
             <Form className={styles.form}>
-              <ComputePricingResetWatcher
-                assetId={asset.id}
-                serviceId={service.id}
-                values={values}
+              <ReviewExitResetWatcher
+                currentStep={values.user.stepCurrent}
+                reviewStep={stepNumbers.review}
+                credentialsVerified={Boolean(values.credentialsVerified)}
                 onReset={resetComputedFeeState}
+                setFieldValue={setFieldValue}
               />
               <Navigation flow={flow} />
               <SectionContainer className={styles.container}>
