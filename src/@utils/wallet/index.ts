@@ -40,13 +40,15 @@ function getWagmiChains(): readonly [Chain, ...Chain[]] {
   }
 
   if (baseChains.length === 0) {
-    throw new Error('No supported chains found for Wagmi config.')
+    // Keep builds and server rendering resilient when runtime env is not
+    // available yet. The client can still receive the real runtime config.
+    return [localhost]
   }
 
   return baseChains as unknown as readonly [Chain, ...Chain[]]
 }
 
-export const wagmiConfig = (() => {
+export function createWagmiConfig() {
   const chains = getWagmiChains()
 
   return createConfig({
@@ -62,7 +64,7 @@ export const wagmiConfig = (() => {
       {} as Record<number, ReturnType<typeof http>>
     )
   })
-})()
+}
 
 // ConnectKit CSS overrides
 // https://docs.family.co/connectkit/theming#theme-variables
