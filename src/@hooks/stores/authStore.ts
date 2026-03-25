@@ -1,4 +1,3 @@
-// stores/authStore.ts
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
@@ -10,7 +9,7 @@ export interface User {
   organizationId?: string
   walletAddress?: string
   isOnboarded: boolean
-  authProvider: 'google' | 'twitter' | 'apple' | 'email'
+  authProvider: 'google' | 'twitter' | 'apple' | 'email' | 'keycloak'
 }
 
 interface AuthState {

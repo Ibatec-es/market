@@ -1,0 +1,351 @@
+.leftColumn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  padding: 40px;
+}
+
+.card {
+  width: 100%;
+  max-width: 520px;
+  background: linear-gradient(135deg, #0a4b70 0%, #1a6b8a 100%);
+  border-radius: 30px;
+  padding: 48px 40px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  height: auto;
+  min-height: 600px;
+  display: flex;
+  align-items: center;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.12);
+}
+
+.content {
+  width: 100%;
+}
+
+.logoWrapper {
+  margin-bottom: 40px;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 16px;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.description {
+  font-size: 0.95rem;
+  color: rgba(255, 255, 255, 0.85);
+  margin-bottom: 32px;
+  line-height: 1.5;
+}
+
+.features {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.feature {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.featureIcon {
+  width: 32px;
+  height: 32px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+
+.featureText {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.trustBadges {
+  padding-top: 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.trustTitle {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.7rem;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.badges {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.badge {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.8);
+  letter-spacing: 0.3px;
+}
+
+@media (min-width: 2560px) {
+  .leftColumn {
+    padding: 80px;
+  }
+
+  .card {
+    max-width: 720px;
+    padding: 64px 56px;
+    min-height: 800px;
+  }
+
+  .title {
+    font-size: 3rem;
+    margin-bottom: 24px;
+  }
+
+  .description {
+    font-size: 1.1rem;
+    margin-bottom: 48px;
+  }
+
+  .features {
+    gap: 24px;
+    margin-bottom: 48px;
+  }
+
+  .featureIcon {
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+  }
+
+  .featureText {
+    font-size: 1rem;
+  }
+
+  .logoWrapper {
+    margin-bottom: 56px;
+  }
+
+  .logoWrapper img {
+    width: 180px;
+    height: auto;
+  }
+}
+
+@media (min-width: 1440px) and (max-width: 2559px) {
+  .leftColumn {
+    padding: 48px;
+  }
+
+  .card {
+    max-width: 560px;
+    padding: 52px 44px;
+    min-height: 680px;
+  }
+
+  .title {
+    font-size: 2.25rem;
+  }
+
+  .description {
+    font-size: 1rem;
+  }
+}
+
+@media (min-width: 1025px) and (max-width: 1439px) {
+  .leftColumn {
+    padding: 32px;
+  }
+
+  .card {
+    max-width: 480px;
+    padding: 40px 32px;
+    min-height: 560px;
+  }
+
+  .title {
+    font-size: 1.75rem;
+  }
+
+  .description {
+    font-size: 0.9rem;
+    margin-bottom: 28px;
+  }
+
+  .features {
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+
+  .logoWrapper {
+    margin-bottom: 32px;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .leftColumn {
+    padding: 24px;
+  }
+
+  .card {
+    max-width: 100%;
+    padding: 40px 36px;
+    min-height: auto;
+  }
+
+  .title {
+    font-size: 2rem;
+  }
+
+  .description {
+    font-size: 0.95rem;
+  }
+
+  .features {
+    gap: 16px;
+  }
+
+  .logoWrapper {
+    margin-bottom: 36px;
+  }
+}
+
+@media (min-width: 481px) and (max-width: 768px) {
+  .leftColumn {
+    padding: 20px;
+  }
+
+  .card {
+    max-width: 100%;
+    padding: 32px 28px;
+    min-height: auto;
+  }
+
+  .title {
+    font-size: 1.75rem;
+  }
+
+  .description {
+    font-size: 0.9rem;
+    margin-bottom: 28px;
+  }
+
+  .features {
+    gap: 14px;
+    margin-bottom: 28px;
+  }
+
+  .logoWrapper {
+    margin-bottom: 28px;
+  }
+
+  .logoWrapper img {
+    width: 120px;
+    height: auto;
+  }
+}
+
+@media (max-width: 480px) {
+  .leftColumn {
+    padding: 16px;
+  }
+
+  .card {
+    max-width: 100%;
+    padding: 28px 20px;
+    min-height: auto;
+  }
+
+  .title {
+    font-size: 1.5rem;
+    margin-bottom: 12px;
+  }
+
+  .description {
+    font-size: 0.85rem;
+    margin-bottom: 24px;
+  }
+
+  .features {
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+
+  .featureIcon {
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
+  }
+
+  .featureText {
+    font-size: 0.85rem;
+  }
+
+  .trustBadges {
+    padding-top: 20px;
+  }
+
+  .badge {
+    font-size: 0.65rem;
+    padding: 3px 10px;
+  }
+
+  .logoWrapper {
+    margin-bottom: 24px;
+  }
+
+  .logoWrapper img {
+    width: 110px;
+    height: auto;
+  }
+}
+
+.logoWrapper {
+  margin-bottom: 40px;
+}
+
+.logoWrapper svg {
+  width: 140px;
+  height: auto;
+}
+
+@media (min-width: 2560px) {
+  .logoWrapper svg {
+    width: 180px;
+  }
+}
+
+@media (min-width: 1025px) and (max-width: 1439px) {
+  .logoWrapper svg {
+    width: 120px;
+  }
+}
+
+@media (max-width: 480px) {
+  .logoWrapper svg {
+    width: 110px;
+  }
+}

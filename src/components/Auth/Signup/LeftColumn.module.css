@@ -1,0 +1,286 @@
+.leftColumn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  padding: 40px;
+}
+
+.card {
+  width: 100%;
+  max-width: 520px;
+  background: linear-gradient(135deg, #0a4b70 0%, #1a6b8a 100%);
+  border-radius: 30px;
+  padding: 48px 40px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  height: auto;
+  min-height: 600px;
+  display: flex;
+  align-items: center;
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.12);
+}
+
+.content {
+  width: 100%;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 700;
+  color: white;
+  margin-bottom: 48px;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.benefits {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.benefit {
+  display: flex;
+  gap: 16px;
+}
+
+.benefitIcon {
+  width: 48px;
+  height: 48px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.benefitContent {
+  flex: 1;
+}
+
+.benefitTitle {
+  font-weight: 700;
+  color: white;
+  font-size: 1.1rem;
+  margin-bottom: 6px;
+}
+
+.benefitDescription {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+@media (min-width: 2560px) {
+  .leftColumn {
+    padding: 80px;
+  }
+
+  .card {
+    max-width: 720px;
+    padding: 64px 56px;
+    min-height: 800px;
+  }
+
+  .title {
+    font-size: 3rem;
+    margin-bottom: 64px;
+  }
+
+  .benefits {
+    gap: 48px;
+  }
+
+  .benefitIcon {
+    width: 64px;
+    height: 64px;
+    font-size: 32px;
+  }
+
+  .benefitTitle {
+    font-size: 1.3rem;
+    margin-bottom: 8px;
+  }
+
+  .benefitDescription {
+    font-size: 1rem;
+  }
+}
+
+@media (min-width: 1440px) and (max-width: 2559px) {
+  .leftColumn {
+    padding: 48px;
+  }
+
+  .card {
+    max-width: 560px;
+    padding: 52px 44px;
+    min-height: 680px;
+  }
+
+  .title {
+    font-size: 2.25rem;
+    margin-bottom: 52px;
+  }
+
+  .benefits {
+    gap: 36px;
+  }
+}
+
+@media (min-width: 1025px) and (max-width: 1439px) {
+  .leftColumn {
+    padding: 32px;
+  }
+
+  .card {
+    max-width: 480px;
+    padding: 40px 32px;
+    min-height: 560px;
+  }
+
+  .title {
+    font-size: 1.75rem;
+    margin-bottom: 36px;
+  }
+
+  .benefits {
+    gap: 28px;
+  }
+
+  .benefitIcon {
+    width: 44px;
+    height: 44px;
+    font-size: 22px;
+  }
+
+  .benefitTitle {
+    font-size: 1rem;
+  }
+
+  .benefitDescription {
+    font-size: 0.85rem;
+  }
+}
+
+@media (min-width: 769px) and (max-width: 1024px) {
+  .leftColumn {
+    padding: 24px;
+  }
+
+  .card {
+    max-width: 100%;
+    padding: 40px 36px;
+    min-height: auto;
+  }
+
+  .title {
+    font-size: 2rem;
+    margin-bottom: 40px;
+  }
+
+  .benefits {
+    gap: 32px;
+  }
+}
+
+@media (min-width: 481px) and (max-width: 768px) {
+  .leftColumn {
+    padding: 20px;
+  }
+
+  .card {
+    max-width: 100%;
+    padding: 32px 28px;
+    min-height: auto;
+  }
+
+  .title {
+    font-size: 1.75rem;
+    margin-bottom: 32px;
+  }
+
+  .benefits {
+    gap: 24px;
+  }
+
+  .benefitIcon {
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+  }
+
+  .benefitTitle {
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .leftColumn {
+    padding: 16px;
+  }
+
+  .card {
+    max-width: 100%;
+    padding: 28px 20px;
+    min-height: auto;
+  }
+
+  .title {
+    font-size: 1.5rem;
+    margin-bottom: 28px;
+  }
+
+  .benefits {
+    gap: 20px;
+  }
+
+  .benefitIcon {
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+  }
+
+  .benefitTitle {
+    font-size: 0.95rem;
+  }
+
+  .benefitDescription {
+    font-size: 0.8rem;
+  }
+}
+
+.logoWrapper {
+  margin-bottom: 40px;
+}
+
+.logoWrapper svg {
+  width: 140px;
+  height: auto;
+}
+
+@media (min-width: 2560px) {
+  .logoWrapper svg {
+    width: 180px;
+  }
+}
+
+@media (min-width: 1025px) and (max-width: 1439px) {
+  .logoWrapper svg {
+    width: 120px;
+  }
+}
+
+@media (max-width: 480px) {
+  .logoWrapper svg {
+    width: 110px;
+  }
+}
