@@ -10,39 +10,56 @@ export default function AuthGuard({ children }: AuthGuardProps) {
   const { isAuthenticated, isLoading, authEnabled, checkSession } = useAuth()
   const router = useRouter()
 
-  const publicRoutes = [
-    '/',
-    '/auth/login',
-    '/auth/signup',
-    '/auth/callback',
-    '/about',
-    '/terms',
-    '/privacy'
-  ]
+  const isPublicRoute = (): boolean => {
+    const path = router.asPath.split('?')[0]
 
-  const isPublicRoute =
-    publicRoutes.includes(router.pathname) ||
-    router.pathname.startsWith('/auth/')
+    const exactPublicPaths = [
+      '/',
+      '/auth/login',
+      '/auth/signup',
+      '/auth/callback',
+      '/about',
+      '/terms',
+      '/privacy',
+      '/imprint',
+      '/cookie-settings'
+    ]
+
+    if (exactPublicPaths.includes(path)) {
+      return true
+    }
+
+    if (path.startsWith('/privacy/')) {
+      return true
+    }
+
+    if (path.startsWith('/auth/')) {
+      return true
+    }
+
+    return false
+  }
 
   useEffect(() => {
-    if (authEnabled && router.pathname === '/auth/callback') {
+    if (authEnabled && router.asPath.includes('/auth/callback')) {
       checkSession()
     }
-  }, [authEnabled, router.pathname, checkSession])
+  }, [authEnabled, router.asPath, checkSession])
 
   useEffect(() => {
-    if (authEnabled && !isLoading && !isAuthenticated && !isPublicRoute) {
+    const isPublic = isPublicRoute()
+    if (authEnabled && !isLoading && !isAuthenticated && !isPublic) {
       router.push(
         `/auth/login?callbackUrl=${encodeURIComponent(router.asPath)}`
       )
     }
-  }, [authEnabled, isAuthenticated, isLoading, router, isPublicRoute])
+  }, [authEnabled, isAuthenticated, isLoading, router.asPath, router])
 
   if (!authEnabled) {
     return <>{children}</>
   }
 
-  if (isLoading && !isPublicRoute) {
+  if (isLoading && !isPublicRoute()) {
     return (
       <div
         style={{
