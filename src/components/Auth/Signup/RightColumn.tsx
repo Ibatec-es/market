@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useAuth } from '@hooks/useAuth'
+import { authConfig } from '../../../config/auth.config'
 import styles from './RightColumn.module.css'
 import Link from 'next/link'
 
@@ -16,12 +17,20 @@ export default function RightColumn({ onSignupSuccess }: RightColumnProps) {
   const [password, setPassword] = useState('')
   const [errors, setErrors] = useState<Record<string, string>>({})
 
-  const handleSocialSignup = async (
-    provider: 'google' | 'twitter' | 'apple'
-  ) => {
-    setSelectedProvider(provider)
+  const handleOIDCSignup = async () => {
+    setSelectedProvider('oidc')
     try {
-      await login(provider)
+      await login('oidc')
+      onSignupSuccess?.()
+    } catch (error) {
+      setSelectedProvider(null)
+    }
+  }
+
+  const handleGoogleSignup = async () => {
+    setSelectedProvider('google')
+    try {
+      await login('google')
       onSignupSuccess?.()
     } catch (error) {
       setSelectedProvider(null)
@@ -52,6 +61,8 @@ export default function RightColumn({ onSignupSuccess }: RightColumnProps) {
     }
   }
 
+  const showOIDC = authConfig.oidc.issuer && authConfig.oidc.clientId
+
   return (
     <div className={styles.rightColumn}>
       <div className={styles.card}>
@@ -64,8 +75,35 @@ export default function RightColumn({ onSignupSuccess }: RightColumnProps) {
 
         {!showEmailForm ? (
           <div className={styles.socialButtons}>
+            {showOIDC && (
+              <button
+                onClick={handleOIDCSignup}
+                disabled={isLoading}
+                className={`${styles.socialButton} ${
+                  isLoading && selectedProvider === 'oidc' ? styles.loading : ''
+                }`}
+              >
+                <svg className={styles.icon} viewBox="0 0 24 24" fill="#0a4b70">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z" />
+                </svg>
+                <span>
+                  {isLoading && selectedProvider === 'oidc'
+                    ? 'Redirecting to signup...'
+                    : 'Sign up with Company SSO'}
+                </span>
+              </button>
+            )}
+
+            {showOIDC && (
+              <div className={styles.divider}>
+                <span className={styles.dividerLine}></span>
+                <span className={styles.dividerText}>or sign up with</span>
+                <span className={styles.dividerLine}></span>
+              </div>
+            )}
+
             <button
-              onClick={() => handleSocialSignup('google')}
+              onClick={handleGoogleSignup}
               disabled={isLoading}
               className={`${styles.socialButton} ${
                 isLoading && selectedProvider === 'google' ? styles.loading : ''
@@ -93,42 +131,6 @@ export default function RightColumn({ onSignupSuccess }: RightColumnProps) {
                 {isLoading && selectedProvider === 'google'
                   ? 'Creating account...'
                   : 'Continue with Google'}
-              </span>
-            </button>
-
-            <button
-              onClick={() => handleSocialSignup('twitter')}
-              disabled={isLoading}
-              className={`${styles.socialButton} ${
-                isLoading && selectedProvider === 'twitter'
-                  ? styles.loading
-                  : ''
-              }`}
-            >
-              <svg className={styles.icon} viewBox="0 0 24 24" fill="#1DA1F2">
-                <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
-              </svg>
-              <span>
-                {isLoading && selectedProvider === 'twitter'
-                  ? 'Creating account...'
-                  : 'Continue with Twitter'}
-              </span>
-            </button>
-
-            <button
-              onClick={() => handleSocialSignup('apple')}
-              disabled={isLoading}
-              className={`${styles.socialButton} ${
-                isLoading && selectedProvider === 'apple' ? styles.loading : ''
-              }`}
-            >
-              <svg className={styles.icon} viewBox="0 0 24 24" fill="black">
-                <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.47 3.08.8.97-.44 2.03-.84 3.37-.74 1.4.09 2.61.53 3.48 1.29-1.43 1.04-2.14 2.42-1.98 4.15.16 1.72 1.15 3.02 2.53 3.84-.55 1.29-1.37 2.5-2.48 3.63zM14.07 4.4c.72-.9 1.13-2.12.98-3.4-.98.07-2.13.59-2.85 1.48-.66.81-1.07 1.98-.93 3.18 1.04.04 2.14-.52 2.8-1.26z" />
-              </svg>
-              <span>
-                {isLoading && selectedProvider === 'apple'
-                  ? 'Creating account...'
-                  : 'Continue with Apple'}
               </span>
             </button>
 

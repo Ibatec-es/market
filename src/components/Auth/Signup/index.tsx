@@ -14,7 +14,7 @@ interface SignupProps {
 }
 
 export default function Signup({ content }: SignupProps) {
-  const { isAuthenticated, authEnabled } = useAuth() // Add authEnabled
+  const { isAuthenticated, authEnabled } = useAuth()
   const router = useRouter()
   const { callbackUrl } = router.query
 

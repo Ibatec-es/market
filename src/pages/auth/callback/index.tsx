@@ -11,7 +11,7 @@ export default function AuthCallback() {
     if (code) {
       checkSession()
     } else if (error) {
-      console.error('Keycloak error:', error)
+      console.error('OAuth error:', error)
       router.push('/auth/login?error=auth_failed')
     }
   }, [code, error, checkSession, router])

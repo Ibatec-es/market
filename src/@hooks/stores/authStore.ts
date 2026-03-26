@@ -9,7 +9,7 @@ export interface User {
   organizationId?: string
   walletAddress?: string
   isOnboarded: boolean
-  authProvider: 'google' | 'twitter' | 'apple' | 'email' | 'keycloak'
+  authProvider: 'google' | 'email' | 'oidc'
 }
 
 interface AuthState {

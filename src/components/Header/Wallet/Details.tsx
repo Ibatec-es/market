@@ -7,17 +7,20 @@ import Avatar from '@components/@shared/atoms/Avatar'
 import Bookmark from '@images/bookmark.svg'
 import DisconnectWallet from '@images/disconnect.svg'
 import SwitchWallet from '@images/switchWallet.svg'
+import LogoutIcon from '@images/logout.svg'
 import { MenuLink } from '../Menu'
 import AddTokenList from './AddTokenList'
 import { useSsiWallet } from '@context/SsiWallet'
 import { disconnectFromWallet } from '@utils/wallet/ssiWallet'
 import { LoggerInstance } from '@oceanprotocol/lib'
+import { useAuth } from '@hooks/useAuth'
 
 export default function Details(): ReactElement {
   const { connector: activeConnector, address: accountId } = useAccount()
   const connectors = useConnectors()
   const { connect } = useConnect()
   const { disconnect } = useDisconnect()
+  const { logout, isAuthenticated, user } = useAuth()
 
   const {
     setSessionToken,
@@ -45,6 +48,12 @@ export default function Details(): ReactElement {
     } else {
       LoggerInstance.warn('No connector available to switch to.')
     }
+  }
+
+  const handleLogout = async () => {
+    await logout()
+    const event = new CustomEvent('closeWalletDropdown')
+    window.dispatchEvent(event)
   }
 
   return (
@@ -101,7 +110,28 @@ export default function Details(): ReactElement {
                 Disconnect
               </Button>
             </div>
+            {isAuthenticated && user && (
+              <div className={styles.walletActionRow}>
+                <LogoutIcon className={styles.walletActionIcon} />
+                <Button
+                  style="text"
+                  size="small"
+                  onClick={handleLogout}
+                  className={styles.logoutButton}
+                >
+                  Sign Out
+                </Button>
+              </div>
+            )}
           </div>
+          {isAuthenticated && user && (
+            <div className={styles.userInfo}>
+              <div className={styles.userEmail}>{user.email}</div>
+              <div className={styles.userProvider}>
+                Signed in with {user.authProvider}
+              </div>
+            </div>
+          )}
         </li>
       </ul>
     </div>
