@@ -178,18 +178,18 @@ class OIDCProvider implements AuthProviderInterface {
 
     // Try multiple logout URL formats
     // Option 1: With logout_choice=all (skips confirmation)
-    const logoutUrl =
-      `${endpoints.endSession}?` +
-      `client_id=${config.clientId}&` +
-      `post_logout_redirect_uri=${redirectUri}${idTokenHint}&` +
-      `logout_choice=all`
+    // const logoutUrl =
+    //   `${endpoints.endSession}?` +
+    //   `client_id=${config.clientId}&` +
+    //   `post_logout_redirect_uri=${redirectUri}${idTokenHint}&` +
+    //   `logout_choice=all`
 
-    console.log('🔓 Attempt 1 - Logout URL:', logoutUrl)
+    // console.log('🔓 Attempt 1 - Logout URL:', logoutUrl)
 
     // Set a timeout to try alternative if this doesn't work
     // But we'll use this one first
     this.clearSession()
-    window.location.href = logoutUrl
+    window.location.href = redirectUri
   }
 
   async getSession(): Promise<User | null> {
