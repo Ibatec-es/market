@@ -443,6 +443,12 @@ export const useAuth = () => {
         sessionStorage.setItem('oidc_logout_pending', 'true')
         const authProvider = providers.oidc
         await authProvider.logout()
+        try {
+          await disconnectFromWallet()
+          await disconnect()
+        } catch (error) {
+          console.error('Error disconnecting from wallet:', error)
+        }
         // Note: The redirect happens in authProvider.logout()
         // The code after this won't execute because of the redirect
         return
