@@ -3,9 +3,6 @@ import { useRouter } from 'next/router'
 import { toast } from 'react-toastify'
 import { authConfig } from '../config/auth.config'
 import React from 'react'
-import { disconnect } from 'process'
-import { disconnectFromWallet } from '@utils/wallet/ssiWallet'
-import { useDisconnect } from 'wagmi'
 
 interface AuthProviderInterface {
   login: () => Promise<User>
@@ -157,42 +154,32 @@ class OIDCProvider implements AuthProviderInterface {
     if (tokens) {
       try {
         const tokenData = JSON.parse(tokens)
-        console.log('Token data:', {
-          hasIdToken: !!tokenData.id_token,
-          idTokenLength: tokenData.id_token?.length,
-          hasAccessToken: !!tokenData.access_token,
-          expiresIn: tokenData.expires_in
-        })
-
         if (tokenData.id_token) {
           idTokenHint = `&id_token_hint=${encodeURIComponent(
             tokenData.id_token
           )}`
           console.log('✅ ID Token hint added')
-        } else {
-          console.warn('⚠️ No id_token found in stored tokens!')
         }
       } catch (e) {
         console.error('Error parsing tokens:', e)
       }
-    } else {
-      console.warn('⚠️ No tokens found in localStorage!')
     }
 
-    // Try multiple logout URL formats
-    // Option 1: With logout_choice=all (skips confirmation)
-    // const logoutUrl =
-    //   `${endpoints.endSession}?` +
-    //   `client_id=${config.clientId}&` +
-    //   `post_logout_redirect_uri=${redirectUri}${idTokenHint}&` +
-    //   `logout_choice=all`
-
-    // console.log('🔓 Attempt 1 - Logout URL:', logoutUrl)
-
-    // Set a timeout to try alternative if this doesn't work
-    // But we'll use this one first
+    try {
+      fetch(
+        `${endpoints.endSession}?` +
+          `client_id=${config.clientId}&` +
+          `post_logout_redirect_uri=${redirectUri}${idTokenHint}`,
+        {
+          method: 'GET',
+          mode: 'no-cors'
+        }
+      )
+    } catch (e) {
+      console.error('Error calling logout endpoint:', e)
+    }
     this.clearSession()
-    window.location.href = redirectUri
+    toast.info('Logout successful. Local session cleared.')
   }
 
   async getSession(): Promise<User | null> {
@@ -246,7 +233,6 @@ export const useAuth = () => {
     logout: storeLogout
   } = useAuthStore()
   const router = useRouter()
-  const { disconnect } = useDisconnect()
 
   const restoreSession = async () => {
     const mockGoogleSession = localStorage.getItem('mock_google_session')
@@ -285,13 +271,10 @@ export const useAuth = () => {
     }
   }
 
-  // Clean up after returning from Authentik logout
   React.useEffect(() => {
-    // Check if we're returning from a logout
     const logoutPending = sessionStorage.getItem('oidc_logout_pending')
     if (logoutPending === 'true') {
       console.log('🔓 Returning from Authentik logout - clearing local session')
-      // Clear all stored sessions
       localStorage.removeItem('oidc_session')
       localStorage.removeItem('oidc_tokens')
       localStorage.removeItem('mock_google_session')
@@ -299,9 +282,9 @@ export const useAuth = () => {
       sessionStorage.removeItem('oidc_pkce_code_verifier')
       sessionStorage.removeItem('oidc_logout_pending')
       storeLogout()
-      // No redirect needed - we're already on the page
+      router.push('/')
     }
-  }, [storeLogout])
+  }, [storeLogout, router])
 
   React.useEffect(() => {
     restoreSession()
@@ -313,9 +296,6 @@ export const useAuth = () => {
       const config = authConfig.oidc
       const endpoints = getEndpoints(config.issuer)
       const tokenEndpoint = endpoints.token
-
-      console.log('🔄 OIDC Callback - Exchanging code for tokens...')
-      console.log('Token endpoint:', tokenEndpoint)
 
       const tokenResponse = await fetch(tokenEndpoint, {
         method: 'POST',
@@ -339,22 +319,8 @@ export const useAuth = () => {
       }
 
       const tokens = await tokenResponse.json()
-
-      console.log('🔑 Tokens received:', {
-        hasIdToken: !!tokens.id_token,
-        idTokenLength: tokens.id_token?.length,
-        hasAccessToken: !!tokens.access_token,
-        hasRefreshToken: !!tokens.refresh_token
-      })
-
       const idToken = tokens.id_token
       const payload = JSON.parse(atob(idToken.split('.')[1]))
-
-      console.log('👤 User info from token:', {
-        sub: payload.sub,
-        email: payload.email,
-        name: payload.name
-      })
 
       const userData: User = {
         id: payload.sub,
@@ -373,16 +339,6 @@ export const useAuth = () => {
 
       localStorage.setItem('oidc_session', JSON.stringify(userData))
       localStorage.setItem('oidc_tokens', JSON.stringify(tokens))
-
-      // Verify storage worked
-      console.log(
-        '💾 Verification - oidc_tokens stored:',
-        !!localStorage.getItem('oidc_tokens')
-      )
-      console.log(
-        '💾 Verification - oidc_session stored:',
-        !!localStorage.getItem('oidc_session')
-      )
 
       window.history.replaceState({}, '', window.location.pathname)
       useAuthStore.getState().setUser(userData)
@@ -429,7 +385,6 @@ export const useAuth = () => {
     }
   }
 
-  // SINGLE LOGOUT FUNCTION - This is the main logout handler
   const logout = async () => {
     console.log('🔓 === LOGOUT STARTED ===')
     console.log('Current user:', user?.authProvider, user?.email)
@@ -439,51 +394,32 @@ export const useAuth = () => {
       // Handle OIDC logout (Authentik)
       if (user?.authProvider === 'oidc') {
         console.log('🔓 OIDC provider logout - redirecting to Authentik...')
-        // Store a flag that we're logging out so we can clear after redirect
         sessionStorage.setItem('oidc_logout_pending', 'true')
         const authProvider = providers.oidc
         await authProvider.logout()
-        try {
-          await disconnectFromWallet()
-          await disconnect()
-        } catch (error) {
-          console.error('Error disconnecting from wallet:', error)
-        }
-        // Note: The redirect happens in authProvider.logout()
-        // The code after this won't execute because of the redirect
         return
       }
 
-      // Handle mock providers (google, email)
       const mockProviders = ['google', 'email']
       const isMockProvider =
         user?.authProvider && mockProviders.includes(user.authProvider)
 
       if (isMockProvider && user?.authProvider) {
-        console.log('🔓 Mock provider logout - clearing local session')
         const authProvider = providers[user.authProvider as 'google' | 'email']
         await authProvider.logout()
       }
 
-      // Clear all stored sessions
       localStorage.removeItem('oidc_session')
       localStorage.removeItem('oidc_tokens')
       localStorage.removeItem('mock_google_session')
       localStorage.removeItem('mock_email_session')
       sessionStorage.removeItem('oidc_pkce_code_verifier')
       storeLogout()
-      try {
-        await disconnectFromWallet()
-        await disconnect()
-      } catch (error) {
-        console.error('Error disconnecting from wallet:', error)
-      }
 
       toast.success('Signed out successfully')
       router.push('/')
     } catch (error) {
       console.error('Logout error:', error)
-      // Even if provider logout fails, clear local session
       localStorage.removeItem('oidc_session')
       localStorage.removeItem('oidc_tokens')
       localStorage.removeItem('mock_google_session')

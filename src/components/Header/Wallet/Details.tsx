@@ -1,6 +1,6 @@
+// components/Header/Details.tsx
 import { ReactElement } from 'react'
 import Button from '@shared/atoms/Button'
-// import { useOrbis } from '@context/DirectMessages'
 import { useDisconnect, useAccount, useConnect, useConnectors } from 'wagmi'
 import styles from './Details.module.css'
 import Avatar from '@components/@shared/atoms/Avatar'
@@ -51,6 +51,15 @@ export default function Details(): ReactElement {
   }
 
   const handleLogout = async () => {
+    try {
+      disconnect()
+      // eslint-disable-next-line promise/param-names
+      await new Promise((r) => setTimeout(r, 500))
+      await disconnectSsiWallet()
+    } catch (error) {
+      console.error('Error disconnecting wallet/SSI:', error)
+    }
+
     await logout()
     const event = new CustomEvent('closeWalletDropdown')
     window.dispatchEvent(event)
@@ -78,13 +87,8 @@ export default function Details(): ReactElement {
         <li className={styles.actions}>
           <div className={styles.walletInfo}>
             <span className={styles.walletLogoWrap}>
-              {/* <img className={styles.walletLogo} src={activeConnector?.logo} /> */}
               {activeConnector?.name}
             </span>
-            {/* <AddNetwork
-              chainId={Number(activeConnector?.id)}
-              networkName={activeConnector?.name}
-            /> */}
             {activeConnector?.name === 'MetaMask' && <AddTokenList />}
           </div>
           <div>
