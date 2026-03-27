@@ -184,7 +184,11 @@ class OIDCProvider implements AuthProviderInterface {
     console.log('🔓 Final logout URL:', logoutUrl)
     console.log('🔓 Redirecting to Authentik...')
 
-    this.clearSession()
+    // IMPORTANT: Don't clear session here! Let Authentik handle it.
+    // The tokens will be cleared after redirect in the main logout function
+    // DO NOT call this.clearSession() here - it would clear tokens before redirect
+
+    // Redirect to Authentik
     window.location.href = logoutUrl
   }
 
@@ -277,6 +281,24 @@ export const useAuth = () => {
     }
   }
 
+  // Clean up after returning from Authentik logout
+  React.useEffect(() => {
+    // Check if we're returning from a logout
+    const logoutPending = sessionStorage.getItem('oidc_logout_pending')
+    if (logoutPending === 'true') {
+      console.log('🔓 Returning from Authentik logout - clearing local session')
+      // Clear all stored sessions
+      localStorage.removeItem('oidc_session')
+      localStorage.removeItem('oidc_tokens')
+      localStorage.removeItem('mock_google_session')
+      localStorage.removeItem('mock_email_session')
+      sessionStorage.removeItem('oidc_pkce_code_verifier')
+      sessionStorage.removeItem('oidc_logout_pending')
+      storeLogout()
+      // No redirect needed - we're already on the page
+    }
+  }, [storeLogout])
+
   React.useEffect(() => {
     restoreSession()
   }, [])
@@ -348,6 +370,16 @@ export const useAuth = () => {
       localStorage.setItem('oidc_session', JSON.stringify(userData))
       localStorage.setItem('oidc_tokens', JSON.stringify(tokens))
 
+      // Verify storage worked
+      console.log(
+        '💾 Verification - oidc_tokens stored:',
+        !!localStorage.getItem('oidc_tokens')
+      )
+      console.log(
+        '💾 Verification - oidc_session stored:',
+        !!localStorage.getItem('oidc_session')
+      )
+
       window.history.replaceState({}, '', window.location.pathname)
       useAuthStore.getState().setUser(userData)
 
@@ -403,6 +435,8 @@ export const useAuth = () => {
       // Handle OIDC logout (Authentik)
       if (user?.authProvider === 'oidc') {
         console.log('🔓 OIDC provider logout - redirecting to Authentik...')
+        // Store a flag that we're logging out so we can clear after redirect
+        sessionStorage.setItem('oidc_logout_pending', 'true')
         const authProvider = providers.oidc
         await authProvider.logout()
         // Note: The redirect happens in authProvider.logout()
