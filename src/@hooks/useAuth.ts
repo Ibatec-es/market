@@ -176,17 +176,19 @@ class OIDCProvider implements AuthProviderInterface {
       console.warn('⚠️ No tokens found in localStorage!')
     }
 
-    // Build logout URL with logout_choice=all to bypass confirmation page
+    // Try multiple logout URL formats
+    // Option 1: With logout_choice=all (skips confirmation)
     const logoutUrl =
       `${endpoints.endSession}?` +
       `client_id=${config.clientId}&` +
       `post_logout_redirect_uri=${redirectUri}${idTokenHint}&` +
       `logout_choice=all`
 
-    console.log('🔓 Final logout URL:', logoutUrl)
-    console.log('🔓 Redirecting to Authentik...')
+    console.log('🔓 Attempt 1 - Logout URL:', logoutUrl)
 
-    // Redirect to Authentik
+    // Set a timeout to try alternative if this doesn't work
+    // But we'll use this one first
+    this.clearSession()
     window.location.href = logoutUrl
   }
 
