@@ -391,12 +391,18 @@ export const useAuth = () => {
 
     setLoading(true)
     try {
-      // Handle OIDC logout (Authentik)
       if (user?.authProvider === 'oidc') {
-        console.log('🔓 OIDC provider logout - redirecting to Authentik...')
         sessionStorage.setItem('oidc_logout_pending', 'true')
         const authProvider = providers.oidc
         await authProvider.logout()
+
+        localStorage.removeItem('oidc_session')
+        localStorage.removeItem('oidc_tokens')
+        sessionStorage.removeItem('oidc_pkce_code_verifier')
+        storeLogout()
+
+        toast.success('Signed out successfully')
+        router.push('/')
         return
       }
 
