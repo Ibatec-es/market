@@ -135,6 +135,7 @@ class OIDCProvider implements AuthProviderInterface {
       `code_challenge=${codeChallenge}&` +
       `code_challenge_method=S256`
 
+    console.log('🚀 OIDC Login - Redirect URL:', authUrl)
     window.location.href = authUrl
     throw new Error('Redirecting to OIDC provider...')
   }
@@ -146,23 +147,42 @@ class OIDCProvider implements AuthProviderInterface {
     const tokens = localStorage.getItem('oidc_tokens')
     let idTokenHint = ''
 
+    console.log('🔓 === OIDC LOGOUT DEBUG ===')
+    console.log('Redirect URI (home page):', redirectUri)
+    console.log('Tokens in localStorage:', tokens ? 'Yes' : 'No')
+
     if (tokens) {
       try {
         const tokenData = JSON.parse(tokens)
+        console.log('Token data:', {
+          hasIdToken: !!tokenData.id_token,
+          idTokenLength: tokenData.id_token?.length,
+          hasAccessToken: !!tokenData.access_token,
+          expiresIn: tokenData.expires_in
+        })
+
         if (tokenData.id_token) {
           idTokenHint = `&id_token_hint=${encodeURIComponent(
             tokenData.id_token
           )}`
+          console.log('✅ ID Token hint added')
+        } else {
+          console.warn('⚠️ No id_token found in stored tokens!')
         }
       } catch (e) {
         console.error('Error parsing tokens:', e)
       }
+    } else {
+      console.warn('⚠️ No tokens found in localStorage!')
     }
 
     const logoutUrl =
       `${endpoints.endSession}?` +
       `client_id=${config.clientId}&` +
       `post_logout_redirect_uri=${redirectUri}${idTokenHint}`
+
+    console.log('🔓 Final logout URL:', logoutUrl)
+    console.log('🔓 Redirecting to Authentik...')
 
     this.clearSession()
     window.location.href = logoutUrl
@@ -267,6 +287,10 @@ export const useAuth = () => {
       const config = authConfig.oidc
       const endpoints = getEndpoints(config.issuer)
       const tokenEndpoint = endpoints.token
+
+      console.log('🔄 OIDC Callback - Exchanging code for tokens...')
+      console.log('Token endpoint:', tokenEndpoint)
+
       const tokenResponse = await fetch(tokenEndpoint, {
         method: 'POST',
         headers: {
@@ -290,8 +314,21 @@ export const useAuth = () => {
 
       const tokens = await tokenResponse.json()
 
+      console.log('🔑 Tokens received:', {
+        hasIdToken: !!tokens.id_token,
+        idTokenLength: tokens.id_token?.length,
+        hasAccessToken: !!tokens.access_token,
+        hasRefreshToken: !!tokens.refresh_token
+      })
+
       const idToken = tokens.id_token
       const payload = JSON.parse(atob(idToken.split('.')[1]))
+
+      console.log('👤 User info from token:', {
+        sub: payload.sub,
+        email: payload.email,
+        name: payload.name
+      })
 
       const userData: User = {
         id: payload.sub,
@@ -356,33 +393,47 @@ export const useAuth = () => {
     }
   }
 
+  // SINGLE LOGOUT FUNCTION - This is the main logout handler
   const logout = async () => {
+    console.log('🔓 === LOGOUT STARTED ===')
+    console.log('Current user:', user?.authProvider, user?.email)
+
     setLoading(true)
     try {
+      // Handle OIDC logout (Authentik)
+      if (user?.authProvider === 'oidc') {
+        console.log('🔓 OIDC provider logout - redirecting to Authentik...')
+        const authProvider = providers.oidc
+        await authProvider.logout()
+        // Note: The redirect happens in authProvider.logout()
+        // The code after this won't execute because of the redirect
+        return
+      }
+
+      // Handle mock providers (google, email)
       const mockProviders = ['google', 'email']
       const isMockProvider =
         user?.authProvider && mockProviders.includes(user.authProvider)
 
       if (isMockProvider && user?.authProvider) {
+        console.log('🔓 Mock provider logout - clearing local session')
         const authProvider = providers[user.authProvider as 'google' | 'email']
         await authProvider.logout()
       }
 
-      if (user?.authProvider === 'oidc') {
-        const authProvider = providers.oidc
-        await authProvider.logout()
-      }
-
+      // Clear all stored sessions
       localStorage.removeItem('oidc_session')
       localStorage.removeItem('oidc_tokens')
       localStorage.removeItem('mock_google_session')
       localStorage.removeItem('mock_email_session')
       sessionStorage.removeItem('oidc_pkce_code_verifier')
       storeLogout()
+
       toast.success('Signed out successfully')
       router.push('/')
     } catch (error) {
       console.error('Logout error:', error)
+      // Even if provider logout fails, clear local session
       localStorage.removeItem('oidc_session')
       localStorage.removeItem('oidc_tokens')
       localStorage.removeItem('mock_google_session')
