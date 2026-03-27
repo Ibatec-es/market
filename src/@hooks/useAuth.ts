@@ -3,6 +3,9 @@ import { useRouter } from 'next/router'
 import { toast } from 'react-toastify'
 import { authConfig } from '../config/auth.config'
 import React from 'react'
+import { disconnect } from 'process'
+import { disconnectFromWallet } from '@utils/wallet/ssiWallet'
+import { useDisconnect } from 'wagmi'
 
 interface AuthProviderInterface {
   login: () => Promise<User>
@@ -243,6 +246,7 @@ export const useAuth = () => {
     logout: storeLogout
   } = useAuthStore()
   const router = useRouter()
+  const { disconnect } = useDisconnect()
 
   const restoreSession = async () => {
     const mockGoogleSession = localStorage.getItem('mock_google_session')
@@ -462,6 +466,12 @@ export const useAuth = () => {
       localStorage.removeItem('mock_email_session')
       sessionStorage.removeItem('oidc_pkce_code_verifier')
       storeLogout()
+      try {
+        await disconnectFromWallet()
+        await disconnect()
+      } catch (error) {
+        console.error('Error disconnecting from wallet:', error)
+      }
 
       toast.success('Signed out successfully')
       router.push('/')
