@@ -1,22 +1,22 @@
 {
-  "title": "Enterprise Data Marketplace",
-  "description": "Monetize your data assets with institutional-grade security, gasless transactions, and organizational wallets.",
+  "title": "Ocean Enterprise Marketplace",
+  "description": "Discover, publish and manage data, software and AI services with enterprise-grade governance and trusted access control.",
   "features": [
     {
-      "icon": "⛽",
-      "text": "Gasless transactions - No ETH/MATIC needed"
+      "icon": "marketplace",
+      "text": "Publish and discover service offerings"
     },
     {
-      "icon": "🏢",
-      "text": "Organizational wallets for teams"
+      "icon": "access",
+      "text": "Control access with verified credentials"
     },
     {
-      "icon": "🔒",
-      "text": "Enterprise-grade security with multisig"
+      "icon": "interop",
+      "text": "Standardized, interoperable metadata"
     },
     {
-      "icon": "⚡",
-      "text": "Batched transactions for efficiency"
+      "icon": "compute",
+      "text": "Private computation with Compute-to-Data"
     }
   ]
 }

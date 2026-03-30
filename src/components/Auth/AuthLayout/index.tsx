@@ -1,0 +1,68 @@
+import { useEffect, useState } from 'react'
+import LoginForm from '../Login/LoginForm'
+import SignupForm from '../Signup/SignupForm'
+import {
+  authTabLabels,
+  type AuthPanelContent,
+  type AuthTab
+} from '../constants'
+import BrandPanel from './BrandPanel'
+import styles from './index.module.css'
+
+interface AuthLayoutProps {
+  content: AuthPanelContent
+  initialTab?: AuthTab
+  onLoginSuccess?: () => void
+  onSignupSuccess?: () => void
+}
+
+export default function AuthLayout({
+  content,
+  initialTab = 'login',
+  onLoginSuccess,
+  onSignupSuccess
+}: AuthLayoutProps) {
+  const [activeTab, setActiveTab] = useState<AuthTab>(initialTab)
+
+  useEffect(() => {
+    setActiveTab(initialTab)
+  }, [initialTab])
+
+  return (
+    <div className={styles.page}>
+      <div className={styles.card}>
+        <BrandPanel content={content} />
+        <div className={styles.formPanel}>
+          <div className={styles.pillTabs}>
+            <button
+              type="button"
+              className={`${styles.pillTab} ${
+                activeTab === 'login' ? styles.pillTabActive : ''
+              }`}
+              onClick={() => setActiveTab('login')}
+            >
+              {authTabLabels.login}
+            </button>
+            <button
+              type="button"
+              className={`${styles.pillTab} ${
+                activeTab === 'signup' ? styles.pillTabActive : ''
+              }`}
+              onClick={() => setActiveTab('signup')}
+            >
+              {authTabLabels.signup}
+            </button>
+          </div>
+
+          <div className={styles.formContent}>
+            {activeTab === 'login' ? (
+              <LoginForm onLoginSuccess={onLoginSuccess} />
+            ) : (
+              <SignupForm onSignupSuccess={onSignupSuccess} />
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}

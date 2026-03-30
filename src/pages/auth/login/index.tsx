@@ -1,12 +1,19 @@
 // pages/auth/login.tsx
 import { ReactElement } from 'react'
+import router, { useRouter } from 'next/router'
 import Login from '../../../components/Auth/Login'
 import Page from '../../../components/@shared/Page'
+import type { AuthFeature, AuthTab } from '../../../components/Auth/constants'
 import content from '../../../../content/auth/login.json'
-import router from 'next/router'
 
 export default function AuthLogin(): ReactElement {
+  const pageRouter = useRouter()
   const { title, description, features } = content
+  const typedFeatures = features as AuthFeature[]
+  const initialTab =
+    pageRouter.query.tab === 'signup'
+      ? ('signup' as AuthTab)
+      : ('login' as AuthTab)
 
   return (
     <Page
@@ -14,8 +21,12 @@ export default function AuthLogin(): ReactElement {
       description={description}
       uri={router.route}
       noPageHeader
+      fullWidth
     >
-      <Login content={{ title, description, features }} />
+      <Login
+        content={{ title, description, features: typedFeatures }}
+        initialTab={initialTab}
+      />
     </Page>
   )
 }
