@@ -94,31 +94,27 @@ class OIDCProvider implements AuthProviderInterface {
   }
 
   async login(): Promise<User> {
-    try {
-      const config = this.getConfig()
-      const endpoints = getEndpoints(config.issuer)
+    const config = this.getConfig()
+    const endpoints = getEndpoints(config.issuer)
 
-      const codeVerifier = this.generateCodeVerifier()
-      const codeChallenge = await this.generateCodeChallenge(codeVerifier)
+    const codeVerifier = this.generateCodeVerifier()
+    const codeChallenge = await this.generateCodeChallenge(codeVerifier)
 
-      sessionStorage.setItem('oidc_pkce_code_verifier', codeVerifier)
+    sessionStorage.setItem('oidc_pkce_code_verifier', codeVerifier)
 
-      const authUrl =
-        `${endpoints.authorize}?` +
-        `client_id=${config.clientId}&` +
-        `redirect_uri=${encodeURIComponent(config.redirectUri)}&` +
-        `response_type=code&` +
-        `scope=${config.scope}&` +
-        `code_challenge=${codeChallenge}&` +
-        `code_challenge_method=S256`
+    const authUrl =
+      `${endpoints.authorize}?` +
+      `client_id=${config.clientId}&` +
+      `redirect_uri=${encodeURIComponent(config.redirectUri)}&` +
+      `response_type=code&` +
+      `scope=${config.scope}&` +
+      `code_challenge=${codeChallenge}&` +
+      `code_challenge_method=S256`
 
-      window.location.href = authUrl
-      throw new Error('Redirecting...')
-    } catch (err) {
-      console.error('Login error:', err)
-      toast.error('Failed to start login')
-      throw err
-    }
+    console.log('🚀 OIDC Login - Redirect URL:', authUrl)
+
+    window.location.href = authUrl
+    return new Promise(() => {})
   }
 
   async logout(): Promise<void> {
@@ -126,7 +122,6 @@ class OIDCProvider implements AuthProviderInterface {
       const config = this.getConfig()
       const endpoints = getEndpoints(config.issuer)
 
-      // IMPORTANT: This MUST match exactly what's configured in Authentik
       const redirectUri = encodeURIComponent(
         'https://market-git-feat-aa-auth-ocean-enterprise.vercel.app/auth/login'
       )
@@ -144,31 +139,25 @@ class OIDCProvider implements AuthProviderInterface {
             console.log('✅ Using id_token_hint for logout')
           }
         } catch (e) {
-          console.warn('Could not parse tokens for logout', e)
+          console.warn('Could not parse tokens', e)
         }
       }
 
-      // Build logout URL with front-channel parameters
-      const logoutUrl = new URL(endpoints.endSession)
-      logoutUrl.searchParams.append('client_id', config.clientId)
-      logoutUrl.searchParams.append('post_logout_redirect_uri', redirectUri)
-
-      if (idTokenHint) {
-        logoutUrl.searchParams.append('id_token_hint', idTokenHint)
-      }
-
-      // Add state for security
       const state = Math.random().toString(36).substring(2)
-      logoutUrl.searchParams.append('state', state)
       sessionStorage.setItem('oidc_logout_state', state)
 
-      console.log('🔓 Logout URL:', logoutUrl.toString())
+      const logoutUrl =
+        `${endpoints.endSession}?` +
+        `client_id=${config.clientId}&` +
+        `post_logout_redirect_uri=${redirectUri}&` +
+        `state=${state}` +
+        idTokenHint
 
-      // Set flag BEFORE redirect
+      console.log('🔓 Logout URL:', logoutUrl)
+
       sessionStorage.setItem('oidc_logout_pending', 'true')
 
-      // Redirect to Authentik logout - this will now use front-channel
-      window.location.href = logoutUrl.toString()
+      window.location.href = logoutUrl
     } catch (err) {
       console.error('Logout error:', err)
       toast.error('Logout failed')
@@ -234,16 +223,23 @@ export const useAuth = () => {
   }, [])
 
   /* -------- Handle Logout Return -------- */
-
   React.useEffect(() => {
-    if (sessionStorage.getItem('oidc_logout_pending') === 'true') {
+    const isLogoutPending =
+      sessionStorage.getItem('oidc_logout_pending') === 'true'
+
+    if (isLogoutPending) {
+      console.log('🔄 Returning from Authentik logout')
+
       localStorage.clear()
       sessionStorage.clear()
 
       storeLogout()
-      router.replace('/auth/login')
+
+      if (window.location.pathname !== '/auth/login') {
+        router.replace('/auth/login')
+      }
     }
-  }, [])
+  }, [router, storeLogout])
 
   /* -------- Callback -------- */
 
