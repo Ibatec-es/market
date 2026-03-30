@@ -127,7 +127,7 @@ class OIDCProvider implements AuthProviderInterface {
       const endpoints = getEndpoints(config.issuer)
 
       const redirectUri = encodeURIComponent(
-        `${window.location.origin}/auth/login`
+        'https://market-git-feat-aa-auth-ocean-enterprise.vercel.app/auth/login'
       )
 
       let idTokenHint = ''
