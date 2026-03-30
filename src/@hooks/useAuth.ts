@@ -152,7 +152,7 @@ class OIDCProvider implements AuthProviderInterface {
 
       sessionStorage.setItem('oidc_logout_pending', 'true')
 
-      window.location.href = redirectUri
+      window.location.href = logoutUrl
     } catch (err) {
       console.error('Logout error:', err)
       toast.error('Logout failed')
