@@ -126,6 +126,7 @@ class OIDCProvider implements AuthProviderInterface {
       const config = this.getConfig()
       const endpoints = getEndpoints(config.issuer)
 
+      // IMPORTANT: This MUST match exactly what's configured in Authentik
       const redirectUri = encodeURIComponent(
         'https://market-git-feat-aa-auth-ocean-enterprise.vercel.app/auth/login'
       )
@@ -140,19 +141,34 @@ class OIDCProvider implements AuthProviderInterface {
             idTokenHint = `&id_token_hint=${encodeURIComponent(
               parsed.id_token
             )}`
+            console.log('✅ Using id_token_hint for logout')
           }
-        } catch {}
+        } catch (e) {
+          console.warn('Could not parse tokens for logout', e)
+        }
       }
 
-      const logoutUrl =
-        `${endpoints.endSession}?` +
-        `client_id=${config.clientId}&` +
-        `post_logout_redirect_uri=${redirectUri}` +
-        idTokenHint
+      // Build logout URL with front-channel parameters
+      const logoutUrl = new URL(endpoints.endSession)
+      logoutUrl.searchParams.append('client_id', config.clientId)
+      logoutUrl.searchParams.append('post_logout_redirect_uri', redirectUri)
 
+      if (idTokenHint) {
+        logoutUrl.searchParams.append('id_token_hint', idTokenHint)
+      }
+
+      // Add state for security
+      const state = Math.random().toString(36).substring(2)
+      logoutUrl.searchParams.append('state', state)
+      sessionStorage.setItem('oidc_logout_state', state)
+
+      console.log('🔓 Logout URL:', logoutUrl.toString())
+
+      // Set flag BEFORE redirect
       sessionStorage.setItem('oidc_logout_pending', 'true')
 
-      window.location.href = logoutUrl
+      // Redirect to Authentik logout - this will now use front-channel
+      window.location.href = logoutUrl.toString()
     } catch (err) {
       console.error('Logout error:', err)
       toast.error('Logout failed')
