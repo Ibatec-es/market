@@ -1,4 +1,3 @@
-// pages/auth/login.tsx
 import { ReactElement } from 'react'
 import router, { useRouter } from 'next/router'
 import Login from '../../../components/Auth/Login'

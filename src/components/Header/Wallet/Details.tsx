@@ -1,4 +1,3 @@
-// components/Header/Details.tsx
 import { ReactElement } from 'react'
 import Button from '@shared/atoms/Button'
 import { useDisconnect, useAccount, useConnect, useConnectors } from 'wagmi'
