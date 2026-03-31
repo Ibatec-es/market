@@ -49,17 +49,23 @@ class OIDCProvider {
 
     sessionStorage.setItem('oidc_pkce_code_verifier', codeVerifier)
 
-    const authUrl =
+    const authorizeUrl =
       `${endpoints.authorize}?` +
       `client_id=${config.clientId}&` +
       `redirect_uri=${encodeURIComponent(config.redirectUri)}&` +
       `response_type=code&` +
       `scope=${config.scope}&` +
       `code_challenge=${codeChallenge}&` +
-      `code_challenge_method=S256&` +
-      `prompt=create`
+      `code_challenge_method=S256`
 
-    window.location.href = authUrl
+    const flowSlug = 'self-service-registration'
+    const authentikBase = config.issuer.replace(/\/application\/o\/.*$/, '')
+
+    const signupUrl =
+      `${authentikBase}/if/flow/${flowSlug}/?` +
+      `next=${encodeURIComponent(authorizeUrl)}`
+
+    window.location.href = signupUrl
     return new Promise(() => {})
   }
 
