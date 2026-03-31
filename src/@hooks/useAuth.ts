@@ -40,6 +40,29 @@ class OIDCProvider {
     return authConfig.oidc
   }
 
+  async signup(): Promise<User> {
+    const config = this.getConfig()
+    const endpoints = getEndpoints(config.issuer)
+
+    const codeVerifier = this.generateCodeVerifier()
+    const codeChallenge = await this.generateCodeChallenge(codeVerifier)
+
+    sessionStorage.setItem('oidc_pkce_code_verifier', codeVerifier)
+
+    const authUrl =
+      `${endpoints.authorize}?` +
+      `client_id=${config.clientId}&` +
+      `redirect_uri=${encodeURIComponent(config.redirectUri)}&` +
+      `response_type=code&` +
+      `scope=${config.scope}&` +
+      `code_challenge=${codeChallenge}&` +
+      `code_challenge_method=S256&` +
+      `prompt=create`
+
+    window.location.href = authUrl
+    return new Promise(() => {})
+  }
+
   async login(): Promise<User> {
     const config = this.getConfig()
     const endpoints = getEndpoints(config.issuer)
@@ -248,10 +271,14 @@ export const useAuth = () => {
 
   /* -------- Login -------- */
 
-  const login = async () => {
+  const login = async (mode: PendingAuthMode = 'login') => {
     setLoading(true)
     try {
-      await oidcProvider.login()
+      if (mode === 'signup') {
+        await oidcProvider.signup()
+      } else {
+        await oidcProvider.login()
+      }
     } finally {
       setLoading(false)
     }
@@ -284,7 +311,7 @@ export const useAuth = () => {
       return
     }
 
-    await login()
+    await login(mode)
   }
 
   /* -------- Logout -------- */
