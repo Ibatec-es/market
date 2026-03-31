@@ -1,4 +1,3 @@
-// pages/auth/signup.tsx
 import { ReactElement } from 'react'
 import Signup from '../../../components/Auth/Signup'
 import Page from '../../../components/@shared/Page'
