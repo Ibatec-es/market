@@ -9,9 +9,19 @@ import { isAddress } from 'ethers'
 
 export default function PageProfile(): ReactElement {
   const router = useRouter()
-  const { address: accountId } = useAccount()
+  const { address: accountId, isConnecting, isReconnecting } = useAccount()
   const [finalAccountId, setFinalAccountId] = useState<string>()
   const [ownAccount, setOwnAccount] = useState(false)
+
+  useEffect(() => {
+    if (!router.isReady) return
+    if (isConnecting || isReconnecting) return
+    if (accountId) return
+
+    router.replace(
+      `/auth/login?callbackUrl=${encodeURIComponent(router.asPath)}`
+    )
+  }, [accountId, isConnecting, isReconnecting, router])
 
   // Have accountId in path take over, if not present fall back to web3
   useEffect(() => {
@@ -36,6 +46,10 @@ export default function PageProfile(): ReactElement {
     }
     init()
   }, [router, accountId])
+
+  if (!accountId || !finalAccountId) {
+    return null
+  }
 
   return (
     <Page

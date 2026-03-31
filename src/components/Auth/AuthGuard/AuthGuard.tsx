@@ -16,7 +16,6 @@ export default function AuthGuard({ children }: AuthGuardProps) {
     const exactPublicPaths = [
       '/',
       '/auth/login',
-      '/auth/signup',
       '/auth/callback',
       '/about',
       '/terms',

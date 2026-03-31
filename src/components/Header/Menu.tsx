@@ -14,6 +14,8 @@ import { SsiWallet } from '@components/Header/SsiWallet'
 import Upload from '@images/publish.svg'
 import BurgerIcon from '@images/burgerIcon.svg' // You'll need to add a burger icon
 import CloseIcon from '@images/closeIcon.svg' // You'll need to add a close icon
+import { useAuth } from '@hooks/useAuth'
+import AuthEntry from './AuthEntry'
 
 const cx = classNames.bind(styles)
 
@@ -52,6 +54,7 @@ export function MenuLink({ name, link, className }: MenuItem) {
 export default function Menu(): ReactElement {
   const { validatedSupportedChains } = useMarketMetadata()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const { isAuthenticated } = useAuth()
 
   const router = useRouter()
 
@@ -83,6 +86,11 @@ export default function Menu(): ReactElement {
   const handleWalletClick = () => {
     setIsMobileMenuOpen(false)
   }
+  const handleLoginClick = (event: MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault()
+    router.push('/auth/login')
+    setIsMobileMenuOpen(false)
+  }
 
   return (
     <nav className={styles.menu}>
@@ -108,10 +116,15 @@ export default function Menu(): ReactElement {
           {/* <SearchButton /> */}
           {validatedSupportedChains.length > 1 && <Networks />}
           <UserPreferences />
-          <Wallet />
+          {isAuthenticated && <Wallet />}
           {/* Desktop view - show SSiWallet and buttons normally */}
           <div className={styles.desktopActions}>
-            <SsiWallet />
+            <AuthEntry
+              authenticatedContent={<SsiWallet />}
+              loginClassName={styles.ctaButton}
+              buttonContentClassName={styles.buttonContent}
+              buttonTextClassName={styles.buttonText}
+            />
             <div className={styles.ctaContent}>
               {showPublishButton && (
                 <Link className={styles.ctaButton} href={publishLink}>
@@ -154,9 +167,20 @@ export default function Menu(): ReactElement {
             <CloseIcon className={styles.closeIcon} />
           </button>
           <div className={styles.mobileMenuContent}>
-            <div className={styles.mobileWallet} onClick={handleWalletClick}>
-              <SsiWallet />
-            </div>
+            <AuthEntry
+              authenticatedContent={
+                <div
+                  className={styles.mobileWallet}
+                  onClick={handleWalletClick}
+                >
+                  <SsiWallet />
+                </div>
+              }
+              loginClassName={styles.mobileCtaButton}
+              buttonContentClassName={styles.buttonContent}
+              buttonTextClassName={styles.buttonText}
+              onLoginClick={handleLoginClick}
+            />
             {showPublishButton && (
               <button
                 className={styles.mobileCtaButton}

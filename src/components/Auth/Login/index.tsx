@@ -2,19 +2,15 @@ import { useEffect } from 'react'
 import { useRouter } from 'next/router'
 import { useAuth } from '@hooks/useAuth'
 import { toast } from 'react-toastify'
-import LeftColumn from './LeftColumn'
-import RightColumn from './RightColumn'
-import styles from './index.module.css'
+import AuthLayout from '../AuthLayout'
+import type { AuthPanelContent, AuthTab } from '../constants'
 
 interface LoginProps {
-  content: {
-    title: string
-    description: string
-    features: Array<{ icon: string; text: string }>
-  }
+  content: AuthPanelContent
+  initialTab?: AuthTab
 }
 
-export default function Login({ content }: LoginProps) {
+export default function Login({ content, initialTab = 'login' }: LoginProps) {
   const { isAuthenticated, authEnabled } = useAuth()
   const router = useRouter()
   const { callbackUrl, error } = router.query
@@ -31,7 +27,17 @@ export default function Login({ content }: LoginProps) {
         default:
           toast.error('Authentication error. Please try again.')
       }
-      router.replace('/auth/login', undefined, { shallow: true })
+      const nextQuery = { ...router.query }
+      delete nextQuery.error
+
+      router.replace(
+        {
+          pathname: '/auth/login',
+          query: nextQuery
+        },
+        undefined,
+        { shallow: true }
+      )
     }
   }, [error, router])
 
@@ -48,19 +54,9 @@ export default function Login({ content }: LoginProps) {
     }
   }, [isAuthenticated, router, callbackUrl])
 
-  const handleLoginSuccess = () => {
-    const redirectTo = (callbackUrl as string) || '/profile'
-    router.push(redirectTo)
-  }
-
   if (!authEnabled) {
     return null
   }
 
-  return (
-    <div className={styles.container}>
-      <LeftColumn content={content} />
-      <RightColumn onLoginSuccess={handleLoginSuccess} />
-    </div>
-  )
+  return <AuthLayout content={content} initialTab={initialTab} />
 }

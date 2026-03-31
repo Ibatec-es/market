@@ -3,72 +3,19 @@ import { useRouter } from 'next/router'
 import { toast } from 'react-toastify'
 import { authConfig } from '../config/auth.config'
 import React from 'react'
-
-interface AuthProviderInterface {
-  login: () => Promise<User>
-  logout: () => Promise<void>
-  getSession: () => Promise<User | null>
-}
-
-/* ---------------- MOCK PROVIDERS ---------------- */
-
-class GoogleAuthProvider implements AuthProviderInterface {
-  async login(): Promise<User> {
-    const userData: User = {
-      id: Math.random().toString(36),
-      email: 'test.user@example.com',
-      name: 'Test User',
-      avatar: 'https://ui-avatars.com/api/?name=Test+User',
-      isOnboarded: false,
-      authProvider: 'google'
-    }
-
-    localStorage.setItem('mock_google_session', JSON.stringify(userData))
-    return userData
-  }
-
-  async logout(): Promise<void> {
-    localStorage.removeItem('mock_google_session')
-  }
-
-  async getSession(): Promise<User | null> {
-    try {
-      const data = localStorage.getItem('mock_google_session')
-      return data ? JSON.parse(data) : null
-    } catch {
-      return null
-    }
-  }
-}
-
-class EmailAuthProvider implements AuthProviderInterface {
-  async login(): Promise<User> {
-    const userData: User = {
-      id: Math.random().toString(36),
-      email: 'email@example.com',
-      name: 'Email User',
-      avatar: 'https://ui-avatars.com/api/?name=Email+User',
-      isOnboarded: false,
-      authProvider: 'email'
-    }
-
-    localStorage.setItem('mock_email_session', JSON.stringify(userData))
-    return userData
-  }
-
-  async logout(): Promise<void> {
-    localStorage.removeItem('mock_email_session')
-  }
-
-  async getSession(): Promise<User | null> {
-    try {
-      const data = localStorage.getItem('mock_email_session')
-      return data ? JSON.parse(data) : null
-    } catch {
-      return null
-    }
-  }
-}
+import { useAccount } from 'wagmi'
+import { useModal } from 'connectkit'
+import { useSsiWallet } from '@context/SsiWallet'
+import { useUserPreferences } from '@context/UserPreferences'
+import useSsiChainGuard from './useSsiChainGuard'
+import {
+  clearPendingCallbackUrl,
+  clearPendingAuthMode,
+  getPendingCallbackUrl,
+  setPendingCallbackUrl,
+  setPendingAuthMode,
+  type PendingAuthMode
+} from '@utils/authFlow'
 
 /* ---------------- ENDPOINTS ---------------- */
 
@@ -88,7 +35,7 @@ const getEndpoints = (issuer: string) => {
 
 /* ---------------- OIDC ---------------- */
 
-class OIDCProvider implements AuthProviderInterface {
+class OIDCProvider {
   private getConfig() {
     return authConfig.oidc
   }
@@ -121,7 +68,7 @@ class OIDCProvider implements AuthProviderInterface {
       const endpoints = getEndpoints(config.issuer)
 
       const redirectUri = encodeURIComponent(
-        `${window.location.origin}/auth/login?callbackUrl=%2Fpublish%2F1`
+        `${window.location.origin}/auth/login`
       )
 
       let idTokenHint = ''
@@ -158,15 +105,6 @@ class OIDCProvider implements AuthProviderInterface {
     }
   }
 
-  async getSession(): Promise<User | null> {
-    try {
-      const data = localStorage.getItem('oidc_session')
-      return data ? JSON.parse(data) : null
-    } catch {
-      return null
-    }
-  }
-
   private generateCodeVerifier(): string {
     const array = new Uint8Array(32)
     crypto.getRandomValues(array)
@@ -185,13 +123,17 @@ class OIDCProvider implements AuthProviderInterface {
       .replace(/=+$/, '')
   }
 }
+const oidcProvider = new OIDCProvider()
 
-/* ---------------- PROVIDERS ---------------- */
-
-const providers = {
-  google: new GoogleAuthProvider(),
-  email: new EmailAuthProvider(),
-  oidc: new OIDCProvider()
+const clearOidcStorage = () => {
+  localStorage.removeItem('oidc_session')
+  localStorage.removeItem('oidc_tokens')
+  sessionStorage.removeItem('oidc_pkce_code_verifier')
+  sessionStorage.removeItem('oidc_processing')
+  sessionStorage.removeItem('oidc_logout_state')
+  sessionStorage.removeItem('oidc_logout_pending')
+  clearPendingAuthMode()
+  clearPendingCallbackUrl()
 }
 
 /* ---------------- HOOK ---------------- */
@@ -206,6 +148,11 @@ export const useAuth = () => {
   } = useAuthStore()
 
   const router = useRouter()
+  const { address, isConnected } = useAccount()
+  const { setOpen } = useModal()
+  const { sessionToken } = useSsiWallet()
+  const { setShowSsiWalletModule } = useUserPreferences()
+  const { ensureAllowedChainForSsi } = useSsiChainGuard()
 
   /* -------- Restore Session -------- */
 
@@ -222,8 +169,7 @@ export const useAuth = () => {
       sessionStorage.getItem('oidc_logout_pending') === 'true'
 
     if (isLogoutPending) {
-      localStorage.clear()
-      sessionStorage.clear()
+      clearOidcStorage()
 
       storeLogout()
 
@@ -269,19 +215,25 @@ export const useAuth = () => {
         email: payload.email,
         name: payload.name,
         avatar: `https://ui-avatars.com/api/?name=${payload.name}`,
+        walletAddress: address,
         isOnboarded: false,
         authProvider: 'oidc'
       }
 
       localStorage.setItem('oidc_session', JSON.stringify(userData))
       localStorage.setItem('oidc_tokens', JSON.stringify(tokens))
+      const redirectTo = getPendingCallbackUrl() || '/profile'
+      clearPendingAuthMode()
+      clearPendingCallbackUrl()
 
       window.history.replaceState({}, '', '/')
 
       setUser(userData)
-      router.replace('/profile')
+      router.replace(redirectTo)
     } catch (err) {
       console.error('Callback error:', err)
+      clearPendingAuthMode()
+      clearPendingCallbackUrl()
       toast.error('Login failed')
       router.replace('/auth/login')
     } finally {
@@ -296,13 +248,43 @@ export const useAuth = () => {
 
   /* -------- Login -------- */
 
-  const login = async (provider: keyof typeof providers) => {
+  const login = async () => {
     setLoading(true)
     try {
-      await providers[provider].login()
+      await oidcProvider.login()
     } finally {
       setLoading(false)
     }
+  }
+
+  const beginOidcFlow = async (mode: PendingAuthMode) => {
+    setPendingAuthMode(mode)
+    const callbackUrl =
+      typeof router.query.callbackUrl === 'string'
+        ? router.query.callbackUrl
+        : null
+
+    if (callbackUrl) {
+      setPendingCallbackUrl(callbackUrl)
+    } else {
+      clearPendingCallbackUrl()
+    }
+
+    if (!isConnected) {
+      setOpen(true)
+      return
+    }
+
+    if (!sessionToken) {
+      if (!ensureAllowedChainForSsi()) {
+        return
+      }
+
+      setShowSsiWalletModule(true)
+      return
+    }
+
+    await login()
   }
 
   /* -------- Logout -------- */
@@ -312,12 +294,11 @@ export const useAuth = () => {
 
     try {
       if (user?.authProvider === 'oidc') {
-        await providers.oidc.logout()
+        await oidcProvider.logout()
         return
       }
 
-      localStorage.clear()
-      sessionStorage.clear()
+      clearOidcStorage()
       storeLogout()
 
       router.replace('/auth/login')
@@ -331,9 +312,9 @@ export const useAuth = () => {
     isLoading,
     isAuthenticated: !!user,
     login,
+    beginOidcFlow,
     logout,
     checkSession,
-    authEnabled: authConfig.enabled,
-    availableProviders: Object.keys(providers) as (keyof typeof providers)[]
+    authEnabled: authConfig.enabled
   }
 }

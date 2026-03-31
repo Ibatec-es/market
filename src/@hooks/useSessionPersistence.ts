@@ -58,7 +58,7 @@ export function useSessionPersistence() {
   }
 
   useEffect(() => {
-    if (!user || user.authProvider !== 'oidc') {
+    if (!user) {
       return
     }
 

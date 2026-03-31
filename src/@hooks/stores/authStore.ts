@@ -9,7 +9,7 @@ export interface User {
   organizationId?: string
   walletAddress?: string
   isOnboarded: boolean
-  authProvider: 'google' | 'email' | 'oidc'
+  authProvider: 'oidc'
 }
 
 interface AuthState {
