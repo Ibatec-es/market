@@ -7,21 +7,16 @@ import { authSignupCopy } from '../constants'
 import { SsoIcon } from '../SsoIcons'
 import styles from './SignupForm.module.css'
 
-interface SignupFormProps {
-  onSignupSuccess?: () => void
-}
-
-export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
-  const { login, isLoading } = useAuth()
+export default function SignupForm() {
+  const { beginOidcFlow, isLoading } = useAuth()
   const { privacyPolicySlug } = useUserPreferences()
   const [selectedProvider, setSelectedProvider] = useState<string | null>(null)
 
   const handleOIDCSignup = async () => {
     setSelectedProvider('oidc')
     try {
-      await login('oidc')
-      onSignupSuccess?.()
-    } catch (error) {
+      await beginOidcFlow('signup')
+    } catch {
       setSelectedProvider(null)
     }
   }
@@ -38,6 +33,7 @@ export default function SignupForm({ onSignupSuccess }: SignupFormProps) {
       <div className={styles.socialButtons}>
         {showOIDC && (
           <button
+            type="button"
             onClick={handleOIDCSignup}
             disabled={isLoading}
             className={`${styles.socialButton} ${

@@ -14,10 +14,6 @@ export default function Login({ content, initialTab = 'login' }: LoginProps) {
   const { isAuthenticated, authEnabled } = useAuth()
   const router = useRouter()
   const { callbackUrl, error } = router.query
-  const redirectToCallback = () => {
-    const redirectTo = (callbackUrl as string) || '/profile'
-    router.push(redirectTo)
-  }
 
   useEffect(() => {
     if (error) {
@@ -62,12 +58,5 @@ export default function Login({ content, initialTab = 'login' }: LoginProps) {
     return null
   }
 
-  return (
-    <AuthLayout
-      content={content}
-      initialTab={initialTab}
-      onLoginSuccess={redirectToCallback}
-      onSignupSuccess={redirectToCallback}
-    />
-  )
+  return <AuthLayout content={content} initialTab={initialTab} />
 }

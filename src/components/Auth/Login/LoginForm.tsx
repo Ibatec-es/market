@@ -5,20 +5,15 @@ import { authLoginCopy } from '../constants'
 import { SsoIcon } from '../SsoIcons'
 import styles from './LoginForm.module.css'
 
-interface LoginFormProps {
-  onLoginSuccess?: () => void
-}
-
-export default function LoginForm({ onLoginSuccess }: LoginFormProps) {
-  const { login, isLoading } = useAuth()
+export default function LoginForm() {
+  const { beginOidcFlow, isLoading } = useAuth()
   const [selectedProvider, setSelectedProvider] = useState<string | null>(null)
 
   const handleOIDCLogin = async () => {
     setSelectedProvider('oidc')
     try {
-      await login('oidc')
-      onLoginSuccess?.()
-    } catch (error) {
+      await beginOidcFlow('login')
+    } catch {
       setSelectedProvider(null)
     }
   }
@@ -35,6 +30,7 @@ export default function LoginForm({ onLoginSuccess }: LoginFormProps) {
       <div className={styles.socialButtons}>
         {showOIDC && (
           <button
+            type="button"
             onClick={handleOIDCLogin}
             disabled={isLoading}
             className={`${styles.socialButton} ${

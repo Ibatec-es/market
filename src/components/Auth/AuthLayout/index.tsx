@@ -12,15 +12,11 @@ import styles from './index.module.css'
 interface AuthLayoutProps {
   content: AuthPanelContent
   initialTab?: AuthTab
-  onLoginSuccess?: () => void
-  onSignupSuccess?: () => void
 }
 
 export default function AuthLayout({
   content,
-  initialTab = 'login',
-  onLoginSuccess,
-  onSignupSuccess
+  initialTab = 'login'
 }: AuthLayoutProps) {
   const [activeTab, setActiveTab] = useState<AuthTab>(initialTab)
 
@@ -55,11 +51,7 @@ export default function AuthLayout({
           </div>
 
           <div className={styles.formContent}>
-            {activeTab === 'login' ? (
-              <LoginForm onLoginSuccess={onLoginSuccess} />
-            ) : (
-              <SignupForm onSignupSuccess={onSignupSuccess} />
-            )}
+            {activeTab === 'login' ? <LoginForm /> : <SignupForm />}
           </div>
         </div>
       </div>
