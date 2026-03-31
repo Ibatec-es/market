@@ -111,8 +111,6 @@ class OIDCProvider implements AuthProviderInterface {
       `code_challenge=${codeChallenge}&` +
       `code_challenge_method=S256`
 
-    console.log('🚀 OIDC Login - Redirect URL:', authUrl)
-
     window.location.href = authUrl
     return new Promise(() => {})
   }
@@ -136,7 +134,6 @@ class OIDCProvider implements AuthProviderInterface {
             idTokenHint = `&id_token_hint=${encodeURIComponent(
               parsed.id_token
             )}`
-            console.log('✅ Using id_token_hint for logout')
           }
         } catch (e) {
           console.warn('Could not parse tokens', e)
@@ -153,10 +150,7 @@ class OIDCProvider implements AuthProviderInterface {
         `state=${state}` +
         idTokenHint
 
-      console.log('🔓 Logout URL:', logoutUrl)
-
       sessionStorage.setItem('oidc_logout_pending', 'true')
-
       window.location.href = logoutUrl
     } catch (err) {
       console.error('Logout error:', err)
@@ -228,8 +222,6 @@ export const useAuth = () => {
       sessionStorage.getItem('oidc_logout_pending') === 'true'
 
     if (isLogoutPending) {
-      console.log('🔄 Returning from Authentik logout')
-
       localStorage.clear()
       sessionStorage.clear()
 

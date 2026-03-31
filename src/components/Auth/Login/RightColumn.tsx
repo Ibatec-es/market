@@ -1,4 +1,3 @@
-// components/Auth/Login/RightColumn.tsx
 import { useState } from 'react'
 import { useAuth } from '@hooks/useAuth'
 import { authConfig } from '../../../config/auth.config'
@@ -54,7 +53,6 @@ export default function RightColumn({ onLoginSuccess }: RightColumnProps) {
     }
   }
 
-  // Check if OIDC is configured
   const showOIDC = authConfig.oidc.issuer && authConfig.oidc.clientId
 
   return (
@@ -69,7 +67,6 @@ export default function RightColumn({ onLoginSuccess }: RightColumnProps) {
 
         {!showEmailForm ? (
           <div className={styles.socialButtons}>
-            {/* OIDC Button */}
             {showOIDC && (
               <button
                 onClick={handleOIDCLogin}
@@ -89,7 +86,6 @@ export default function RightColumn({ onLoginSuccess }: RightColumnProps) {
               </button>
             )}
 
-            {/* Divider - only show if OIDC button is shown */}
             {showOIDC && (
               <div className={styles.divider}>
                 <span className={styles.dividerLine}></span>
@@ -98,7 +94,6 @@ export default function RightColumn({ onLoginSuccess }: RightColumnProps) {
               </div>
             )}
 
-            {/* Google Button */}
             <button
               onClick={handleGoogleLogin}
               disabled={isLoading}
