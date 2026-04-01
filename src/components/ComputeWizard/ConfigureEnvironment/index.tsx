@@ -12,7 +12,8 @@ import { ResourceType } from 'src/@types/ResourceType'
 import { useChainId } from 'wagmi'
 import StepTitle from '@shared/StepTitle'
 import Input from '@components/@shared/FormInput'
-import { FormComputeData } from '../_types'
+import Tooltip from '@shared/atoms/Tooltip'
+import { FormComputeData, QueueWaitTimeUnit } from '../_types'
 import { useProfile } from '@context/Profile'
 import styles from './index.module.css'
 import { useEthersSigner } from '@hooks/useEthersSigner'
@@ -89,6 +90,101 @@ function SectionRadioOption({
       <label htmlFor={id} className={styles.sectionTitle}>
         {label}
       </label>
+    </div>
+  )
+}
+
+function QueueWaitSection({
+  enabled,
+  queueMaxWaitTime,
+  queueMaxWaitTimeUnit,
+  error,
+  onToggle,
+  onChange,
+  onUnitChange
+}: {
+  enabled: boolean
+  queueMaxWaitTime: number | null | undefined
+  queueMaxWaitTimeUnit: QueueWaitTimeUnit
+  error?: string
+  onToggle: (checked: boolean) => void
+  onChange: (value: string) => void
+  onUnitChange: (value: QueueWaitTimeUnit) => void
+}): ReactElement {
+  return (
+    <div className={styles.queueSection}>
+      <div className={styles.queueToggleRow}>
+        <label
+          htmlFor="queue-waiting-enabled"
+          className={styles.queueToggleLabel}
+        >
+          <input
+            id="queue-waiting-enabled"
+            type="checkbox"
+            checked={enabled}
+            onChange={(e) => onToggle(e.target.checked)}
+            className={styles.queueCheckbox}
+          />
+          <span>Allow job to be queued</span>
+        </label>
+        <Tooltip
+          placement="top"
+          content={
+            <div className={styles.queueTooltipContent}>
+              If no compute resources are currently available, the job will wait
+              in queue until resources become available.
+            </div>
+          }
+        />
+      </div>
+
+      {enabled && (
+        <div className={styles.queueSettings}>
+          <label
+            htmlFor="queue-max-wait-time"
+            className={styles.queueInputLabel}
+          >
+            Maximum waiting time in queue
+          </label>
+          <div className={styles.queueInputRow}>
+            <input
+              id="queue-max-wait-time"
+              type="number"
+              min={1}
+              step={1}
+              value={queueMaxWaitTime ?? ''}
+              onChange={(e) => onChange(e.target.value)}
+              className={`${styles.input} ${styles.inputSmall} ${
+                error ? styles.inputError : ''
+              }`}
+              aria-invalid={Boolean(error)}
+              aria-describedby={
+                error ? 'queue-max-wait-time-error' : 'queue-max-wait-time-help'
+              }
+            />
+            <select
+              value={queueMaxWaitTimeUnit}
+              onChange={(e) =>
+                onUnitChange(e.target.value as QueueWaitTimeUnit)
+              }
+              className={`${styles.input} ${styles.inputSmall} ${styles.queueUnitSelect}`}
+              aria-label="Maximum waiting time unit"
+            >
+              <option value="seconds">Seconds</option>
+              <option value="minutes">Minutes</option>
+              <option value="hours">Hours</option>
+            </select>
+          </div>
+          <p id="queue-max-wait-time-help" className={styles.queueInputHint}>
+            Enter at least 1 {queueMaxWaitTimeUnit.slice(0, -1)}.
+          </p>
+          {error && (
+            <p id="queue-max-wait-time-error" className={styles.queueError}>
+              {error}
+            </p>
+          )}
+        </div>
+      )}
     </div>
   )
 }
@@ -302,6 +398,9 @@ export default function ConfigureEnvironment({
   const { escrowFundsByToken } = useProfile()
   const walletClient = useEthersSigner()
   const [symbolMap, setSymbolMap] = useState<Record<string, string>>({})
+  const { queueMaxWaitTime } = values
+  const queueMaxWaitTimeUnit = values.queueMaxWaitTimeUnit || 'minutes'
+  const queueWaitingEnabled = Boolean(values.queueWaitingEnabled)
 
   const gpuAvailable = useMemo(
     () => hasGPUResource(values.computeEnv),
@@ -420,22 +519,47 @@ export default function ConfigureEnvironment({
       return {
         cpu: hasStoredResourceValue(envResourceValues?.cpu)
           ? envResourceValues.cpu
-          : getDefaultComputeResourceValue(env, 'cpu', isFree),
+          : getDefaultComputeResourceValue(
+              env,
+              'cpu',
+              isFree,
+              queueWaitingEnabled
+            ),
         ram: hasStoredResourceValue(envResourceValues?.ram)
           ? envResourceValues.ram
-          : getDefaultComputeResourceValue(env, 'ram', isFree),
+          : getDefaultComputeResourceValue(
+              env,
+              'ram',
+              isFree,
+              queueWaitingEnabled
+            ),
         disk: hasStoredResourceValue(envResourceValues?.disk)
           ? envResourceValues.disk
-          : getDefaultComputeResourceValue(env, 'disk', isFree),
+          : getDefaultComputeResourceValue(
+              env,
+              'disk',
+              isFree,
+              queueWaitingEnabled
+            ),
         gpu: hasStoredResourceValue(envResourceValues?.gpu)
           ? envResourceValues.gpu
-          : getDefaultComputeResourceValue(env, 'gpu', isFree),
+          : getDefaultComputeResourceValue(
+              env,
+              'gpu',
+              isFree,
+              queueWaitingEnabled
+            ),
         jobDuration: hasStoredResourceValue(envResourceValues?.jobDuration)
           ? envResourceValues.jobDuration
-          : getDefaultComputeResourceValue(env, 'jobDuration', isFree)
+          : getDefaultComputeResourceValue(
+              env,
+              'jobDuration',
+              isFree,
+              queueWaitingEnabled
+            )
       }
     },
-    [values.computeEnv, allResourceValues]
+    [values.computeEnv, allResourceValues, queueWaitingEnabled]
   )
 
   const [freeValues, setFreeValues] = useState<ResourceValues>(() =>
@@ -458,7 +582,8 @@ export default function ConfigureEnvironment({
     return getComputeResourceLimits(
       values.computeEnv,
       id as ResourceValueKey,
-      isFree
+      isFree,
+      queueWaitingEnabled
     )
   }
 
@@ -877,6 +1002,16 @@ export default function ConfigureEnvironment({
     }
   ]
 
+  const queueWaitTimeError = !queueWaitingEnabled
+    ? undefined
+    : queueMaxWaitTime === null || queueMaxWaitTime === undefined
+    ? 'Enter a maximum waiting time.'
+    : !Number.isFinite(Number(queueMaxWaitTime))
+    ? 'Enter a valid waiting time.'
+    : Number(queueMaxWaitTime) < 1
+    ? 'Maximum waiting time must be at least 1.'
+    : undefined
+
   return (
     <div className={styles.container}>
       <StepTitle title="C2D Environment Configuration" />
@@ -967,6 +1102,31 @@ export default function ConfigureEnvironment({
           }
         }}
         disabled={isTokenListLoading}
+      />
+
+      <QueueWaitSection
+        enabled={queueWaitingEnabled}
+        queueMaxWaitTime={queueMaxWaitTime}
+        queueMaxWaitTimeUnit={queueMaxWaitTimeUnit}
+        error={queueWaitTimeError}
+        onToggle={(checked) => {
+          setFieldValue('queueWaitingEnabled', checked)
+          if (checked && (!queueMaxWaitTime || Number(queueMaxWaitTime) < 1)) {
+            setFieldValue('queueMaxWaitTime', 1)
+            setFieldValue('queueMaxWaitTimeUnit', 'minutes')
+          }
+        }}
+        onChange={(value) => {
+          const parsedValue = value === '' ? null : Number(value)
+          const normalizedValue =
+            parsedValue === null || Number.isFinite(parsedValue)
+              ? parsedValue
+              : null
+          setFieldValue('queueMaxWaitTime', normalizedValue)
+        }}
+        onUnitChange={(value) => {
+          setFieldValue('queueMaxWaitTimeUnit', value)
+        }}
       />
 
       {freeAvailable && (

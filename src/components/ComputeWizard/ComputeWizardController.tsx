@@ -24,7 +24,7 @@ import { Asset } from 'src/@types/Asset'
 import { AssetExtended } from 'src/@types/AssetExtended'
 import { Service } from 'src/@types/ddo/Service'
 import { ResourceType } from 'src/@types/ResourceType'
-import { ComputeFlow, FormComputeData } from './_types'
+import { ComputeFlow, FormComputeData, QueueWaitTimeUnit } from './_types'
 import { AssetSelectionAsset } from '@shared/FormInput/InputElement/AssetSelection'
 import Title from './Title'
 import Navigation from './Navigation'
@@ -213,6 +213,24 @@ function resolveRerunEnvironment(
 
   const prefix = value.split('-')[0]
   return computeEnvs.find((env) => env.id === prefix)
+}
+
+function convertQueueWaitTimeToSeconds(
+  value?: number | null,
+  unit: QueueWaitTimeUnit = 'minutes'
+): number | undefined {
+  if (!Number.isFinite(Number(value)) || Number(value) < 1) return undefined
+
+  const numericValue = Number(value)
+  switch (unit) {
+    case 'hours':
+      return numericValue * 60 * 60
+    case 'minutes':
+      return numericValue * 60
+    case 'seconds':
+    default:
+      return numericValue
+  }
 }
 
 function ReviewExitResetWatcher({
@@ -935,7 +953,13 @@ export default function ComputeWizardController({
         computeServiceEndpoint: service.serviceEndpoint,
         computeOutput: output,
         computeOutputEncryptionKey: encryptionKey,
-        computeOutputStorage: formikValues?.outputStorage
+        computeOutputStorage: formikValues?.outputStorage,
+        queueMaxWaitTime: formikValues?.queueWaitingEnabled
+          ? convertQueueWaitTimeToSeconds(
+              formikValues.queueMaxWaitTime,
+              formikValues.queueMaxWaitTimeUnit
+            )
+          : undefined
         // oceanTokenAddress --- IGNORE ---
       })
 
@@ -1001,6 +1025,17 @@ export default function ComputeWizardController({
       )
       if (outputStorageError) {
         toast.error(outputStorageError)
+        return
+      }
+
+      if (
+        values.queueWaitingEnabled &&
+        !convertQueueWaitTimeToSeconds(
+          values.queueMaxWaitTime,
+          values.queueMaxWaitTimeUnit
+        )
+      ) {
+        toast.error('Please enter a valid maximum waiting time.')
         return
       }
 

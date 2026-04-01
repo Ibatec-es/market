@@ -11,7 +11,8 @@ function clamp(value: number, minValue: number, maxValue: number): number {
 export function getComputeResourceLimits(
   env: ComputeEnvironment | null | undefined,
   id: ComputeResourceId,
-  isFree: boolean
+  isFree: boolean,
+  ignoreInUse = false
 ): { minValue: number; maxValue: number; step: number } {
   if (!env) return { minValue: 0, maxValue: 0, step: 1 }
 
@@ -37,10 +38,10 @@ export function getComputeResourceLimits(
 
   if (!resource) return { minValue: 0, maxValue: 0, step: 1 }
 
-  const available = Math.max(
-    0,
-    ((resource.max || resource.total) ?? 0) - (resource.inUse ?? 0)
-  )
+  const resourceMax = (resource.max || resource.total) ?? 0
+  const available = ignoreInUse
+    ? resourceMax
+    : Math.max(0, resourceMax - (resource.inUse ?? 0))
 
   return {
     minValue: resource.min ?? 0,
@@ -52,9 +53,15 @@ export function getComputeResourceLimits(
 export function getDefaultComputeResourceValue(
   env: ComputeEnvironment | null | undefined,
   id: ComputeResourceId,
-  isFree: boolean
+  isFree: boolean,
+  ignoreInUse = false
 ): number {
-  const { minValue, maxValue, step } = getComputeResourceLimits(env, id, isFree)
+  const { minValue, maxValue, step } = getComputeResourceLimits(
+    env,
+    id,
+    isFree,
+    ignoreInUse
+  )
 
   if (maxValue <= 0) return 0
   if (id === 'gpu') return clamp(minValue, minValue, maxValue)
@@ -65,16 +72,22 @@ export function getDefaultComputeResourceValue(
 
 export function createDefaultComputeResourceValues(
   env: ComputeEnvironment,
-  mode: ComputeEnvironmentMode
+  mode: ComputeEnvironmentMode,
+  ignoreInUse = false
 ): ResourceType {
   const isFree = mode === 'free'
 
   return {
-    cpu: getDefaultComputeResourceValue(env, 'cpu', isFree),
-    ram: getDefaultComputeResourceValue(env, 'ram', isFree),
-    disk: getDefaultComputeResourceValue(env, 'disk', isFree),
-    gpu: getDefaultComputeResourceValue(env, 'gpu', isFree),
-    jobDuration: getDefaultComputeResourceValue(env, 'jobDuration', isFree),
+    cpu: getDefaultComputeResourceValue(env, 'cpu', isFree, ignoreInUse),
+    ram: getDefaultComputeResourceValue(env, 'ram', isFree, ignoreInUse),
+    disk: getDefaultComputeResourceValue(env, 'disk', isFree, ignoreInUse),
+    gpu: getDefaultComputeResourceValue(env, 'gpu', isFree, ignoreInUse),
+    jobDuration: getDefaultComputeResourceValue(
+      env,
+      'jobDuration',
+      isFree,
+      ignoreInUse
+    ),
     mode,
     price: '0',
     fullJobPrice: '0',
