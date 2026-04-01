@@ -257,6 +257,21 @@ function ReviewExitResetWatcher({
   return null
 }
 
+function ComputeEnvironmentLoadWatcher({
+  shouldLoad,
+  onLoad
+}: {
+  shouldLoad: boolean
+  onLoad: () => void
+}): null {
+  useEffect(() => {
+    if (!shouldLoad) return
+    onLoad()
+  }, [shouldLoad, onLoad])
+
+  return null
+}
+
 export default function ComputeWizardController({
   accountId,
   signer,
@@ -358,9 +373,13 @@ export default function ComputeWizardController({
 
   const [isConsumablePrice, setIsConsumablePrice] = useState(true)
   const [providerFeesSymbol, setProviderFeesSymbol] = useState('')
+  const [shouldLoadComputeEnvs, setShouldLoadComputeEnvs] = useState(
+    Boolean(rerunConfig)
+  )
   const { computeEnvs, computeEnvsError } = useComputeEnvironments({
     serviceEndpoint: service?.serviceEndpoint,
-    chainId: asset.credentialSubject?.chainId
+    chainId: asset.credentialSubject?.chainId,
+    enabled: shouldLoadComputeEnvs || Boolean(rerunConfig)
   })
   const {
     initializePricingAndProvider,
@@ -555,6 +574,10 @@ export default function ComputeWizardController({
       setSvcIndex(selectedAlgorithmAsset?.serviceIndex)
     }
   }, [selectedAlgorithmAsset])
+
+  useEffect(() => {
+    setShouldLoadComputeEnvs(Boolean(rerunConfig))
+  }, [rerunConfig, asset?.id, service?.id])
 
   useEffect(() => {
     if (!showSuccess) return
@@ -1231,6 +1254,12 @@ export default function ComputeWizardController({
                 credentialsVerified={Boolean(values.credentialsVerified)}
                 onReset={resetComputedFeeState}
                 setFieldValue={setFieldValue}
+              />
+              <ComputeEnvironmentLoadWatcher
+                shouldLoad={
+                  values.user.stepCurrent >= stepNumbers.selectEnvironment
+                }
+                onLoad={() => setShouldLoadComputeEnvs(true)}
               />
               <Navigation flow={flow} />
               <SectionContainer className={styles.container}>
