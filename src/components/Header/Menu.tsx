@@ -57,6 +57,8 @@ export default function Menu(): ReactElement {
   const { isAuthenticated } = useAuth()
 
   const router = useRouter()
+  const path = router.asPath.split('?')[0]
+  const isAuthRoute = path.startsWith('/auth/')
 
   const isPublishRoute = router.pathname.startsWith('/publish')
   const isCatalogRoute =
@@ -64,8 +66,9 @@ export default function Menu(): ReactElement {
     router.query.sort === 'indexedMetadata.event.block' &&
     router.query.sortOrder === 'desc'
 
-  const showPublishButton = !isPublishRoute
-  const showCatalogButton = !isCatalogRoute
+  const canShowProtectedCtas = isAuthenticated && !isAuthRoute
+  const showPublishButton = canShowProtectedCtas && !isPublishRoute
+  const showCatalogButton = canShowProtectedCtas && !isCatalogRoute
 
   const publishLink = '/publish/1'
   const catalogLink = '/search?sort=indexedMetadata.event.block&sortOrder=desc'
