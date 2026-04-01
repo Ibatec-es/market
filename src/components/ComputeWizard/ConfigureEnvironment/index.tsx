@@ -920,7 +920,7 @@ export default function ConfigureEnvironment({
     const validatedValue = clamp(Number(value), minValue, maxValue)
 
     const adjustedValue =
-      step && (type === 'ram' || type === 'disk' || type === 'gpu')
+      step && type === 'disk'
         ? Number(validatedValue.toFixed(1))
         : Math.floor(validatedValue)
 

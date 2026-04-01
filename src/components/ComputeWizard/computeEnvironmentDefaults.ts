@@ -46,7 +46,7 @@ export function getComputeResourceLimits(
   return {
     minValue: resource.min ?? 0,
     maxValue: available,
-    step: id === 'ram' || id === 'disk' ? 0.1 : 1
+    step: id === 'disk' ? 0.1 : 1
   }
 }
 
@@ -65,6 +65,7 @@ export function getDefaultComputeResourceValue(
 
   if (maxValue <= 0) return 0
   if (id === 'gpu') return clamp(minValue, minValue, maxValue)
+  if (id === 'ram' && minValue === 0) return 0
 
   const minimumAcceptedValue = minValue > 0 ? minValue : step
   return clamp(minimumAcceptedValue, minValue, maxValue)
