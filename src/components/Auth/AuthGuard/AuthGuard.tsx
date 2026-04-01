@@ -7,7 +7,7 @@ interface AuthGuardProps {
 }
 
 export default function AuthGuard({ children }: AuthGuardProps) {
-  const { isAuthenticated, isLoading, authEnabled, checkSession } = useAuth()
+  const { isAuthenticated, isLoading, authEnabled } = useAuth()
   const router = useRouter()
 
   const isPublicRoute = (): boolean => {
@@ -38,12 +38,6 @@ export default function AuthGuard({ children }: AuthGuardProps) {
 
     return false
   }
-
-  useEffect(() => {
-    if (authEnabled && router.asPath.includes('/auth/callback')) {
-      checkSession()
-    }
-  }, [authEnabled, router.asPath, checkSession])
 
   useEffect(() => {
     const isPublic = isPublicRoute()

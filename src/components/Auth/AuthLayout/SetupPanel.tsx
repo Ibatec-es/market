@@ -1,10 +1,11 @@
-import { useEffect, useRef } from 'react'
 import { useAccount } from 'wagmi'
 import { useModal } from 'connectkit'
 import { useSsiWallet } from '@context/SsiWallet'
 import { useUserPreferences } from '@context/UserPreferences'
 import useSsiAllowedChain from '@hooks/useSsiAllowedChain'
 import useSsiChainGuard from '@hooks/useSsiChainGuard'
+import { useAuth } from '@hooks/useAuth'
+import { getPendingAuthMode } from '@utils/authFlow'
 import { authSetupCopy } from '../constants'
 import styles from './SetupPanel.module.css'
 
@@ -63,23 +64,12 @@ function SetupStep({
 export default function SetupPanel() {
   const { isConnected } = useAccount()
   const { setOpen } = useModal()
+  const { user, logout } = useAuth()
   const { setShowSsiWalletModule } = useUserPreferences()
   const { sessionToken, isSsiStateHydrated } = useSsiWallet()
   const { isSsiChainAllowed, isSsiChainReady } = useSsiAllowedChain()
   const { ensureAllowedChainForSsi } = useSsiChainGuard()
-  const walletAutoPromptedRef = useRef(false)
-
-  useEffect(() => {
-    if (isConnected) {
-      walletAutoPromptedRef.current = false
-      return
-    }
-
-    if (walletAutoPromptedRef.current) return
-
-    walletAutoPromptedRef.current = true
-    setOpen(true)
-  }, [isConnected, setOpen])
+  const authMode = getPendingAuthMode()
 
   const isWalletReady = isConnected
   const isSsiReady = Boolean(sessionToken)
@@ -130,12 +120,40 @@ export default function SetupPanel() {
     }
   }
 
+  const handleAccountSwitch = () => {
+    logout().catch((error) => {
+      console.error('Account switch logout failed:', error)
+    })
+  }
+
+  const greeting = user?.name
+    ? `${
+        authMode === 'signup'
+          ? authSetupCopy.signupGreeting
+          : authSetupCopy.greeting
+      }, ${user.name}`
+    : authSetupCopy.title
+  const subtitle =
+    authMode === 'signup'
+      ? authSetupCopy.signupSubtitle
+      : authSetupCopy.subtitle
+
   return (
     <div className={styles.panel}>
       <div className={styles.header}>
         <p className={styles.eyebrow}>{authSetupCopy.eyebrow}</p>
-        <h2 className={styles.title}>{authSetupCopy.title}</h2>
-        <p className={styles.subtitle}>{authSetupCopy.subtitle}</p>
+        <h2 className={styles.title}>{greeting}</h2>
+        <p className={styles.subtitle}>{subtitle}</p>
+        <p className={styles.accountSwitch}>
+          {authSetupCopy.wrongAccount}{' '}
+          <button
+            type="button"
+            className={styles.accountSwitchButton}
+            onClick={handleAccountSwitch}
+          >
+            {authSetupCopy.wrongAccountAction}
+          </button>
+        </p>
       </div>
 
       <div className={styles.progressCard}>

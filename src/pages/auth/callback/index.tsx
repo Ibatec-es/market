@@ -8,11 +8,18 @@ export default function AuthCallback() {
   const { code, error } = router.query
 
   useEffect(() => {
+    const run = async () => {
+      await checkSession()
+    }
+
     if (code) {
-      checkSession()
+      run().catch((callbackError) => {
+        console.error('OAuth callback error:', callbackError)
+        router.replace('/auth/login?error=auth_failed')
+      })
     } else if (error) {
       console.error('OAuth error:', error)
-      router.push('/auth/login?error=auth_failed')
+      router.replace('/auth/login?error=auth_failed')
     }
   }, [code, error, checkSession, router])
 

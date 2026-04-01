@@ -4,7 +4,9 @@ import { toast } from 'react-toastify'
 import { authConfig } from '../config/auth.config'
 import React from 'react'
 import {
+  clearPendingAuthMode,
   clearPendingCallbackUrl,
+  setPendingAuthMode,
   getPendingCallbackUrl,
   setPendingCallbackUrl,
   type PendingAuthMode
@@ -152,6 +154,7 @@ const clearOidcStorage = () => {
   sessionStorage.removeItem('oidc_processing')
   sessionStorage.removeItem('oidc_logout_state')
   sessionStorage.removeItem('oidc_logout_pending')
+  clearPendingAuthMode()
   clearPendingCallbackUrl()
 }
 
@@ -197,68 +200,73 @@ export const useAuth = () => {
 
   /* -------- Callback -------- */
 
-  const handleOIDCCallback = async (code: string) => {
-    if (sessionStorage.getItem('oidc_processing')) return
+  const handleOIDCCallback = React.useCallback(
+    async (code: string) => {
+      if (sessionStorage.getItem('oidc_processing')) return
 
-    sessionStorage.setItem('oidc_processing', 'true')
+      sessionStorage.setItem('oidc_processing', 'true')
 
-    try {
-      const config = authConfig.oidc
-      const endpoints = getEndpoints(config.issuer)
+      try {
+        const config = authConfig.oidc
+        const endpoints = getEndpoints(config.issuer)
 
-      const res = await fetch(endpoints.token, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({
-          grant_type: 'authorization_code',
-          client_id: config.clientId,
-          client_secret: config.clientSecret || '',
-          code,
-          redirect_uri: config.redirectUri,
-          code_verifier: sessionStorage.getItem('oidc_pkce_code_verifier') || ''
+        const res = await fetch(endpoints.token, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: new URLSearchParams({
+            grant_type: 'authorization_code',
+            client_id: config.clientId,
+            client_secret: config.clientSecret || '',
+            code,
+            redirect_uri: config.redirectUri,
+            code_verifier:
+              sessionStorage.getItem('oidc_pkce_code_verifier') || ''
+          })
         })
-      })
 
-      if (!res.ok) {
-        throw new Error(await res.text())
+        if (!res.ok) {
+          throw new Error(await res.text())
+        }
+
+        const tokens = await res.json()
+        const payload = JSON.parse(atob(tokens.id_token.split('.')[1]))
+
+        const userData: User = {
+          id: payload.sub,
+          email: payload.email,
+          name: payload.name,
+          avatar: `https://ui-avatars.com/api/?name=${payload.name}`,
+          isOnboarded: false,
+          authProvider: 'oidc'
+        }
+
+        localStorage.setItem('oidc_session', JSON.stringify(userData))
+        localStorage.setItem('oidc_tokens', JSON.stringify(tokens))
+        const callbackUrl = getPendingCallbackUrl()
+        clearPendingCallbackUrl()
+
+        setUser(userData)
+        router.replace({
+          pathname: '/auth/login',
+          ...(callbackUrl ? { query: { callbackUrl } } : {})
+        })
+      } catch (err) {
+        console.error('Callback error:', err)
+        clearPendingAuthMode()
+        clearPendingCallbackUrl()
+        toast.error('Login failed')
+        router.replace('/auth/login')
+      } finally {
+        sessionStorage.removeItem('oidc_processing')
       }
+    },
+    [router, setUser]
+  )
 
-      const tokens = await res.json()
-      const payload = JSON.parse(atob(tokens.id_token.split('.')[1]))
-
-      const userData: User = {
-        id: payload.sub,
-        email: payload.email,
-        name: payload.name,
-        avatar: `https://ui-avatars.com/api/?name=${payload.name}`,
-        isOnboarded: false,
-        authProvider: 'oidc'
-      }
-
-      localStorage.setItem('oidc_session', JSON.stringify(userData))
-      localStorage.setItem('oidc_tokens', JSON.stringify(tokens))
-      const callbackUrl = getPendingCallbackUrl()
-      clearPendingCallbackUrl()
-
-      setUser(userData)
-      router.replace({
-        pathname: '/auth/login',
-        ...(callbackUrl ? { query: { callbackUrl } } : {})
-      })
-    } catch (err) {
-      console.error('Callback error:', err)
-      clearPendingCallbackUrl()
-      toast.error('Login failed')
-      router.replace('/auth/login')
-    } finally {
-      sessionStorage.removeItem('oidc_processing')
-    }
-  }
-
-  const checkSession = async () => {
+  const checkSession = React.useCallback(async () => {
     const code = new URLSearchParams(window.location.search).get('code')
     if (code) await handleOIDCCallback(code)
-  }
+  }, [handleOIDCCallback])
 
   /* -------- Login -------- */
 
@@ -281,6 +289,8 @@ export const useAuth = () => {
         ? router.query.callbackUrl
         : null
 
+    setPendingAuthMode(mode)
+
     if (callbackUrl) {
       setPendingCallbackUrl(callbackUrl)
     } else {
@@ -298,6 +308,7 @@ export const useAuth = () => {
     try {
       if (user?.authProvider === 'oidc') {
         localStorage.removeItem('oidc_session')
+        clearPendingAuthMode()
         clearPendingCallbackUrl()
         storeLogout()
         await oidcProvider.logout()

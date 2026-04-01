@@ -61,19 +61,25 @@ export const authSetupCopy = {
   title: 'One more step to enter the marketplace',
   subtitle:
     'Your company sign-in is complete. Connect your wallet and SSI to finish secure access setup.',
+  greeting: 'Welcome back',
+  signupGreeting: 'Welcome',
+  signupSubtitle:
+    'Your company account is ready. Connect your wallet and SSI to finish secure access setup.',
   ssoStep: 'Company SSO',
   ssoMeta: 'Company sign-in complete',
-  walletStep: 'Connect your wallet',
-  walletPending: 'Needed to access your profile and protected actions',
-  walletActive: 'Waiting for wallet connection',
+  walletStep: 'Connect your Web3 wallet',
+  walletPending: 'Connect your Web3 wallet to continue',
+  walletActive: 'Connect your Web3 wallet to continue',
   walletComplete: 'Wallet connected',
   ssiStep: 'Establish SSI session',
-  ssiPending: 'SSI setup begins after your wallet is connected',
+  ssiPending: 'Connect your wallet first to unlock SSI setup',
   ssiNetwork: 'Switch to an SSI-supported network to continue',
-  ssiActive: 'Establishing SSI session',
+  ssiActive: 'Connect your SSI wallet to finish secure access',
   ssiComplete: 'SSI session established',
   connectWallet: 'Connect wallet',
-  connectSsi: 'Connect SSI',
+  connectSsi: 'Connect SSI wallet',
   switchNetwork: 'Switch network',
-  redirecting: 'Access ready. Redirecting you now...'
+  redirecting: 'Access ready. Redirecting you now...',
+  wrongAccount: 'Signed in with a different company account?',
+  wrongAccountAction: 'Use another account'
 }

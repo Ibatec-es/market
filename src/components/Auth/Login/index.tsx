@@ -3,6 +3,7 @@ import { useRouter } from 'next/router'
 import { useAuth } from '@hooks/useAuth'
 import { useSsiWallet } from '@context/SsiWallet'
 import { toast } from 'react-toastify'
+import { clearPendingAuthMode } from '@utils/authFlow'
 import AuthLayout from '../AuthLayout'
 import type { AuthPanelContent, AuthTab } from '../constants'
 import { useAccount } from 'wagmi'
@@ -59,6 +60,7 @@ export default function Login({ content, initialTab = 'login' }: LoginProps) {
 
     const redirectTo = (callbackUrl as string) || '/profile'
     const timeoutId = window.setTimeout(() => {
+      clearPendingAuthMode()
       router.replace(redirectTo)
     }, 900)
 
