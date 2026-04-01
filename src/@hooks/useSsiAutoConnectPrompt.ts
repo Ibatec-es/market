@@ -6,7 +6,6 @@ import { useEthersSigner } from './useEthersSigner'
 import useSsiAllowedChain from './useSsiAllowedChain'
 import { useUserPreferences } from '@context/UserPreferences'
 import { useAuth } from './useAuth'
-import { hasPendingAuthMode } from '@utils/authFlow'
 
 export default function useSsiAutoConnectPrompt(): void {
   const { isConnected } = useAccount()
@@ -25,15 +24,13 @@ export default function useSsiAutoConnectPrompt(): void {
     if (!appConfig.ssiEnabled) return
     if (!isSsiStateHydrated) return
 
-    const canAutoPrompt = isAuthenticated || hasPendingAuthMode()
-
     if (!isConnected || !isSsiChainReady || !isSsiChainAllowed) {
       resetSsiAutoConnectLock()
       setShowSsiWalletModule(false)
       return
     }
 
-    if (!canAutoPrompt) {
+    if (!isAuthenticated) {
       resetSsiAutoConnectLock()
       setShowSsiWalletModule(false)
       return

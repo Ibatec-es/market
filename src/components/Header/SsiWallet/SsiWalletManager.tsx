@@ -15,14 +15,11 @@ import { SsiWalletDesc, SsiWalletSession } from 'src/@types/SsiWallet'
 import { useEthersSigner } from '@hooks/useEthersSigner'
 import useSsiAutoConnectPrompt from '@hooks/useSsiAutoConnectPrompt'
 import { toast } from 'react-toastify'
-import { useAuth } from '@hooks/useAuth'
-import { clearPendingAuthMode, hasPendingAuthMode } from '@utils/authFlow'
 
 export default function SsiWalletManager() {
   const { showSsiWalletModule, setShowSsiWalletModule } = useUserPreferences()
   const walletClient = useEthersSigner()
   useSsiAutoConnectPrompt()
-  const { isAuthenticated, login } = useAuth()
   const {
     setSessionToken,
     ssiWalletCache,
@@ -85,12 +82,7 @@ export default function SsiWalletManager() {
       const wallet = await fetchWallets(session)
       await fetchKeys(wallet, session)
       setShowSsiWalletModule(false)
-
-      if (hasPendingAuthMode() && !isAuthenticated) {
-        await login()
-      }
     } catch (error) {
-      clearPendingAuthMode()
       LoggerInstance.error(error)
       const message =
         error instanceof Error ? error.message : 'SSI connection failed'
@@ -101,10 +93,6 @@ export default function SsiWalletManager() {
   }
 
   function handleClose() {
-    if (hasPendingAuthMode() && !isAuthenticated) {
-      clearPendingAuthMode()
-    }
-
     setShowSsiWalletModule(false)
   }
 

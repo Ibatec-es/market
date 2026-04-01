@@ -1,9 +1,11 @@
 import { useEffect } from 'react'
 import { useRouter } from 'next/router'
 import { useAuth } from '@hooks/useAuth'
+import { useSsiWallet } from '@context/SsiWallet'
 import { toast } from 'react-toastify'
 import AuthLayout from '../AuthLayout'
 import type { AuthPanelContent, AuthTab } from '../constants'
+import { useAccount } from 'wagmi'
 
 interface LoginProps {
   content: AuthPanelContent
@@ -12,6 +14,8 @@ interface LoginProps {
 
 export default function Login({ content, initialTab = 'login' }: LoginProps) {
   const { isAuthenticated, authEnabled } = useAuth()
+  const { isConnected } = useAccount()
+  const { sessionToken, isSsiStateHydrated } = useSsiWallet()
   const router = useRouter()
   const { callbackUrl, error } = router.query
 
@@ -48,11 +52,25 @@ export default function Login({ content, initialTab = 'login' }: LoginProps) {
   }, [authEnabled, router])
 
   useEffect(() => {
-    if (isAuthenticated) {
-      const redirectTo = (callbackUrl as string) || '/profile'
-      router.push(redirectTo)
-    }
-  }, [isAuthenticated, router, callbackUrl])
+    if (!isAuthenticated) return
+    if (!isConnected) return
+    if (!isSsiStateHydrated) return
+    if (!sessionToken) return
+
+    const redirectTo = (callbackUrl as string) || '/profile'
+    const timeoutId = window.setTimeout(() => {
+      router.replace(redirectTo)
+    }, 900)
+
+    return () => window.clearTimeout(timeoutId)
+  }, [
+    callbackUrl,
+    isAuthenticated,
+    isConnected,
+    isSsiStateHydrated,
+    router,
+    sessionToken
+  ])
 
   if (!authEnabled) {
     return null

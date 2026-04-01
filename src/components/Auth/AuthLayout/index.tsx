@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useAuth } from '@hooks/useAuth'
 import LoginForm from '../Login/LoginForm'
 import SignupForm from '../Signup/SignupForm'
 import {
@@ -7,6 +8,7 @@ import {
   type AuthTab
 } from '../constants'
 import BrandPanel from './BrandPanel'
+import SetupPanel from './SetupPanel'
 import styles from './index.module.css'
 
 interface AuthLayoutProps {
@@ -18,6 +20,7 @@ export default function AuthLayout({
   content,
   initialTab = 'login'
 }: AuthLayoutProps) {
+  const { isAuthenticated } = useAuth()
   const [activeTab, setActiveTab] = useState<AuthTab>(initialTab)
 
   useEffect(() => {
@@ -29,29 +32,37 @@ export default function AuthLayout({
       <div className={styles.card}>
         <BrandPanel content={content} />
         <div className={styles.formPanel}>
-          <div className={styles.pillTabs}>
-            <button
-              type="button"
-              className={`${styles.pillTab} ${
-                activeTab === 'login' ? styles.pillTabActive : ''
-              }`}
-              onClick={() => setActiveTab('login')}
-            >
-              {authTabLabels.login}
-            </button>
-            <button
-              type="button"
-              className={`${styles.pillTab} ${
-                activeTab === 'signup' ? styles.pillTabActive : ''
-              }`}
-              onClick={() => setActiveTab('signup')}
-            >
-              {authTabLabels.signup}
-            </button>
-          </div>
+          {!isAuthenticated && (
+            <div className={styles.pillTabs}>
+              <button
+                type="button"
+                className={`${styles.pillTab} ${
+                  activeTab === 'login' ? styles.pillTabActive : ''
+                }`}
+                onClick={() => setActiveTab('login')}
+              >
+                {authTabLabels.login}
+              </button>
+              <button
+                type="button"
+                className={`${styles.pillTab} ${
+                  activeTab === 'signup' ? styles.pillTabActive : ''
+                }`}
+                onClick={() => setActiveTab('signup')}
+              >
+                {authTabLabels.signup}
+              </button>
+            </div>
+          )}
 
           <div className={styles.formContent}>
-            {activeTab === 'login' ? <LoginForm /> : <SignupForm />}
+            {isAuthenticated ? (
+              <SetupPanel />
+            ) : activeTab === 'login' ? (
+              <LoginForm />
+            ) : (
+              <SignupForm />
+            )}
           </div>
         </div>
       </div>

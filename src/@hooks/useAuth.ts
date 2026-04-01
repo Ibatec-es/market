@@ -3,17 +3,10 @@ import { useRouter } from 'next/router'
 import { toast } from 'react-toastify'
 import { authConfig } from '../config/auth.config'
 import React from 'react'
-import { useAccount } from 'wagmi'
-import { useModal } from 'connectkit'
-import { useSsiWallet } from '@context/SsiWallet'
-import { useUserPreferences } from '@context/UserPreferences'
-import useSsiChainGuard from './useSsiChainGuard'
 import {
   clearPendingCallbackUrl,
-  clearPendingAuthMode,
   getPendingCallbackUrl,
   setPendingCallbackUrl,
-  setPendingAuthMode,
   type PendingAuthMode
 } from '@utils/authFlow'
 
@@ -40,7 +33,7 @@ class OIDCProvider {
     return authConfig.oidc
   }
 
-  async signup(): Promise<User> {
+  async signup(): Promise<void> {
     const config = this.getConfig()
     const endpoints = getEndpoints(config.issuer)
 
@@ -66,10 +59,9 @@ class OIDCProvider {
       `next=${encodeURIComponent(authorizeUrl)}`
 
     window.location.href = signupUrl
-    return new Promise(() => {})
   }
 
-  async login(): Promise<User> {
+  async login(): Promise<void> {
     const config = this.getConfig()
     const endpoints = getEndpoints(config.issuer)
 
@@ -88,7 +80,6 @@ class OIDCProvider {
       `code_challenge_method=S256`
 
     window.location.href = authUrl
-    return new Promise(() => {})
   }
 
   async logout(): Promise<void> {
@@ -161,7 +152,6 @@ const clearOidcStorage = () => {
   sessionStorage.removeItem('oidc_processing')
   sessionStorage.removeItem('oidc_logout_state')
   sessionStorage.removeItem('oidc_logout_pending')
-  clearPendingAuthMode()
   clearPendingCallbackUrl()
 }
 
@@ -181,12 +171,6 @@ export const useAuth = () => {
   } = useAuthStore()
 
   const router = useRouter()
-  const { address, isConnected } = useAccount()
-  const { setOpen } = useModal()
-  const { sessionToken } = useSsiWallet()
-  const { setShowSsiWalletModule } = useUserPreferences()
-  const { ensureAllowedChainForSsi } = useSsiChainGuard()
-
   /* -------- Handle Logout Return -------- */
   React.useEffect(() => {
     if (isOidcLogoutPending()) {
@@ -247,24 +231,22 @@ export const useAuth = () => {
         email: payload.email,
         name: payload.name,
         avatar: `https://ui-avatars.com/api/?name=${payload.name}`,
-        walletAddress: address,
         isOnboarded: false,
         authProvider: 'oidc'
       }
 
       localStorage.setItem('oidc_session', JSON.stringify(userData))
       localStorage.setItem('oidc_tokens', JSON.stringify(tokens))
-      const redirectTo = getPendingCallbackUrl() || '/profile'
-      clearPendingAuthMode()
+      const callbackUrl = getPendingCallbackUrl()
       clearPendingCallbackUrl()
 
-      window.history.replaceState({}, '', '/')
-
       setUser(userData)
-      router.replace(redirectTo)
+      router.replace({
+        pathname: '/auth/login',
+        ...(callbackUrl ? { query: { callbackUrl } } : {})
+      })
     } catch (err) {
       console.error('Callback error:', err)
-      clearPendingAuthMode()
       clearPendingCallbackUrl()
       toast.error('Login failed')
       router.replace('/auth/login')
@@ -294,7 +276,6 @@ export const useAuth = () => {
   }
 
   const beginOidcFlow = async (mode: PendingAuthMode) => {
-    setPendingAuthMode(mode)
     const callbackUrl =
       typeof router.query.callbackUrl === 'string'
         ? router.query.callbackUrl
@@ -304,20 +285,6 @@ export const useAuth = () => {
       setPendingCallbackUrl(callbackUrl)
     } else {
       clearPendingCallbackUrl()
-    }
-
-    if (!isConnected) {
-      setOpen(true)
-      return
-    }
-
-    if (!sessionToken) {
-      if (!ensureAllowedChainForSsi()) {
-        return
-      }
-
-      setShowSsiWalletModule(true)
-      return
     }
 
     await login(mode)
@@ -331,7 +298,6 @@ export const useAuth = () => {
     try {
       if (user?.authProvider === 'oidc') {
         localStorage.removeItem('oidc_session')
-        clearPendingAuthMode()
         clearPendingCallbackUrl()
         storeLogout()
         await oidcProvider.logout()

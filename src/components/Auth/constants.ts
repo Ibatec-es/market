@@ -55,3 +55,25 @@ export const authSignupCopy = {
   termsLabel: 'Terms of Service',
   privacyLabel: 'Privacy Policy'
 }
+
+export const authSetupCopy = {
+  eyebrow: 'Secure access setup',
+  title: 'One more step to enter the marketplace',
+  subtitle:
+    'Your company sign-in is complete. Connect your wallet and SSI to finish secure access setup.',
+  ssoStep: 'Company SSO',
+  ssoMeta: 'Company sign-in complete',
+  walletStep: 'Connect your wallet',
+  walletPending: 'Needed to access your profile and protected actions',
+  walletActive: 'Waiting for wallet connection',
+  walletComplete: 'Wallet connected',
+  ssiStep: 'Establish SSI session',
+  ssiPending: 'SSI setup begins after your wallet is connected',
+  ssiNetwork: 'Switch to an SSI-supported network to continue',
+  ssiActive: 'Establishing SSI session',
+  ssiComplete: 'SSI session established',
+  connectWallet: 'Connect wallet',
+  connectSsi: 'Connect SSI',
+  switchNetwork: 'Switch network',
+  redirecting: 'Access ready. Redirecting you now...'
+}
