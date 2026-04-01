@@ -42,13 +42,24 @@ class OIDCProvider {
 
   async signup(): Promise<User> {
     const config = this.getConfig()
+    const endpoints = getEndpoints(config.issuer)
 
-    const flowSlug = 'self-service-registration'
-    const authentikBase = config.issuer.replace(/\/application\/o\/.*$/, '')
+    const codeVerifier = this.generateCodeVerifier()
+    const codeChallenge = await this.generateCodeChallenge(codeVerifier)
 
-    const signupUrl = `${authentikBase}/if/flow/${flowSlug}/`
+    sessionStorage.setItem('oidc_pkce_code_verifier', codeVerifier)
 
-    window.location.href = signupUrl
+    const authUrl =
+      `${endpoints.authorize}?` +
+      `client_id=${config.clientId}&` +
+      `redirect_uri=${encodeURIComponent(config.redirectUri)}&` +
+      `response_type=code&` +
+      `scope=${config.scope}&` +
+      `code_challenge=${codeChallenge}&` +
+      `code_challenge_method=S256&` +
+      `prompt=create`
+
+    window.location.href = authUrl
     return new Promise(() => {})
   }
 
