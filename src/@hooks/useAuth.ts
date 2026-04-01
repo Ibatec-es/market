@@ -165,6 +165,10 @@ const clearOidcStorage = () => {
   clearPendingCallbackUrl()
 }
 
+const isOidcLogoutPending = () =>
+  typeof window !== 'undefined' &&
+  sessionStorage.getItem('oidc_logout_pending') === 'true'
+
 /* ---------------- HOOK ---------------- */
 
 export const useAuth = () => {
@@ -183,21 +187,9 @@ export const useAuth = () => {
   const { setShowSsiWalletModule } = useUserPreferences()
   const { ensureAllowedChainForSsi } = useSsiChainGuard()
 
-  /* -------- Restore Session -------- */
-
-  React.useEffect(() => {
-    try {
-      const session = localStorage.getItem('oidc_session')
-      if (session) setUser(JSON.parse(session))
-    } catch {}
-  }, [])
-
   /* -------- Handle Logout Return -------- */
   React.useEffect(() => {
-    const isLogoutPending =
-      sessionStorage.getItem('oidc_logout_pending') === 'true'
-
-    if (isLogoutPending) {
+    if (isOidcLogoutPending()) {
       clearOidcStorage()
 
       storeLogout()
@@ -207,6 +199,17 @@ export const useAuth = () => {
       }
     }
   }, [router, storeLogout])
+
+  /* -------- Restore Session -------- */
+
+  React.useEffect(() => {
+    if (isOidcLogoutPending()) return
+
+    try {
+      const session = localStorage.getItem('oidc_session')
+      if (session) setUser(JSON.parse(session))
+    } catch {}
+  }, [setUser])
 
   /* -------- Callback -------- */
 
@@ -327,6 +330,10 @@ export const useAuth = () => {
 
     try {
       if (user?.authProvider === 'oidc') {
+        localStorage.removeItem('oidc_session')
+        clearPendingAuthMode()
+        clearPendingCallbackUrl()
+        storeLogout()
         await oidcProvider.logout()
         return
       }
