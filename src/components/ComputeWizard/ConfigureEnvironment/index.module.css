@@ -364,6 +364,28 @@
   min-height: 24px;
 }
 
+.resourceRowInactive .labelText,
+.resourceRowInactive .infoIcon,
+.resourceRowInactive .minLabel,
+.resourceRowInactive .maxLabel,
+.resourceRowInactive .unit,
+.resourceRowInactive .priceLabel {
+  color: #9bb4c8;
+}
+
+.resourceRowInactive .sliderLine {
+  background: #d7e3ec;
+}
+
+.resourceRowInactive .input {
+  color: #9bb4c8;
+  border-color: #9bb4c8;
+}
+
+.resourceRowInactive .input::placeholder {
+  color: #9bb4c8;
+}
+
 .resourceLabel {
   width: 106px;
   height: 16px;

@@ -291,7 +291,9 @@ function ResourceRow({
   return (
     <div
       key={`${resourceId}-${isFree ? 'free' : 'paid'}`}
-      className={styles.resourceRow}
+      className={`${styles.resourceRow} ${
+        !isActive ? styles.resourceRowInactive : ''
+      }`}
     >
       <div
         className={styles.labelContainer}
@@ -374,6 +376,7 @@ function ResourceRow({
             className={`${styles.input} ${styles.inputSmall}`}
             placeholder="value..."
             readOnly
+            disabled={!isActive}
             value={fee?.prices?.find((p) => p.id === resourceId)?.price ?? 0}
           />
         </div>
