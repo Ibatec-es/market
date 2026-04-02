@@ -64,10 +64,13 @@ export const authSignupCopy = {
 export const authSetupCopy = {
   title: 'One more step to enter the marketplace',
   subtitle: 'Connect your wallet and SSI to finish secure access setup.',
+  walletOnlySubtitle: 'Connect your wallet to finish secure access setup.',
   greeting: 'Welcome back',
   signupGreeting: 'Welcome',
   signupSubtitle:
     'Connect your wallet and SSI to finish setting up secure access.',
+  signupWalletOnlySubtitle:
+    'Connect your wallet to finish setting up secure access.',
   ssoStep: 'Company SSO',
   ssoMeta: 'Company sign-in complete',
   walletStep: 'Connect your Web3 wallet',

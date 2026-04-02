@@ -1,5 +1,6 @@
 import { useAccount } from 'wagmi'
 import { useModal } from 'connectkit'
+import appConfig from 'app.config.cjs'
 import { useSsiWallet } from '@context/SsiWallet'
 import useSsiAllowedChain from '@hooks/useSsiAllowedChain'
 import useSsiChainGuard from '@hooks/useSsiChainGuard'
@@ -71,12 +72,15 @@ export default function SetupPanel() {
   const { isSsiChainAllowed, isSsiChainReady } = useSsiAllowedChain()
   const { ensureAllowedChainForSsi } = useSsiChainGuard()
   const authMode = getPendingAuthMode()
+  const isSsiEnabled = appConfig.ssiEnabled
 
   const isWalletReady = isConnected
   const isSsiReady = Boolean(sessionToken)
-  const isSetupReady = isWalletReady && isSsiStateHydrated && isSsiReady
+  const isSetupReady = isSsiEnabled
+    ? isWalletReady && isSsiStateHydrated && isSsiReady
+    : isWalletReady
   const needsNetworkSwitch =
-    isWalletReady && (!isSsiChainReady || !isSsiChainAllowed)
+    isSsiEnabled && isWalletReady && (!isSsiChainReady || !isSsiChainAllowed)
 
   const walletStatus: StepStatus = isWalletReady ? 'complete' : 'active'
   const ssiStatus: StepStatus = isSsiReady
@@ -101,11 +105,11 @@ export default function SetupPanel() {
 
   const actionLabel = !isWalletReady
     ? authSetupCopy.connectWallet
-    : needsNetworkSwitch
+    : isSsiEnabled && needsNetworkSwitch
     ? authSetupCopy.switchNetwork
-    : isSsiSessionHydrating
+    : isSsiEnabled && isSsiSessionHydrating
     ? authSetupCopy.connectingSsi
-    : !isSsiReady
+    : isSsiEnabled && !isSsiReady
     ? authSetupCopy.connectSsi
     : null
 
@@ -140,8 +144,12 @@ export default function SetupPanel() {
     : authSetupCopy.title
   const subtitle =
     authMode === 'signup'
-      ? authSetupCopy.signupSubtitle
-      : authSetupCopy.subtitle
+      ? isSsiEnabled
+        ? authSetupCopy.signupSubtitle
+        : authSetupCopy.signupWalletOnlySubtitle
+      : isSsiEnabled
+      ? authSetupCopy.subtitle
+      : authSetupCopy.walletOnlySubtitle
 
   return (
     <div className={styles.panel}>
@@ -170,13 +178,16 @@ export default function SetupPanel() {
           title={authSetupCopy.walletStep}
           description={walletDescription}
           status={walletStatus}
+          isLast={!isSsiEnabled}
         />
-        <SetupStep
-          title={authSetupCopy.ssiStep}
-          description={ssiDescription}
-          status={ssiStatus}
-          isLast
-        />
+        {isSsiEnabled && (
+          <SetupStep
+            title={authSetupCopy.ssiStep}
+            description={ssiDescription}
+            status={ssiStatus}
+            isLast
+          />
+        )}
       </div>
 
       <div className={styles.footer}>

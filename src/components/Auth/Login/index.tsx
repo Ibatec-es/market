@@ -1,5 +1,6 @@
 import { useEffect } from 'react'
 import { useRouter } from 'next/router'
+import appConfig from 'app.config.cjs'
 import { useAuth } from '@hooks/useAuth'
 import { useSsiWallet } from '@context/SsiWallet'
 import { toast } from 'react-toastify'
@@ -19,6 +20,7 @@ export default function Login({ content, initialTab = 'login' }: LoginProps) {
   const { sessionToken, isSsiStateHydrated } = useSsiWallet()
   const router = useRouter()
   const { callbackUrl, error } = router.query
+  const isSsiEnabled = appConfig.ssiEnabled
 
   useEffect(() => {
     if (error) {
@@ -55,8 +57,10 @@ export default function Login({ content, initialTab = 'login' }: LoginProps) {
   useEffect(() => {
     if (!isAuthenticated) return
     if (!isConnected) return
-    if (!isSsiStateHydrated) return
-    if (!sessionToken) return
+    if (isSsiEnabled) {
+      if (!isSsiStateHydrated) return
+      if (!sessionToken) return
+    }
 
     const redirectTo = (callbackUrl as string) || '/profile'
     const timeoutId = window.setTimeout(() => {
@@ -69,6 +73,7 @@ export default function Login({ content, initialTab = 'login' }: LoginProps) {
     callbackUrl,
     isAuthenticated,
     isConnected,
+    isSsiEnabled,
     isSsiStateHydrated,
     router,
     sessionToken
