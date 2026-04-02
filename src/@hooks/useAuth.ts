@@ -11,6 +11,12 @@ import {
   setPendingCallbackUrl,
   type PendingAuthMode
 } from '@utils/authFlow'
+import {
+  OIDC_LOGOUT_PENDING_KEY,
+  OIDC_LOGOUT_RETURN_FALLBACK_MS,
+  OIDC_LOGOUT_STARTED_AT_KEY,
+  OIDC_LOGOUT_STATE_KEY
+} from '@components/Auth/constants'
 
 /* ---------------- ENDPOINTS ---------------- */
 
@@ -110,7 +116,7 @@ class OIDCProvider {
       }
 
       const state = Math.random().toString(36).substring(2)
-      sessionStorage.setItem('oidc_logout_state', state)
+      sessionStorage.setItem(OIDC_LOGOUT_STATE_KEY, state)
 
       const logoutUrl =
         `${endpoints.endSession}?` +
@@ -119,11 +125,13 @@ class OIDCProvider {
         `state=${state}` +
         idTokenHint
 
-      sessionStorage.setItem('oidc_logout_pending', 'true')
+      sessionStorage.setItem(OIDC_LOGOUT_PENDING_KEY, 'true')
+      sessionStorage.setItem(OIDC_LOGOUT_STARTED_AT_KEY, Date.now().toString())
       window.location.href = logoutUrl
     } catch (err) {
       console.error('Logout error:', err)
       toast.error('Logout failed')
+      throw err
     }
   }
 
@@ -152,15 +160,22 @@ const clearOidcStorage = () => {
   localStorage.removeItem('oidc_tokens')
   sessionStorage.removeItem('oidc_pkce_code_verifier')
   sessionStorage.removeItem('oidc_processing')
-  sessionStorage.removeItem('oidc_logout_state')
-  sessionStorage.removeItem('oidc_logout_pending')
+  sessionStorage.removeItem(OIDC_LOGOUT_STATE_KEY)
+  sessionStorage.removeItem(OIDC_LOGOUT_PENDING_KEY)
+  sessionStorage.removeItem(OIDC_LOGOUT_STARTED_AT_KEY)
   clearPendingAuthMode()
   clearPendingCallbackUrl()
 }
 
 const isOidcLogoutPending = () =>
   typeof window !== 'undefined' &&
-  sessionStorage.getItem('oidc_logout_pending') === 'true'
+  sessionStorage.getItem(OIDC_LOGOUT_PENDING_KEY) === 'true'
+
+const hasOidcLogoutReturnState = (returnState: string | null) =>
+  typeof window !== 'undefined' &&
+  Boolean(
+    returnState && sessionStorage.getItem(OIDC_LOGOUT_STATE_KEY) === returnState
+  )
 
 /* ---------------- HOOK ---------------- */
 
@@ -168,24 +183,63 @@ export const useAuth = () => {
   const {
     user,
     isLoading,
+    isLogoutPending,
     setUser,
     setLoading,
+    setLogoutPending,
     logout: storeLogout
   } = useAuthStore()
 
   const router = useRouter()
+  const logoutReturnState =
+    typeof router.query.state === 'string' ? router.query.state : null
   /* -------- Handle Logout Return -------- */
   React.useEffect(() => {
+    if (!router.isReady) return
     if (isOidcLogoutPending()) {
-      clearOidcStorage()
+      const completeOidcLogoutReturn = () => {
+        if (!isOidcLogoutPending()) return
 
-      storeLogout()
+        clearOidcStorage()
+        setLogoutPending(false)
+        storeLogout()
 
-      if (window.location.pathname !== '/auth/login') {
-        router.replace('/auth/login')
+        if (window.location.pathname !== '/auth/login') {
+          router.replace('/auth/login')
+          return
+        }
+
+        if (!logoutReturnState) return
+
+        const nextQuery = { ...router.query }
+        delete nextQuery.state
+
+        router.replace(
+          {
+            pathname: '/auth/login',
+            query: nextQuery
+          },
+          undefined,
+          { shallow: true }
+        )
       }
+
+      if (
+        window.location.pathname !== '/auth/login' ||
+        hasOidcLogoutReturnState(logoutReturnState)
+      ) {
+        completeOidcLogoutReturn()
+        return
+      }
+
+      const timeoutId = window.setTimeout(
+        completeOidcLogoutReturn,
+        OIDC_LOGOUT_RETURN_FALLBACK_MS
+      )
+
+      return () => window.clearTimeout(timeoutId)
     }
-  }, [router, storeLogout])
+  }, [logoutReturnState, router, setLogoutPending, storeLogout])
 
   /* -------- Restore Session -------- */
 
@@ -307,6 +361,7 @@ export const useAuth = () => {
 
     try {
       if (user?.authProvider === 'oidc') {
+        setLogoutPending(true)
         localStorage.removeItem('oidc_session')
         clearPendingAuthMode()
         clearPendingCallbackUrl()
@@ -316,9 +371,13 @@ export const useAuth = () => {
       }
 
       clearOidcStorage()
+      setLogoutPending(false)
       storeLogout()
 
       router.replace('/auth/login')
+    } catch (error) {
+      setLogoutPending(false)
+      console.error('Logout flow failed:', error)
     } finally {
       setLoading(false)
     }
@@ -327,6 +386,7 @@ export const useAuth = () => {
   return {
     user,
     isLoading,
+    isLogoutPending,
     isAuthenticated: !!user,
     login,
     beginOidcFlow,

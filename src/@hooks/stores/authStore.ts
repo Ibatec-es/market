@@ -16,8 +16,10 @@ interface AuthState {
   user: User | null
   isLoading: boolean
   isAuthenticated: boolean
+  isLogoutPending: boolean
   setUser: (user: User | null) => void
   setLoading: (loading: boolean) => void
+  setLogoutPending: (isLogoutPending: boolean) => void
   logout: () => void
   updateUser: (updates: Partial<User>) => void
 }
@@ -28,8 +30,10 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       isLoading: false,
       isAuthenticated: false,
+      isLogoutPending: false,
       setUser: (user) => set({ user, isAuthenticated: !!user }),
       setLoading: (isLoading) => set({ isLoading }),
+      setLogoutPending: (isLogoutPending) => set({ isLogoutPending }),
       logout: () => set({ user: null, isAuthenticated: false }),
       updateUser: (updates) =>
         set((state) => ({

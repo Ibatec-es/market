@@ -13,6 +13,11 @@ export interface AuthPanelContent {
   features?: AuthFeature[]
 }
 
+export const OIDC_LOGOUT_PENDING_KEY = 'oidc_logout_pending'
+export const OIDC_LOGOUT_STATE_KEY = 'oidc_logout_state'
+export const OIDC_LOGOUT_STARTED_AT_KEY = 'oidc_logout_started_at'
+export const OIDC_LOGOUT_RETURN_FALLBACK_MS = 1500
+
 export const authTabLabels: Record<AuthTab, string> = {
   login: 'Sign in',
   signup: 'Create account'
@@ -82,4 +87,10 @@ export const authSetupCopy = {
   redirecting: 'Access ready. Redirecting you now...',
   wrongAccount: 'Signed in with a different company account?',
   wrongAccountAction: 'Use another account'
+}
+
+export const authLogoutCopy = {
+  title: 'Logging you out',
+  subtitle: 'Redirecting to Authentik to confirm sign out',
+  waiting: 'Please wait a moment'
 }

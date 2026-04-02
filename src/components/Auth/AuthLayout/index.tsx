@@ -8,6 +8,7 @@ import {
   type AuthTab
 } from '../constants'
 import BrandPanel from './BrandPanel'
+import LogoutPanel from './LogoutPanel'
 import SetupPanel from './SetupPanel'
 import styles from './index.module.css'
 
@@ -20,7 +21,7 @@ export default function AuthLayout({
   content,
   initialTab = 'login'
 }: AuthLayoutProps) {
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, isLogoutPending } = useAuth()
   const [activeTab, setActiveTab] = useState<AuthTab>(initialTab)
 
   useEffect(() => {
@@ -32,7 +33,7 @@ export default function AuthLayout({
       <div className={styles.card}>
         <BrandPanel content={content} />
         <div className={styles.formPanel}>
-          {!isAuthenticated && (
+          {!isAuthenticated && !isLogoutPending && (
             <div className={styles.pillTabs}>
               <button
                 type="button"
@@ -56,7 +57,9 @@ export default function AuthLayout({
           )}
 
           <div className={styles.formContent}>
-            {isAuthenticated ? (
+            {isLogoutPending ? (
+              <LogoutPanel />
+            ) : isAuthenticated ? (
               <SetupPanel />
             ) : activeTab === 'login' ? (
               <LoginForm />
