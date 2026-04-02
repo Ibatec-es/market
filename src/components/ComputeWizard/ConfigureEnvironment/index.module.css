@@ -447,6 +447,19 @@ body .customSlider {
   flex-shrink: 0;
 }
 
+body .customSlider:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.customSlider:disabled::-webkit-slider-thumb {
+  cursor: not-allowed;
+}
+
+.customSlider:disabled::-moz-range-thumb {
+  cursor: not-allowed;
+}
+
 .customSlider::-webkit-slider-track {
   width: 200px;
   height: 2px;

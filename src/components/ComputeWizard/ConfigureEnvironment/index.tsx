@@ -52,6 +52,7 @@ interface ResourceRowProps {
   label: string
   unit: string
   isFree: boolean
+  isActive: boolean
   freeValues: ResourceValues
   paidValues: ResourceValues
   getLimits: (
@@ -228,6 +229,7 @@ function ResourceRow({
   label,
   unit,
   isFree,
+  isActive,
   freeValues,
   paidValues,
   getLimits,
@@ -323,6 +325,7 @@ function ResourceRow({
               )
             }
             className={styles.customSlider}
+            disabled={!isActive}
           />
           <div className={styles.sliderLine}></div>
         </div>
@@ -349,6 +352,7 @@ function ResourceRow({
             error ? styles.inputError : ''
           }`}
           placeholder="value..."
+          disabled={!isActive}
         />
         <span className={styles.unit}>{unit}</span>
       </div>
@@ -1144,6 +1148,7 @@ export default function ConfigureEnvironment({
               label="CPU"
               unit="Units"
               isFree={true}
+              isActive={mode === 'free'}
               freeValues={freeValues}
               paidValues={paidValues}
               getLimits={getLimits}
@@ -1157,6 +1162,7 @@ export default function ConfigureEnvironment({
                 label="GPU"
                 unit="Units"
                 isFree={true}
+                isActive={mode === 'free'}
                 freeValues={freeValues}
                 paidValues={paidValues}
                 getLimits={getLimits}
@@ -1170,6 +1176,7 @@ export default function ConfigureEnvironment({
               label="RAM"
               unit="GB"
               isFree={true}
+              isActive={mode === 'free'}
               freeValues={freeValues}
               paidValues={paidValues}
               getLimits={getLimits}
@@ -1181,6 +1188,7 @@ export default function ConfigureEnvironment({
               label="DISK"
               unit="GB"
               isFree={true}
+              isActive={mode === 'free'}
               freeValues={freeValues}
               paidValues={paidValues}
               getLimits={getLimits}
@@ -1192,6 +1200,7 @@ export default function ConfigureEnvironment({
               label="JOB DURATION"
               unit="Minutes"
               isFree={true}
+              isActive={mode === 'free'}
               freeValues={freeValues}
               paidValues={paidValues}
               getLimits={getLimits}
@@ -1216,6 +1225,7 @@ export default function ConfigureEnvironment({
             label="CPU"
             unit="Units"
             isFree={false}
+            isActive={mode === 'paid'}
             freeValues={freeValues}
             paidValues={paidValues}
             getLimits={getLimits}
@@ -1229,6 +1239,7 @@ export default function ConfigureEnvironment({
               label="GPU"
               unit="Units"
               isFree={false}
+              isActive={mode === 'paid'}
               freeValues={freeValues}
               paidValues={paidValues}
               getLimits={getLimits}
@@ -1242,6 +1253,7 @@ export default function ConfigureEnvironment({
             label="RAM"
             unit="GB"
             isFree={false}
+            isActive={mode === 'paid'}
             freeValues={freeValues}
             paidValues={paidValues}
             getLimits={getLimits}
@@ -1253,6 +1265,7 @@ export default function ConfigureEnvironment({
             label="DISK"
             unit="GB"
             isFree={false}
+            isActive={mode === 'paid'}
             freeValues={freeValues}
             paidValues={paidValues}
             getLimits={getLimits}
@@ -1264,6 +1277,7 @@ export default function ConfigureEnvironment({
             label="JOB DURATION"
             unit="Minutes"
             isFree={false}
+            isActive={mode === 'paid'}
             freeValues={freeValues}
             paidValues={paidValues}
             getLimits={getLimits}

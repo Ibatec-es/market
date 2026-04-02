@@ -82,6 +82,24 @@ export default function FormEditService({
     }
   }, [setFieldValue, values.language])
 
+  useEffect(() => {
+    const currentFile = values.files?.[0] as EditableFileInfo | undefined
+
+    if (!existingFileType || !currentFile) return
+    if (currentFile.url?.trim()) return
+    if (currentFile.isEncrypted || currentFile.type === 'hidden') return
+
+    setFieldValue('files', [
+      {
+        ...currentFile,
+        type: 'hidden',
+        url: '',
+        valid: true,
+        isEncrypted: true
+      }
+    ])
+  }, [existingFileType, setFieldValue, values.files])
+
   const handleLanguageChange = (languageName: string) => {
     const selectedLanguage = supportedLanguages.find(
       (lang) => lang.name === languageName
