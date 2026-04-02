@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react'
 import { useAuth } from '@hooks/useAuth'
-import { getPendingAuthMode } from '@utils/authFlow'
 import LoginForm from '../Login/LoginForm'
 import SignupForm from '../Signup/SignupForm'
 import {
@@ -22,17 +21,11 @@ export default function AuthLayout({
   initialTab = 'login'
 }: AuthLayoutProps) {
   const { isAuthenticated } = useAuth()
-  const [activeTab, setActiveTab] = useState<AuthTab>(() => {
-    const pendingMode = getPendingAuthMode()
-    return pendingMode ?? initialTab
-  })
+  const [activeTab, setActiveTab] = useState<AuthTab>(initialTab)
 
   useEffect(() => {
-    if (isAuthenticated) return
-
-    const pendingMode = getPendingAuthMode()
-    setActiveTab(pendingMode ?? initialTab)
-  }, [initialTab, isAuthenticated])
+    setActiveTab(initialTab)
+  }, [initialTab])
 
   return (
     <div className={styles.page}>

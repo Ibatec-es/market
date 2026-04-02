@@ -252,6 +252,7 @@ export const useAuth = () => {
         })
       } catch (err) {
         console.error('Callback error:', err)
+        clearPendingAuthMode()
         clearPendingCallbackUrl()
         toast.error('Login failed')
         router.replace('/auth/login')
