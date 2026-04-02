@@ -1,11 +1,11 @@
 import { useAccount } from 'wagmi'
 import { useModal } from 'connectkit'
 import { useSsiWallet } from '@context/SsiWallet'
-import { useUserPreferences } from '@context/UserPreferences'
 import useSsiAllowedChain from '@hooks/useSsiAllowedChain'
 import useSsiChainGuard from '@hooks/useSsiChainGuard'
 import { useAuth } from '@hooks/useAuth'
 import { getPendingAuthMode } from '@utils/authFlow'
+import useSsiConnect from '@hooks/useSsiConnect'
 import { authSetupCopy } from '../constants'
 import styles from './SetupPanel.module.css'
 
@@ -65,8 +65,9 @@ export default function SetupPanel() {
   const { isConnected } = useAccount()
   const { setOpen } = useModal()
   const { user, logout } = useAuth()
-  const { setShowSsiWalletModule } = useUserPreferences()
-  const { sessionToken, isSsiStateHydrated } = useSsiWallet()
+  const { connectSsi } = useSsiConnect()
+  const { sessionToken, isSsiStateHydrated, isSsiSessionHydrating } =
+    useSsiWallet()
   const { isSsiChainAllowed, isSsiChainReady } = useSsiAllowedChain()
   const { ensureAllowedChainForSsi } = useSsiChainGuard()
   const authMode = getPendingAuthMode()
@@ -94,17 +95,21 @@ export default function SetupPanel() {
     ? authSetupCopy.ssiPending
     : needsNetworkSwitch
     ? authSetupCopy.ssiNetwork
+    : isSsiSessionHydrating
+    ? authSetupCopy.ssiConnecting
     : authSetupCopy.ssiActive
 
   const actionLabel = !isWalletReady
     ? authSetupCopy.connectWallet
     : needsNetworkSwitch
     ? authSetupCopy.switchNetwork
+    : isSsiSessionHydrating
+    ? authSetupCopy.connectingSsi
     : !isSsiReady
     ? authSetupCopy.connectSsi
     : null
 
-  const handleAction = () => {
+  const handleAction = async () => {
     if (!isWalletReady) {
       setOpen(true)
       return
@@ -116,7 +121,7 @@ export default function SetupPanel() {
     }
 
     if (!isSsiReady) {
-      setShowSsiWalletModule(true)
+      await connectSsi()
     }
   }
 
@@ -141,7 +146,6 @@ export default function SetupPanel() {
   return (
     <div className={styles.panel}>
       <div className={styles.header}>
-        <p className={styles.eyebrow}>{authSetupCopy.eyebrow}</p>
         <h2 className={styles.title}>{greeting}</h2>
         <p className={styles.subtitle}>{subtitle}</p>
         <p className={styles.accountSwitch}>
@@ -187,14 +191,16 @@ export default function SetupPanel() {
               <button
                 type="button"
                 className={styles.actionButton}
-                onClick={handleAction}
+                onClick={() => {
+                  handleAction().catch((error) => {
+                    console.error('SSI setup action failed:', error)
+                  })
+                }}
+                disabled={isSsiSessionHydrating}
               >
                 {actionLabel}
               </button>
             )}
-            <p className={styles.helperText}>
-              {!isWalletReady ? authSetupCopy.walletPending : ssiDescription}
-            </p>
           </>
         )}
       </div>
