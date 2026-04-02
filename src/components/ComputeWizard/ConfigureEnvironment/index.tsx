@@ -132,8 +132,8 @@ function QueueWaitSection({
           placement="top"
           content={
             <div className={styles.queueTooltipContent}>
-              If no compute resources are currently available, the job will wait
-              in queue until resources become available.
+              If not enough compute resources are currently available, the job
+              will wait in queue until resources become available.
             </div>
           }
         />
