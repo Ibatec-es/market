@@ -6,15 +6,15 @@ import { SsoIcon } from '../SsoIcons'
 import styles from './LoginForm.module.css'
 
 export default function LoginForm() {
-  const { beginOidcFlow, isLoading } = useAuth()
-  const [selectedProvider, setSelectedProvider] = useState<string | null>(null)
+  const { beginOidcFlow } = useAuth()
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleOIDCLogin = async () => {
-    setSelectedProvider('oidc')
+    setIsSubmitting(true)
     try {
       await beginOidcFlow('login')
     } catch {
-      setSelectedProvider(null)
+      setIsSubmitting(false)
     }
   }
 
@@ -32,15 +32,14 @@ export default function LoginForm() {
           <button
             type="button"
             onClick={handleOIDCLogin}
-            disabled={isLoading}
             className={`${styles.socialButton} ${
-              isLoading && selectedProvider === 'oidc' ? styles.loading : ''
+              isSubmitting ? styles.loading : ''
             }`}
           >
             <span className={styles.buttonContent}>
               <SsoIcon variant="building_key" className={styles.icon} />
               <span>
-                {isLoading && selectedProvider === 'oidc'
+                {isSubmitting
                   ? authLoginCopy.ssoLoadingLabel
                   : authLoginCopy.ssoLabel}
               </span>

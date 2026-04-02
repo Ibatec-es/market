@@ -136,7 +136,7 @@ export default function SetupPanel() {
         authMode === 'signup'
           ? authSetupCopy.signupGreeting
           : authSetupCopy.greeting
-      }, ${user.name}`
+      }, ${user.name}!`
     : authSetupCopy.title
   const subtitle =
     authMode === 'signup'

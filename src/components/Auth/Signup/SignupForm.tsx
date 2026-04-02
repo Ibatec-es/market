@@ -8,16 +8,16 @@ import { SsoIcon } from '../SsoIcons'
 import styles from './SignupForm.module.css'
 
 export default function SignupForm() {
-  const { beginOidcFlow, isLoading } = useAuth()
+  const { beginOidcFlow } = useAuth()
   const { privacyPolicySlug } = useUserPreferences()
-  const [selectedProvider, setSelectedProvider] = useState<string | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const handleOIDCSignup = async () => {
-    setSelectedProvider('oidc')
+    setIsSubmitting(true)
     try {
       await beginOidcFlow('signup')
     } catch {
-      setSelectedProvider(null)
+      setIsSubmitting(false)
     }
   }
 
@@ -35,15 +35,14 @@ export default function SignupForm() {
           <button
             type="button"
             onClick={handleOIDCSignup}
-            disabled={isLoading}
             className={`${styles.socialButton} ${
-              isLoading && selectedProvider === 'oidc' ? styles.loading : ''
+              isSubmitting ? styles.loading : ''
             }`}
           >
             <span className={styles.buttonContent}>
               <SsoIcon variant="user_plus" className={styles.icon} />
               <span>
-                {isLoading && selectedProvider === 'oidc'
+                {isSubmitting
                   ? authSignupCopy.ssoLoadingLabel
                   : authSignupCopy.ssoLabel}
               </span>
