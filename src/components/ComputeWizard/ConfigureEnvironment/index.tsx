@@ -1016,6 +1016,11 @@ export default function ConfigureEnvironment({
     ? 'Maximum waiting time must be at least 1.'
     : undefined
 
+  const queueWaitTimeLabel =
+    queueWaitingEnabled && !queueWaitTimeError && queueMaxWaitTime
+      ? `${queueMaxWaitTime} ${queueMaxWaitTimeUnit}`
+      : 'the configured queue max wait time'
+
   return (
     <div className={styles.container}>
       <StepTitle title="C2D Environment Configuration" />
@@ -1306,8 +1311,18 @@ export default function ConfigureEnvironment({
         </div>
       </div>
 
-      {(isGpuSelected || mode === 'paid') && (
+      {(queueWaitingEnabled || isGpuSelected || mode === 'paid') && (
         <div className={styles.messagesContainer}>
+          {queueWaitingEnabled && (
+            <div className={styles.queueNotice}>
+              The C2D job is placed in a waiting queue until adequate processing
+              resources are allocated, with a maximum wait duration of{' '}
+              {queueWaitTimeLabel}. Ensure that, upon expiration of this
+              interval, your access entitlements for all job-related assets
+              remain valid.
+            </div>
+          )}
+
           {isGpuSelected && (
             <div className={styles.gpuWarning}>
               <div className={styles.gpuWarningIcon}>⚠️</div>

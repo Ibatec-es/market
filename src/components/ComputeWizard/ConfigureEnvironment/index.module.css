@@ -997,6 +997,17 @@ body .inputSmall {
 .messagesContainer:has(:first-child:last-child) {
   grid-template-columns: 1fr;
 }
+
+.queueNotice {
+  background: var(--surface-highlight);
+  border-left: 4px solid var(--clr-amber);
+  color: var(--clr-slate-70);
+  padding: 12px 16px;
+  line-height: 1.5;
+  font-size: 14px;
+  border-radius: 0 12px 12px 0;
+}
+
 .escrowValidation {
   border-radius: 8px;
   align-self: center;

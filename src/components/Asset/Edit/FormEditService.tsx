@@ -1,4 +1,4 @@
-import { ReactElement, useEffect, useMemo } from 'react'
+import { ReactElement, useEffect, useMemo, useRef } from 'react'
 import { Field, Form, useFormikContext } from 'formik'
 import Input from '@shared/FormInput'
 import FormActions from './FormActions'
@@ -35,6 +35,7 @@ export default function FormEditService({
 }): ReactElement {
   const formUniqueId = service.id
   const { values, setFieldValue } = useFormikContext<ServiceEditForm>()
+  const hasNormalizedExistingFileRef = useRef(false)
 
   type EditableFileInfo = FileInfo & { isEncrypted?: boolean }
 
@@ -86,9 +87,11 @@ export default function FormEditService({
     const currentFile = values.files?.[0] as EditableFileInfo | undefined
 
     if (!existingFileType || !currentFile) return
+    if (hasNormalizedExistingFileRef.current) return
     if (currentFile.url?.trim()) return
     if (currentFile.isEncrypted || currentFile.type === 'hidden') return
 
+    hasNormalizedExistingFileRef.current = true
     setFieldValue('files', [
       {
         ...currentFile,
