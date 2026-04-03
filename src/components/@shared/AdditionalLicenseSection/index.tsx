@@ -158,6 +158,8 @@ function AdditionalLicenseItem({
                 setFileItem={onUpload}
                 buttonStyle="accent"
                 disabled={!!additionalFile.uploadedDocument || isUploading}
+                maxFileSizeKB={700}
+                showProgressBar={true}
               />
             </div>
           )}
