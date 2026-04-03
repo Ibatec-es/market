@@ -292,6 +292,8 @@ export default function FormEditMetadata(): ReactElement {
                 buttonStyle="accent"
                 disabled={!!primaryUploadedLicenseDocument}
                 onReset={handleResetPrimaryUploadedLicense}
+                showProgressBar={true}
+                maxFileSizeKB={700}
               />
             </div>
           ) : (
