@@ -1305,12 +1305,14 @@ export default function ConfigureEnvironment({
             className={`${styles.input} ${styles.inputLarge}`}
             placeholder="0"
           />
-          <div className={styles.priceInfo}>
-            <span>
-              Calculated based on the unit price for each resource and the Job
-              duration selected
-            </span>
-          </div>
+          {mode === 'paid' && (
+            <div className={styles.priceInfo}>
+              <span>
+                Calculated based on the unit price for each resource and the Job
+                duration selected
+              </span>
+            </div>
+          )}
         </div>
       </div>
 
@@ -1350,7 +1352,9 @@ export default function ConfigureEnvironment({
                         .toDecimalPlaces(3, Decimal.ROUND_UP)
                         .toFixed(3)
                   return (
-                    <div className={styles.insufficientEscrow}>
+                    <div
+                      className={`${styles.queueNotice} ${styles.insufficientEscrow}`}
+                    >
                       <p>
                         Insufficient escrow balance. An additional{' '}
                         <strong>

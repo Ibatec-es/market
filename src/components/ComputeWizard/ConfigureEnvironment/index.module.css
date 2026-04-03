@@ -923,7 +923,7 @@ body .inputSmall {
 .priceInfo {
   width: 545px;
   height: 34px;
-  background: var(--surface-highlight);
+  background: var(--blue-80);
   position: relative;
   display: flex;
   align-items: center;
@@ -937,7 +937,7 @@ body .inputSmall {
   height: 34px;
   left: 0;
   top: 0;
-  background: var(--clr-amber);
+  background: var(--blue-500);
 }
 
 .priceInfo span {
@@ -1031,17 +1031,11 @@ body .inputSmall {
 }
 
 .escrowValidation {
-  border-radius: 8px;
-  align-self: center;
-  height: fit-content;
+  align-self: stretch;
 }
 
 .insufficientEscrow {
-  background-color: var(--yellow-150);
-  border: 1px solid var(--yellow-180);
-  color: var(--yellow-900);
-  padding: 16px 18px;
-  border-radius: 12px;
+  color: var(--clr-slate-70);
   height: 100%;
   display: flex;
   flex-direction: column;
