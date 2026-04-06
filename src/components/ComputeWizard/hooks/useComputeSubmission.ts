@@ -16,6 +16,7 @@ import { Service } from 'src/@types/ddo/Service'
 import { ResourceType } from 'src/@types/ResourceType'
 import { Signer } from 'ethers'
 import { getOrderPriceAndFees } from '@utils/accessDetailsAndPricing'
+import { resolveVerifierSessionId } from '@utils/verifierSession'
 import { FormComputeData } from '../_types'
 import { storeComputeOutputEncryptionKey } from '../outputStorage'
 
@@ -223,11 +224,19 @@ export function useComputeSubmission() {
 
         const firstDataset = datasetResponses[0]
         const algorithmSession = firstDataset
-          ? lookupVerifierSessionId(
+          ? resolveVerifierSessionId(
               firstDataset.asset.id,
-              firstDataset.service.id
+              firstDataset.service.id,
+              lookupVerifierSessionId(
+                firstDataset.asset.id,
+                firstDataset.service.id
+              )
             )
-          : lookupVerifierSessionId(algorithmAsset.id, algorithmService.id)
+          : resolveVerifierSessionId(
+              algorithmAsset.id,
+              algorithmService.id,
+              lookupVerifierSessionId(algorithmAsset.id, algorithmService.id)
+            )
 
         const algorithmOrderTx = await handleComputeOrder(
           signer,
@@ -256,7 +265,11 @@ export function useComputeSubmission() {
             accountId,
             initializedProvider.datasets?.[i],
             hasDatatoken,
-            lookupVerifierSessionId(ds.asset.id, ds.service.id),
+            resolveVerifierSessionId(
+              ds.asset.id,
+              ds.service.id,
+              lookupVerifierSessionId(ds.asset.id, ds.service.id)
+            ),
             selectedComputeEnv.consumerAddress
           )
 
@@ -277,7 +290,11 @@ export function useComputeSubmission() {
           })
 
           policyDatasets.push({
-            sessionId: lookupVerifierSessionId(ds.asset.id, ds.service.id),
+            sessionId: resolveVerifierSessionId(
+              ds.asset.id,
+              ds.service.id,
+              lookupVerifierSessionId(ds.asset.id, ds.service.id)
+            ),
             serviceId: ds.service.id,
             documentId: ds.asset.id,
             successRedirectUri: '',
@@ -301,9 +318,10 @@ export function useComputeSubmission() {
           paymentTokenAddress || algorithmAccessDetails?.baseToken?.address
 
         const policyServerAlgo = {
-          sessionId: lookupVerifierSessionId(
+          sessionId: resolveVerifierSessionId(
             algorithmAsset.id,
-            algorithmService.id
+            algorithmService.id,
+            lookupVerifierSessionId(algorithmAsset.id, algorithmService.id)
           ),
           serviceId: algorithmService.id,
           documentId: algorithmAsset.id,
