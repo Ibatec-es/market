@@ -106,7 +106,6 @@ export function FileUpload({
         )}
       </div>
 
-      {/* Enhanced Progress Bar */}
       {showProgressBar && isUploading && (
         <div className={styles.progressBarWrapper}>
           <div className={styles.progressBarHeader}>
@@ -132,7 +131,6 @@ export function FileUpload({
         </div>
       )}
 
-      {/* Error Message */}
       {errorMessage && (
         <div className={styles.errorMessageContainer}>
           <svg
