@@ -350,17 +350,17 @@
   }
 
   .confirmedStatus {
-    background: linear-gradient(135deg, #064e3b 0%, #065f46 50%, #047857 100%);
+    background: rgba(103, 247, 74, 0.12);
     border: 1px solid rgba(16, 185, 129, 0.4);
     box-shadow: 0 2px 12px rgba(16, 185, 129, 0.2);
   }
 
   .confirmedText {
-    color: #e8f2ed;
+    color: #575a58;
   }
 
   .confirmedMeta {
-    color: #fbfbfb;
+    color: #4b4949;
   }
 
   .uploadSpeedWarning {
@@ -374,6 +374,6 @@
   }
 
   .successIcon {
-    color: #34d399;
+    color: linear-gradient(135deg, #064e3b 0%, #065f46 50%, #047857 100%);
   }
 }
