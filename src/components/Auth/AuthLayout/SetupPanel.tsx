@@ -11,6 +11,13 @@ import { authSetupCopy } from '../constants'
 import styles from './SetupPanel.module.css'
 
 type StepStatus = 'complete' | 'active' | 'pending'
+type SetupAction = 'connectWallet' | 'switchNetwork' | 'connectSsi' | null
+
+interface SetupStepItem {
+  title: string
+  description: string
+  status: StepStatus
+}
 
 function SetupStep({
   title,
@@ -62,6 +69,21 @@ function SetupStep({
   )
 }
 
+function getSetupSubtitle(
+  authMode: ReturnType<typeof getPendingAuthMode>,
+  isSsiEnabled: boolean
+) {
+  if (authMode === 'signup') {
+    return isSsiEnabled
+      ? authSetupCopy.signupSubtitle
+      : authSetupCopy.signupWalletOnlySubtitle
+  }
+
+  return isSsiEnabled
+    ? authSetupCopy.subtitle
+    : authSetupCopy.walletOnlySubtitle
+}
+
 export default function SetupPanel() {
   const { isConnected } = useAccount()
   const { setOpen } = useModal()
@@ -76,55 +98,76 @@ export default function SetupPanel() {
 
   const isWalletReady = isConnected
   const isSsiReady = Boolean(sessionToken)
-  const isSetupReady = isSsiEnabled
+  const shouldRequireSsi = isSsiEnabled
+  const isSetupReady = shouldRequireSsi
     ? isWalletReady && isSsiStateHydrated && isSsiReady
     : isWalletReady
-  const needsNetworkSwitch =
+  const shouldSwitchNetwork =
     isSsiEnabled && isWalletReady && (!isSsiChainReady || !isSsiChainAllowed)
+  const subtitle = getSetupSubtitle(authMode, isSsiEnabled)
 
-  const walletStatus: StepStatus = isWalletReady ? 'complete' : 'active'
-  const ssiStatus: StepStatus = isSsiReady
-    ? 'complete'
-    : isWalletReady
-    ? 'active'
-    : 'pending'
+  const steps: SetupStepItem[] = [
+    {
+      title: authSetupCopy.ssoStep,
+      description: authSetupCopy.ssoMeta,
+      status: 'complete'
+    },
+    {
+      title: authSetupCopy.walletStep,
+      description: isWalletReady
+        ? authSetupCopy.walletComplete
+        : authSetupCopy.walletActive,
+      status: isWalletReady ? 'complete' : 'active'
+    }
+  ]
 
-  const walletDescription = isWalletReady
-    ? authSetupCopy.walletComplete
-    : authSetupCopy.walletActive
+  if (shouldRequireSsi) {
+    steps.push({
+      title: authSetupCopy.ssiStep,
+      description: isSsiReady
+        ? authSetupCopy.ssiComplete
+        : !isWalletReady
+        ? authSetupCopy.ssiPending
+        : shouldSwitchNetwork
+        ? authSetupCopy.ssiNetwork
+        : isSsiSessionHydrating
+        ? authSetupCopy.ssiConnecting
+        : authSetupCopy.ssiActive,
+      status: isSsiReady ? 'complete' : isWalletReady ? 'active' : 'pending'
+    })
+  }
 
-  const ssiDescription = isSsiReady
-    ? authSetupCopy.ssiComplete
-    : !isWalletReady
-    ? authSetupCopy.ssiPending
-    : needsNetworkSwitch
-    ? authSetupCopy.ssiNetwork
-    : isSsiSessionHydrating
-    ? authSetupCopy.ssiConnecting
-    : authSetupCopy.ssiActive
-
-  const actionLabel = !isWalletReady
-    ? authSetupCopy.connectWallet
-    : isSsiEnabled && needsNetworkSwitch
-    ? authSetupCopy.switchNetwork
-    : isSsiEnabled && isSsiSessionHydrating
-    ? authSetupCopy.connectingSsi
-    : isSsiEnabled && !isSsiReady
-    ? authSetupCopy.connectSsi
+  const currentAction: SetupAction = !isWalletReady
+    ? 'connectWallet'
+    : shouldRequireSsi && shouldSwitchNetwork
+    ? 'switchNetwork'
+    : shouldRequireSsi && !isSsiReady
+    ? 'connectSsi'
     : null
 
+  const actionLabel =
+    currentAction === 'connectWallet'
+      ? authSetupCopy.connectWallet
+      : currentAction === 'switchNetwork'
+      ? authSetupCopy.switchNetwork
+      : currentAction === 'connectSsi'
+      ? isSsiSessionHydrating
+        ? authSetupCopy.connectingSsi
+        : authSetupCopy.connectSsi
+      : null
+
   const handleAction = async () => {
-    if (!isWalletReady) {
+    if (currentAction === 'connectWallet') {
       setOpen(true)
       return
     }
 
-    if (needsNetworkSwitch) {
+    if (currentAction === 'switchNetwork') {
       ensureAllowedChainForSsi()
       return
     }
 
-    if (!isSsiReady) {
+    if (currentAction === 'connectSsi') {
       await connectSsi()
     }
   }
@@ -142,14 +185,6 @@ export default function SetupPanel() {
           : authSetupCopy.greeting
       }, ${user.name}!`
     : authSetupCopy.title
-  const subtitle =
-    authMode === 'signup'
-      ? isSsiEnabled
-        ? authSetupCopy.signupSubtitle
-        : authSetupCopy.signupWalletOnlySubtitle
-      : isSsiEnabled
-      ? authSetupCopy.subtitle
-      : authSetupCopy.walletOnlySubtitle
 
   return (
     <div className={styles.panel}>
@@ -169,25 +204,15 @@ export default function SetupPanel() {
       </div>
 
       <div className={styles.progressCard}>
-        <SetupStep
-          title={authSetupCopy.ssoStep}
-          description={authSetupCopy.ssoMeta}
-          status="complete"
-        />
-        <SetupStep
-          title={authSetupCopy.walletStep}
-          description={walletDescription}
-          status={walletStatus}
-          isLast={!isSsiEnabled}
-        />
-        {isSsiEnabled && (
+        {steps.map((step, index) => (
           <SetupStep
-            title={authSetupCopy.ssiStep}
-            description={ssiDescription}
-            status={ssiStatus}
-            isLast
+            key={step.title}
+            title={step.title}
+            description={step.description}
+            status={step.status}
+            isLast={index === steps.length - 1}
           />
-        )}
+        ))}
       </div>
 
       <div className={styles.footer}>

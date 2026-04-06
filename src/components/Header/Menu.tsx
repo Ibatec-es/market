@@ -119,7 +119,7 @@ export default function Menu(): ReactElement {
           {/* <SearchButton /> */}
           {validatedSupportedChains.length > 1 && <Networks />}
           <UserPreferences />
-          {isAuthenticated && <Wallet />}
+          {isAuthenticated && !isAuthRoute && <Wallet />}
           {/* Desktop view - show SSiWallet and buttons normally */}
           <div className={styles.desktopActions}>
             <AuthEntry

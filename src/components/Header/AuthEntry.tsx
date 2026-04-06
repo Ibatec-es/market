@@ -26,12 +26,12 @@ export default function AuthEntry({
   const path = router.asPath.split('?')[0]
   const isAuthRoute = path.startsWith('/auth/')
 
-  if (isAuthenticated) {
-    return <>{authenticatedContent}</>
-  }
-
   if (isAuthRoute) {
     return <></>
+  }
+
+  if (isAuthenticated) {
+    return <>{authenticatedContent}</>
   }
 
   const content = (
