@@ -56,6 +56,7 @@ import { useComputeJobs } from './hooks/useComputeJobs'
 import { useComputeSubmission } from './hooks/useComputeSubmission'
 import { getSelectedComputeEnvAndResources } from './hooks/computeEnvSelection'
 import { resetCredentialCache } from './hooks/resetCredentialCache'
+import { resolveVerifierSessionId } from '@utils/verifierSession'
 import { useMarketMetadata } from '@context/MarketMetadata'
 import appConfig from 'app.config.cjs'
 import { ComputeRerunConfig } from '@utils/computeRerun'
@@ -684,14 +685,19 @@ export default function ComputeWizardController({
             asset,
             service,
             accessDetails: asset.accessDetails[datasetIndex],
-            sessionId: lookupVerifierSessionId(asset.id, service.id)
+            sessionId: resolveVerifierSessionId(
+              asset.id,
+              service.id,
+              lookupVerifierSessionId(asset.id, service.id)
+            )
           }
         }
       )
 
-      const algoSessionId = lookupVerifierSessionId(
+      const algoSessionId = resolveVerifierSessionId(
         actualAlgorithmAsset.id,
-        actualAlgoService.id
+        actualAlgoService.id,
+        lookupVerifierSessionId(actualAlgorithmAsset.id, actualAlgoService.id)
       )
       const groupedParams = formValues?.updatedGroupedUserParameters
       const algoParams: Record<string, ParamValue> = {}
