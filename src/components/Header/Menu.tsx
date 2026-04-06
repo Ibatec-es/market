@@ -54,11 +54,12 @@ export function MenuLink({ name, link, className }: MenuItem) {
 export default function Menu(): ReactElement {
   const { validatedSupportedChains } = useMarketMetadata()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, authEnabled } = useAuth()
 
   const router = useRouter()
   const path = router.asPath.split('?')[0]
-  const isAuthRoute = path.startsWith('/auth/')
+  const isAuthRoute = authEnabled && path.startsWith('/auth/')
+  const canAccessWalletControls = !authEnabled || isAuthenticated
 
   const isPublishRoute = router.pathname.startsWith('/publish')
   const isCatalogRoute =
@@ -119,7 +120,7 @@ export default function Menu(): ReactElement {
           {/* <SearchButton /> */}
           {validatedSupportedChains.length > 1 && <Networks />}
           <UserPreferences />
-          {isAuthenticated && !isAuthRoute && <Wallet />}
+          {canAccessWalletControls && !isAuthRoute && <Wallet />}
           {/* Desktop view - show SSiWallet and buttons normally */}
           <div className={styles.desktopActions}>
             <AuthEntry

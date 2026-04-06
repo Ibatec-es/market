@@ -12,7 +12,8 @@ import { SsiWallet } from '../../Header/SsiWallet'
 
 export default function Menu(): ReactElement {
   const { validatedSupportedChains } = useMarketMetadata()
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, authEnabled } = useAuth()
+  const canAccessWalletControls = !authEnabled || isAuthenticated
 
   return (
     <nav className={styles.menu}>
@@ -23,7 +24,7 @@ export default function Menu(): ReactElement {
       <div className={styles.actions}>
         {validatedSupportedChains.length > 1 && <Networks />}
         <UserPreferences />
-        {isAuthenticated && <Wallet />}
+        {canAccessWalletControls && <Wallet />}
         <AuthEntry
           authenticatedContent={
             <SsiWallet walletRequiredMessage="You need to connect to your wallet first" />

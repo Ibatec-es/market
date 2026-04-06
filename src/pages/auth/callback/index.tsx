@@ -1,6 +1,8 @@
+import type { GetServerSideProps } from 'next'
 import { useEffect } from 'react'
 import { useRouter } from 'next/router'
 import { useAuth } from '@hooks/useAuth'
+import { authConfig } from '../../../config/auth.config'
 
 export default function AuthCallback() {
   const router = useRouter()
@@ -53,4 +55,19 @@ export default function AuthCallback() {
       </div>
     </div>
   )
+}
+
+export const getServerSideProps: GetServerSideProps = async () => {
+  if (!authConfig.enabled) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false
+      }
+    }
+  }
+
+  return {
+    props: {}
+  }
 }

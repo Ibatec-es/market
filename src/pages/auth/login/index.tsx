@@ -1,8 +1,10 @@
+import type { GetServerSideProps } from 'next'
 import { ReactElement } from 'react'
 import router, { useRouter } from 'next/router'
 import Login from '../../../components/Auth/Login'
 import Page from '../../../components/@shared/Page'
 import type { AuthFeature, AuthTab } from '../../../components/Auth/constants'
+import { authConfig } from '../../../config/auth.config'
 import content from '../../../../content/auth/login.json'
 
 export default function AuthLogin(): ReactElement {
@@ -28,4 +30,19 @@ export default function AuthLogin(): ReactElement {
       />
     </Page>
   )
+}
+
+export const getServerSideProps: GetServerSideProps = async () => {
+  if (!authConfig.enabled) {
+    return {
+      redirect: {
+        destination: '/',
+        permanent: false
+      }
+    }
+  }
+
+  return {
+    props: {}
+  }
 }

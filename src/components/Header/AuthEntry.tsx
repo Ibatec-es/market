@@ -20,11 +20,15 @@ export default function AuthEntry({
   loginLabel = 'Login',
   onLoginClick
 }: AuthEntryProps): ReactElement {
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, authEnabled } = useAuth()
   const router = useRouter()
 
   const path = router.asPath.split('?')[0]
-  const isAuthRoute = path.startsWith('/auth/')
+  const isAuthRoute = authEnabled && path.startsWith('/auth/')
+
+  if (!authEnabled) {
+    return <>{authenticatedContent}</>
+  }
 
   if (isAuthRoute) {
     return <></>

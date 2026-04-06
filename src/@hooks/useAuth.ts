@@ -190,6 +190,8 @@ export const useAuth = () => {
     logout: storeLogout
   } = useAuthStore()
 
+  const authEnabled = authConfig.enabled
+
   const router = useRouter()
   const logoutReturnState =
     typeof router.query.state === 'string' ? router.query.state : null
@@ -392,6 +394,6 @@ export const useAuth = () => {
     beginOidcFlow,
     logout,
     checkSession,
-    authEnabled: authConfig.enabled
+    authEnabled
   }
 }
