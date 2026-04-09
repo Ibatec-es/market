@@ -39,20 +39,23 @@ export default function AuthGuard({ children }: AuthGuardProps) {
     return false
   }
 
+  const isPublic = isPublicRoute()
+  const shouldRedirectToLogin =
+    authEnabled && !isLoading && !isAuthenticated && !isPublic
+
   useEffect(() => {
-    const isPublic = isPublicRoute()
-    if (authEnabled && !isLoading && !isAuthenticated && !isPublic) {
-      router.push(
+    if (shouldRedirectToLogin) {
+      router.replace(
         `/auth/login?callbackUrl=${encodeURIComponent(router.asPath)}`
       )
     }
-  }, [authEnabled, isAuthenticated, isLoading, router.asPath, router])
+  }, [router, router.asPath, shouldRedirectToLogin])
 
   if (!authEnabled) {
     return <>{children}</>
   }
 
-  if (isLoading && !isPublicRoute()) {
+  if ((isLoading && !isPublic) || shouldRedirectToLogin) {
     return (
       <div
         style={{
