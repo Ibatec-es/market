@@ -132,11 +132,15 @@
   background: transparent;
   text-align: left;
   cursor: pointer;
-  transition: color 0.18s ease, opacity 0.18s ease;
+  transition: color 0.18s ease, opacity 0.18s ease, transform 0.18s ease;
 }
 
 .actionButton + .actionButton {
   margin-top: 0.95rem;
+}
+
+.actionButtonCompact {
+  align-items: center;
 }
 
 .actionButton:hover,
@@ -158,10 +162,11 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1.75rem;
-  height: 1.75rem;
+  width: 1.9rem;
+  height: 1.9rem;
   flex-shrink: 0;
   color: #0a4b70;
+  transition: transform 0.18s ease, color 0.18s ease, opacity 0.18s ease;
 }
 
 .actionIconBadgeDanger {
@@ -169,8 +174,8 @@
 }
 
 .actionGlyph {
-  width: 1.4rem;
-  height: 1.4rem;
+  width: 1.55rem;
+  height: 1.55rem;
 }
 
 .actionContent {
@@ -178,19 +183,51 @@
   flex-direction: column;
   gap: 0.15rem;
   min-width: 0;
+  padding-top: 0.05rem;
+}
+
+.actionButtonCompact .actionContent {
+  justify-content: center;
+  padding-top: 0;
 }
 
 .actionTitle {
+  position: relative;
+  display: inline-block;
   font-family: var(--font-family);
   font-size: 1rem;
   font-weight: 500;
   line-height: 1.2;
   color: var(--navy-700);
+  text-decoration: none;
+}
+
+.actionTitle::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -0.14rem;
+  height: 2px;
+  background-color: currentColor;
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  transition: transform 0.2s ease-out;
+}
+
+.actionButton:hover .actionTitle::after,
+.actionButton:focus-visible .actionTitle::after {
+  transform: scaleX(1);
 }
 
 .actionButton:hover .actionTitle,
 .actionButton:focus-visible .actionTitle {
-  text-decoration: underline;
+  text-decoration: none;
+}
+
+.actionButton:hover .actionIconBadge,
+.actionButton:focus-visible .actionIconBadge {
+  transform: translateX(0.16rem);
 }
 
 .actionButtonDanger .actionTitle {
@@ -260,8 +297,8 @@
   }
 
   .actionGlyph {
-    width: 1.25rem;
-    height: 1.25rem;
+    width: 1.4rem;
+    height: 1.4rem;
   }
 
   .actionTitle {

@@ -73,13 +73,14 @@ function ActionButton({
   tone = 'default'
 }: ActionButtonProps): ReactElement {
   const isDanger = tone === 'danger'
+  const hasDescription = Boolean(description)
 
   return (
     <button
       type="button"
       className={`${styles.actionButton} ${
         isDanger ? styles.actionButtonDanger : ''
-      }`}
+      } ${!hasDescription ? styles.actionButtonCompact : ''}`}
       onClick={onClick}
     >
       <span
