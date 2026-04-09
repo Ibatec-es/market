@@ -122,49 +122,89 @@
   flex-wrap: wrap;
 }
 
-.walletActionRow {
+.actionButton {
   display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  width: 100%;
+  padding: 0.15rem 0;
+  border: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: color 0.18s ease, opacity 0.18s ease;
+}
+
+.actionButton + .actionButton {
+  margin-top: 0.95rem;
+}
+
+.actionButton:hover,
+.actionButton:focus-visible {
+  outline: 0;
+}
+
+.actionButton:focus-visible {
+  outline: 2px solid rgba(10, 75, 112, 0.18);
+  outline-offset: 2px;
+  border-radius: 0.4rem;
+}
+
+.actionButtonDanger {
+  color: #d92d20;
+}
+
+.actionIconBadge {
+  display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.75rem;
-}
-
-.walletActionRow:last-child {
-  margin-bottom: 0;
-}
-
-.walletActionIcon {
-  position: relative;
-  display: inline-block;
-  z-index: 1;
-  width: 1.6rem;
-  height: 100%;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
   flex-shrink: 0;
-  margin: 0;
+  color: #0a4b70;
 }
 
-.walletActionRow button {
+.actionIconBadgeDanger {
+  color: #dc2626;
+}
+
+.actionGlyph {
+  width: 1.4rem;
+  height: 1.4rem;
+}
+
+.actionContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.actionTitle {
+  font-family: var(--font-family);
   font-size: 1rem;
   font-weight: 500;
+  line-height: 1.2;
   color: var(--navy-700);
-  background: none;
-  border: none;
-  text-align: left;
-  padding: 0;
-  cursor: pointer;
 }
 
-.walletActionRow button:hover {
+.actionButton:hover .actionTitle,
+.actionButton:focus-visible .actionTitle {
   text-decoration: underline;
 }
 
-.logoutButton {
-  color: #ef4444 !important;
+.actionButtonDanger .actionTitle {
+  color: #ef4444;
 }
 
-.logoutButton:hover {
-  color: #dc2626 !important;
-  text-decoration: underline !important;
+.actionDescription {
+  font-size: 0.78rem;
+  line-height: 1.35;
+  color: #64748b;
+}
+
+.actionButtonDanger .actionDescription {
+  color: #94a3b8;
 }
 
 .userInfo {
@@ -215,12 +255,21 @@
     font-size: 0.95rem;
   }
 
-  .walletActionIcon {
-    width: 1.25rem;
+  .actionButton {
+    gap: 0.65rem;
   }
 
-  .walletActionRow button {
+  .actionGlyph {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  .actionTitle {
     font-size: 0.95rem;
+  }
+
+  .actionDescription {
+    font-size: 0.78rem;
   }
 
   .userInfo {
@@ -231,9 +280,5 @@
 @media (min-width: 1440px) {
   .details {
     min-width: 24rem;
-  }
-
-  .walletActionIcon {
-    width: 1.8rem;
   }
 }

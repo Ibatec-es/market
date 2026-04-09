@@ -1,5 +1,4 @@
 import { ReactElement, ReactNode } from 'react'
-import Button from '@shared/atoms/Button'
 import { useDisconnect, useAccount } from 'wagmi'
 import styles from './Details.module.css'
 import Avatar from '@components/@shared/atoms/Avatar'
@@ -14,6 +13,7 @@ import { LoggerInstance } from '@oceanprotocol/lib'
 import { useAuth } from '@hooks/useAuth'
 import { useModal } from 'connectkit'
 import { useRouter } from 'next/router'
+import { useUserPreferences } from '@context/UserPreferences'
 
 interface DetailsProps {
   onRequestClose?: () => void
@@ -57,6 +57,49 @@ function MenuRow({
   )
 }
 
+interface ActionButtonProps {
+  icon: ReactNode
+  title: string
+  description?: string
+  onClick: () => void
+  tone?: 'default' | 'danger'
+}
+
+function ActionButton({
+  icon,
+  title,
+  description,
+  onClick,
+  tone = 'default'
+}: ActionButtonProps): ReactElement {
+  const isDanger = tone === 'danger'
+
+  return (
+    <button
+      type="button"
+      className={`${styles.actionButton} ${
+        isDanger ? styles.actionButtonDanger : ''
+      }`}
+      onClick={onClick}
+    >
+      <span
+        className={`${styles.actionIconBadge} ${
+          isDanger ? styles.actionIconBadgeDanger : ''
+        }`}
+        aria-hidden="true"
+      >
+        {icon}
+      </span>
+      <span className={styles.actionContent}>
+        <span className={styles.actionTitle}>{title}</span>
+        {description && (
+          <span className={styles.actionDescription}>{description}</span>
+        )}
+      </span>
+    </button>
+  )
+}
+
 export default function Details({
   onRequestClose
 }: DetailsProps): ReactElement {
@@ -65,6 +108,7 @@ export default function Details({
   const { logout, isAuthenticated, user, authEnabled } = useAuth()
   const { setOpen } = useModal()
   const router = useRouter()
+  const { showOnboardingModule } = useUserPreferences()
 
   const {
     setSessionToken,
@@ -93,6 +137,7 @@ export default function Details({
     : 'Connect your web3 wallet to restore marketplace actions'
   const showTokenList =
     isWalletConnected && activeConnector?.name === 'MetaMask'
+  const showActionDescriptions = showOnboardingModule
 
   const handleNavigation = async (href: string) => {
     onRequestClose?.()
@@ -168,32 +213,36 @@ export default function Details({
       </div>
 
       <div className={styles.section}>
-        <div className={styles.walletActionRow}>
-          <DisconnectWallet className={styles.walletActionIcon} />
-          <Button
-            style="text"
-            size="small"
-            onClick={
-              isWalletConnected ? handleDisconnectWallet : handleConnectWallet
-            }
-          >
-            {isWalletConnected
-              ? 'Disconnect web3 wallet'
-              : 'Connect web3 wallet'}
-          </Button>
-        </div>
+        <ActionButton
+          icon={<DisconnectWallet className={styles.actionGlyph} />}
+          title={
+            isWalletConnected ? 'Disconnect web3 wallet' : 'Connect web3 wallet'
+          }
+          description={
+            showActionDescriptions
+              ? isWalletConnected
+                ? 'Stop the active wallet connection for this browser session.'
+                : 'Reconnect your wallet to restore web3 actions in the marketplace.'
+              : undefined
+          }
+          onClick={
+            isWalletConnected ? handleDisconnectWallet : handleConnectWallet
+          }
+        />
         {hasMarketplaceSession && (
-          <div className={styles.walletActionRow}>
-            <LogoutIcon className={styles.walletActionIcon} />
-            <Button
-              style="text"
-              size="small"
-              onClick={handleLogout}
-              className={styles.logoutButton}
-            >
-              Marketplace sign-out
-            </Button>
-          </div>
+          <ActionButton
+            icon={<LogoutIcon className={styles.actionGlyph} />}
+            title="Sign out of marketplace"
+            description={
+              showActionDescriptions
+                ? isWalletConnected
+                  ? 'End your marketplace session and disconnect this linked wallet.'
+                  : 'End your marketplace session on this browser.'
+                : undefined
+            }
+            onClick={handleLogout}
+            tone="danger"
+          />
         )}
       </div>
 
