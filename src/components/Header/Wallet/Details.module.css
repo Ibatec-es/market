@@ -115,6 +115,13 @@
   word-break: break-word;
 }
 
+.walletAddressRow {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
 .walletActionRow {
   display: flex;
   align-items: center;
