@@ -52,6 +52,8 @@
 }
 
 .menuRowLabel {
+  position: relative;
+  display: inline-block;
   font-family: var(--font-family);
   font-weight: 700;
   font-size: 17px;
@@ -59,11 +61,25 @@
   text-transform: uppercase;
   text-align: left;
   color: #0a4b70;
+  text-decoration: none;
 }
 
-.menuRow:hover .menuRowLabel,
-.menuRow:focus .menuRowLabel {
-  text-decoration: underline;
+.menuRowLabel::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -0.16rem;
+  height: 2px;
+  background-color: currentColor;
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  transition: transform 0.2s ease-out;
+}
+
+.menuRow:hover .menuRowLabel::after,
+.menuRow:focus .menuRowLabel::after {
+  transform: scaleX(1);
 }
 
 .menuRowDisabled {
@@ -77,6 +93,11 @@
 .menuRowDisabled:hover .menuRowLabel,
 .menuRowDisabled:focus .menuRowLabel {
   text-decoration: none;
+}
+
+.menuRowDisabled:hover .menuRowLabel::after,
+.menuRowDisabled:focus .menuRowLabel::after {
+  transform: scaleX(0);
 }
 
 .menuRowDisabled .menuRowIcon {
