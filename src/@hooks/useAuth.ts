@@ -266,6 +266,11 @@ export const useAuth = () => {
         const config = authConfig.oidc
         const endpoints = getEndpoints(config.issuer)
 
+        console.log('========== OIDC CALLBACK START ==========')
+        console.log('AUTH CONFIG:', config)
+        console.log('OIDC ENDPOINTS:', endpoints)
+        console.log('AUTH CODE:', code)
+
         const res = await fetch(endpoints.token, {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -280,12 +285,52 @@ export const useAuth = () => {
           })
         })
 
+        console.log('TOKEN RESPONSE STATUS:', res.status)
+        console.log('TOKEN RESPONSE OK:', res.ok)
+
         if (!res.ok) {
-          throw new Error(await res.text())
+          const errorText = await res.text()
+          console.error('TOKEN ERROR RESPONSE:', errorText)
+          throw new Error(errorText)
         }
 
         const tokens = await res.json()
+
+        console.log('========== TOKEN RESPONSE ==========')
+        console.log(tokens)
+
+        console.log('ACCESS TOKEN:', tokens.access_token)
+        console.log('ID TOKEN:', tokens.id_token)
+        console.log('REFRESH TOKEN:', tokens.refresh_token)
+        console.log('EXPIRES IN:', tokens.expires_in)
+
         const payload = JSON.parse(atob(tokens.id_token.split('.')[1]))
+
+        console.log('========== ID TOKEN PAYLOAD ==========')
+        console.log(payload)
+
+        console.log('ISSUER (MAIN OIDC):', payload.iss)
+        console.log('SUBJECT:', payload.sub)
+        console.log('EMAIL:', payload.email)
+        console.log('NAME:', payload.name)
+        console.log('AUDIENCE:', payload.aud)
+        console.log('CLAIM KEYS:', Object.keys(payload))
+
+        const authMeta = {
+          main_oidc: payload.iss,
+          upstream_idp:
+            payload.last_idp ||
+            payload.idp ||
+            payload.source ||
+            payload.provider ||
+            payload.amr?.[0] ||
+            'unknown'
+        }
+
+        console.log('========== AUTH META ==========')
+        console.log(authMeta)
+
+        localStorage.setItem('oidc_auth_meta', JSON.stringify(authMeta))
 
         const userData: User = {
           id: payload.sub,
@@ -296,18 +341,28 @@ export const useAuth = () => {
           authProvider: 'oidc'
         }
 
+        console.log('========== USER DATA ==========')
+        console.log(userData)
+
         localStorage.setItem('oidc_session', JSON.stringify(userData))
         localStorage.setItem('oidc_tokens', JSON.stringify(tokens))
+
         const callbackUrl = getPendingCallbackUrl()
         clearPendingCallbackUrl()
 
         setUser(userData)
+
+        console.log('REDIRECTING TO APP...')
+        console.log('========== OIDC CALLBACK END ==========')
+
         router.replace({
           pathname: '/auth/login',
           ...(callbackUrl ? { query: { callbackUrl } } : {})
         })
       } catch (err) {
-        console.error('Callback error:', err)
+        console.error('========== CALLBACK ERROR ==========')
+        console.error(err)
+
         clearPendingAuthMode()
         clearPendingCallbackUrl()
         toast.error('Login failed')
