@@ -8,7 +8,7 @@ export const authConfig = {
     redirectUri:
       process.env.NEXT_PUBLIC_OIDC_REDIRECT_URI ||
       'http://localhost:8008/auth/callback',
-    scope: 'openid profile email',
+    scope: 'openid profile email federated_identity',
     responseType: 'code',
     pkceMethod: 'S256'
   }
