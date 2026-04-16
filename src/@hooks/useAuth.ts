@@ -319,6 +319,7 @@ export const useAuth = () => {
         const authMeta = {
           main_oidc: payload.iss,
           upstream_idp:
+            payload.upstream_idp ||
             payload.last_idp ||
             payload.idp ||
             payload.source ||
