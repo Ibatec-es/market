@@ -17,7 +17,8 @@ import { useUserPreferences } from '@context/UserPreferences'
 import {
   isVM3User,
   getLogoutRedirect,
-  getVM3LogoutUrl
+  getVM3LogoutUrl,
+  getAuthMeta
 } from '@utils/logoutRouter'
 
 interface DetailsProps {
@@ -170,22 +171,32 @@ export default function Details({
         await disconnectSsiWallet()
       }
     } catch (error) {
-      console.error('Error disconnecting wallet/SSI:', error)
+      console.error('wallet logout error', error)
     }
 
-    const callback = getLogoutRedirect()
+    const callbackUrl = getLogoutRedirect()
+    const meta = getAuthMeta()
 
-    if (isVM3User()) {
-      const vm3 = getVM3LogoutUrl()
+    const isVm3 =
+      meta?.issuer?.includes('vm3') ||
+      meta?.upstream_idp?.toLowerCase?.().includes('vm3')
 
-      window.location.href = `${vm3}?post_logout_redirect_uri=${encodeURIComponent(
-        callback
+    if (isVm3) {
+      const vm3Url = getVM3LogoutUrl()
+
+      sessionStorage.setItem('logout_flow', 'vm3')
+
+      window.location.href = `${vm3Url}?post_logout_redirect_uri=${encodeURIComponent(
+        callbackUrl
       )}`
       return
     }
+    sessionStorage.setItem('logout_flow', 'vm2')
 
     await logout()
     onRequestClose?.()
+
+    router.replace('/auth/login')
   }
 
   return (

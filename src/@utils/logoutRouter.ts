@@ -9,9 +9,13 @@ export const getAuthMeta = () => {
 export const isVM3User = () => {
   const meta = getAuthMeta()
 
+  const issuer = (meta?.issuer || '').toLowerCase()
+  const upstream = (meta?.upstream_idp || '').toLowerCase()
+
   return (
-    meta?.upstream_idp?.toLowerCase?.().includes('vm3') ||
-    meta?.issuer?.includes('vm3')
+    issuer.includes('vm3') ||
+    upstream.includes('vm3') ||
+    upstream.includes('partner')
   )
 }
 
