@@ -11,30 +11,24 @@ import {
   setPendingCallbackUrl,
   type PendingAuthMode
 } from '@utils/authFlow'
-import {
-  OIDC_LOGOUT_PENDING_KEY,
-  OIDC_LOGOUT_RETURN_FALLBACK_MS,
-  OIDC_LOGOUT_STARTED_AT_KEY,
-  OIDC_LOGOUT_STATE_KEY
-} from '@components/Auth/constants'
+import { isMainOIDCSessionActive } from '@utils/logoutRouter'
 
-/* ---------------- ENDPOINTS ---------------- */
+const OIDC_LOGOUT_PENDING_KEY = 'oidc_logout_pending'
+const OIDC_LOGOUT_STATE_KEY = 'oidc_logout_state'
+const OIDC_LOGOUT_STARTED_AT_KEY = 'oidc_logout_started_at'
+const OIDC_LOGOUT_RETURN_FALLBACK_MS = 5000
 
 const getEndpoints = (issuer: string) => {
   const match = issuer.match(/(.*\/application\/o\/)[^/]+\/?$/)
-
   const baseUrl = match
     ? match[1].replace(/\/$/, '')
     : issuer.replace(/\/[^/]+?\/?$/, '')
-
   return {
     authorize: `${baseUrl}/authorize/`,
     token: `${baseUrl}/token/`,
     endSession: `${issuer.replace(/\/$/, '')}/end-session/`
   }
 }
-
-/* ---------------- OIDC ---------------- */
 
 class OIDCProvider {
   private getConfig() {
@@ -44,49 +38,38 @@ class OIDCProvider {
   async signup(): Promise<void> {
     const config = this.getConfig()
     const endpoints = getEndpoints(config.issuer)
-
     const codeVerifier = this.generateCodeVerifier()
     const codeChallenge = await this.generateCodeChallenge(codeVerifier)
-
     sessionStorage.setItem('oidc_pkce_code_verifier', codeVerifier)
 
-    const authorizeUrl =
-      `${endpoints.authorize}?` +
-      `client_id=${config.clientId}&` +
-      `redirect_uri=${encodeURIComponent(config.redirectUri)}&` +
-      `response_type=code&` +
-      `scope=${config.scope}&` +
-      `code_challenge=${codeChallenge}&` +
-      `code_challenge_method=S256`
-
-    const flowSlug = 'self-service-registration'
+    const authorizeUrl = `${endpoints.authorize}?client_id=${
+      config.clientId
+    }&redirect_uri=${encodeURIComponent(
+      config.redirectUri
+    )}&response_type=code&scope=${
+      config.scope
+    }&code_challenge=${codeChallenge}&code_challenge_method=S256`
     const authentikBase = config.issuer.replace(/\/application\/o\/.*$/, '')
-
-    const signupUrl =
-      `${authentikBase}/if/flow/${flowSlug}/?` +
-      `next=${encodeURIComponent(authorizeUrl)}`
-
+    const signupUrl = `${authentikBase}/if/flow/self-service-registration/?next=${encodeURIComponent(
+      authorizeUrl
+    )}`
     window.location.href = signupUrl
   }
 
   async login(): Promise<void> {
     const config = this.getConfig()
     const endpoints = getEndpoints(config.issuer)
-
     const codeVerifier = this.generateCodeVerifier()
     const codeChallenge = await this.generateCodeChallenge(codeVerifier)
-
     sessionStorage.setItem('oidc_pkce_code_verifier', codeVerifier)
 
-    const authUrl =
-      `${endpoints.authorize}?` +
-      `client_id=${config.clientId}&` +
-      `redirect_uri=${encodeURIComponent(config.redirectUri)}&` +
-      `response_type=code&` +
-      `scope=${config.scope}&` +
-      `code_challenge=${codeChallenge}&` +
-      `code_challenge_method=S256`
-
+    const authUrl = `${endpoints.authorize}?client_id=${
+      config.clientId
+    }&redirect_uri=${encodeURIComponent(
+      config.redirectUri
+    )}&response_type=code&scope=${
+      config.scope
+    }&code_challenge=${codeChallenge}&code_challenge_method=S256`
     window.location.href = authUrl
   }
 
@@ -94,14 +77,12 @@ class OIDCProvider {
     try {
       const config = this.getConfig()
       const endpoints = getEndpoints(config.issuer)
-
       const redirectUri = encodeURIComponent(
         `${window.location.origin}/auth/login`
       )
 
       let idTokenHint = ''
       const tokens = localStorage.getItem('oidc_tokens')
-
       if (tokens) {
         try {
           const parsed = JSON.parse(tokens)
@@ -110,23 +91,15 @@ class OIDCProvider {
               parsed.id_token
             )}`
           }
-        } catch (e) {
-          console.warn('Could not parse tokens', e)
-        }
+        } catch (e) {}
       }
 
       const state = Math.random().toString(36).substring(2)
       sessionStorage.setItem(OIDC_LOGOUT_STATE_KEY, state)
-
-      const logoutUrl =
-        `${endpoints.endSession}?` +
-        `client_id=${config.clientId}&` +
-        `post_logout_redirect_uri=${redirectUri}&` +
-        `state=${state}` +
-        idTokenHint
-
       sessionStorage.setItem(OIDC_LOGOUT_PENDING_KEY, 'true')
       sessionStorage.setItem(OIDC_LOGOUT_STARTED_AT_KEY, Date.now().toString())
+
+      const logoutUrl = `${endpoints.endSession}?client_id=${config.clientId}&post_logout_redirect_uri=${redirectUri}&state=${state}${idTokenHint}`
       window.location.href = logoutUrl
     } catch (err) {
       console.error('Logout error:', err)
@@ -146,13 +119,13 @@ class OIDCProvider {
       'SHA-256',
       new TextEncoder().encode(verifier)
     )
-
     return btoa(String.fromCharCode(...new Uint8Array(hash)))
       .replace(/\+/g, '-')
       .replace(/\//g, '_')
       .replace(/=+$/, '')
   }
 }
+
 const oidcProvider = new OIDCProvider()
 
 const clearOidcStorage = () => {
@@ -177,8 +150,6 @@ const hasOidcLogoutReturnState = (returnState: string | null) =>
     returnState && sessionStorage.getItem(OIDC_LOGOUT_STATE_KEY) === returnState
   )
 
-/* ---------------- HOOK ---------------- */
-
 export const useAuth = () => {
   const {
     user,
@@ -189,38 +160,28 @@ export const useAuth = () => {
     setLogoutPending,
     logout: storeLogout
   } = useAuthStore()
-
   const authEnabled = authConfig.enabled
-
   const router = useRouter()
   const logoutReturnState =
     typeof router.query.state === 'string' ? router.query.state : null
-  /* -------- Handle Logout Return -------- */
+
   React.useEffect(() => {
     if (!router.isReady) return
     if (isOidcLogoutPending()) {
       const completeOidcLogoutReturn = () => {
         if (!isOidcLogoutPending()) return
-
         clearOidcStorage()
         setLogoutPending(false)
         storeLogout()
-
         if (window.location.pathname !== '/auth/login') {
           router.replace('/auth/login')
           return
         }
-
         if (!logoutReturnState) return
-
         const nextQuery = { ...router.query }
         delete nextQuery.state
-
         router.replace(
-          {
-            pathname: '/auth/login',
-            query: nextQuery
-          },
+          { pathname: '/auth/login', query: nextQuery },
           undefined,
           { shallow: true }
         )
@@ -238,39 +199,26 @@ export const useAuth = () => {
         completeOidcLogoutReturn,
         OIDC_LOGOUT_RETURN_FALLBACK_MS
       )
-
       return () => window.clearTimeout(timeoutId)
     }
   }, [logoutReturnState, router, setLogoutPending, storeLogout])
 
-  /* -------- Restore Session -------- */
-
   React.useEffect(() => {
     if (isOidcLogoutPending()) return
-
     try {
       const session = localStorage.getItem('oidc_session')
       if (session) setUser(JSON.parse(session))
     } catch {}
   }, [setUser])
 
-  /* -------- Callback -------- */
-
   const handleOIDCCallback = React.useCallback(
     async (code: string) => {
       if (sessionStorage.getItem('oidc_processing')) return
-
       sessionStorage.setItem('oidc_processing', 'true')
 
       try {
         const config = authConfig.oidc
         const endpoints = getEndpoints(config.issuer)
-
-        console.log('========== OIDC CALLBACK START ==========')
-        console.log('AUTH CONFIG:', config)
-        console.log('OIDC ENDPOINTS:', endpoints)
-        console.log('AUTH CODE:', code)
-
         const res = await fetch(endpoints.token, {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -285,36 +233,13 @@ export const useAuth = () => {
           })
         })
 
-        console.log('TOKEN RESPONSE STATUS:', res.status)
-        console.log('TOKEN RESPONSE OK:', res.ok)
-
         if (!res.ok) {
           const errorText = await res.text()
-          console.error('TOKEN ERROR RESPONSE:', errorText)
           throw new Error(errorText)
         }
 
         const tokens = await res.json()
-
-        console.log('========== TOKEN RESPONSE ==========')
-        console.log(tokens)
-
-        console.log('ACCESS TOKEN:', tokens.access_token)
-        console.log('ID TOKEN:', tokens.id_token)
-        console.log('REFRESH TOKEN:', tokens.refresh_token)
-        console.log('EXPIRES IN:', tokens.expires_in)
-
         const payload = JSON.parse(atob(tokens.id_token.split('.')[1]))
-
-        console.log('========== ID TOKEN PAYLOAD ==========')
-        console.log(payload)
-
-        console.log('ISSUER (MAIN OIDC):', payload.iss)
-        console.log('SUBJECT:', payload.sub)
-        console.log('EMAIL:', payload.email)
-        console.log('NAME:', payload.name)
-        console.log('AUDIENCE:', payload.aud)
-        console.log('CLAIM KEYS:', Object.keys(payload))
 
         const authMeta = {
           main_oidc: payload.iss,
@@ -328,9 +253,6 @@ export const useAuth = () => {
             'unknown'
         }
 
-        console.log('========== AUTH META ==========')
-        console.log(authMeta)
-
         localStorage.setItem('oidc_auth_meta', JSON.stringify(authMeta))
         localStorage.setItem('auth_meta', JSON.stringify(authMeta))
 
@@ -343,28 +265,19 @@ export const useAuth = () => {
           authProvider: 'oidc'
         }
 
-        console.log('========== USER DATA ==========')
-        console.log(userData)
-
         localStorage.setItem('oidc_session', JSON.stringify(userData))
         localStorage.setItem('oidc_tokens', JSON.stringify(tokens))
 
         const callbackUrl = getPendingCallbackUrl()
         clearPendingCallbackUrl()
-
         setUser(userData)
-
-        console.log('REDIRECTING TO APP...')
-        console.log('========== OIDC CALLBACK END ==========')
 
         router.replace({
           pathname: '/auth/login',
           ...(callbackUrl ? { query: { callbackUrl } } : {})
         })
       } catch (err) {
-        console.error('========== CALLBACK ERROR ==========')
-        console.error(err)
-
+        console.error('OIDC callback error:', err)
         clearPendingAuthMode()
         clearPendingCallbackUrl()
         toast.error('Login failed')
@@ -380,8 +293,6 @@ export const useAuth = () => {
     const code = new URLSearchParams(window.location.search).get('code')
     if (code) await handleOIDCCallback(code)
   }, [handleOIDCCallback])
-
-  /* -------- Login -------- */
 
   const login = async (mode: PendingAuthMode = 'login') => {
     setLoading(true)
@@ -401,42 +312,38 @@ export const useAuth = () => {
       typeof router.query.callbackUrl === 'string'
         ? router.query.callbackUrl
         : null
-
     setPendingAuthMode(mode)
-
     if (callbackUrl) {
       setPendingCallbackUrl(callbackUrl)
     } else {
       clearPendingCallbackUrl()
     }
-
     await login(mode)
   }
 
-  /* -------- Logout -------- */
-
   const logout = async () => {
     setLoading(true)
-
     try {
-      // Check if we're coming from VM3 logout
       const isVm3Callback = sessionStorage.getItem('logout_flow') === 'vm3'
+      const vm3Timeout = sessionStorage.getItem('vm3_logout_timeout') === 'true'
 
-      if (isVm3Callback) {
-        // We just completed VM3 logout, now proceed with VM2 OIDC logout
-        // Restore OIDC session data if needed for VM2 logout
-        const savedSession = sessionStorage.getItem('vm3_oidc_session')
-        const savedTokens = sessionStorage.getItem('vm3_oidc_tokens')
+      if (isVm3Callback || vm3Timeout) {
+        sessionStorage.removeItem('logout_flow')
+        sessionStorage.removeItem('vm3_logout_timeout')
 
-        if (savedSession) localStorage.setItem('oidc_session', savedSession)
-        if (savedTokens) localStorage.setItem('oidc_tokens', savedTokens)
-
-        // Clear temp storage
-        sessionStorage.removeItem('vm3_oidc_session')
-        sessionStorage.removeItem('vm3_oidc_tokens')
-
-        // Now perform OIDC logout for VM2
         if (user?.authProvider === 'oidc') {
+          const sessionActive = await isMainOIDCSessionActive()
+
+          if (!sessionActive) {
+            console.log('Main OIDC session already inactive, skipping logout')
+            clearOidcStorage()
+            setLogoutPending(false)
+            storeLogout()
+            router.replace('/auth/login')
+            setLoading(false)
+            return
+          }
+
           setLogoutPending(true)
           localStorage.removeItem('oidc_session')
           clearPendingAuthMode()
@@ -447,8 +354,19 @@ export const useAuth = () => {
         }
       }
 
-      // Normal OIDC logout flow
       if (user?.authProvider === 'oidc') {
+        const sessionActive = await isMainOIDCSessionActive()
+
+        if (!sessionActive) {
+          console.log('Main OIDC session already inactive, cleaning up locally')
+          clearOidcStorage()
+          setLogoutPending(false)
+          storeLogout()
+          router.replace('/auth/login')
+          setLoading(false)
+          return
+        }
+
         setLogoutPending(true)
         localStorage.removeItem('oidc_session')
         clearPendingAuthMode()
@@ -458,7 +376,6 @@ export const useAuth = () => {
         return
       }
 
-      // Fallback logout
       clearOidcStorage()
       setLogoutPending(false)
       storeLogout()

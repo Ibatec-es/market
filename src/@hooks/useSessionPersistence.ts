@@ -4,8 +4,6 @@ import { authConfig } from '../config/auth.config'
 
 const getEndpoints = (issuer: string) => {
   const isAuthentik = issuer.includes('/application/o/')
-  const isKeycloak = issuer.includes('/realms/')
-
   let baseUrl: string
   if (isAuthentik) {
     const match = issuer.match(/(.*\/application\/o\/)[^/]+\/?$/)
@@ -15,12 +13,7 @@ const getEndpoints = (issuer: string) => {
   } else {
     baseUrl = issuer.endsWith('/') ? issuer.slice(0, -1) : issuer
   }
-
-  return {
-    token: `${baseUrl}/token/`,
-    isKeycloak,
-    isAuthentik
-  }
+  return { token: `${baseUrl}/token/` }
 }
 
 export function useSessionPersistence() {
@@ -30,13 +23,9 @@ export function useSessionPersistence() {
     try {
       const config = authConfig.oidc
       const endpoints = getEndpoints(config.issuer)
-      const tokenEndpoint = endpoints.token
-
-      const response = await fetch(tokenEndpoint, {
+      const response = await fetch(endpoints.token, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
-        },
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: new URLSearchParams({
           grant_type: 'refresh_token',
           client_id: config.clientId,
@@ -58,9 +47,7 @@ export function useSessionPersistence() {
   }
 
   useEffect(() => {
-    if (!user) {
-      return
-    }
+    if (!user) return
 
     const interval = setInterval(() => {
       const tokens = localStorage.getItem('oidc_tokens')
@@ -69,7 +56,6 @@ export function useSessionPersistence() {
           const tokenData = JSON.parse(tokens)
           const expiresIn = tokenData.expires_in
           const refreshTokenValue = tokenData.refresh_token
-
           if (expiresIn && expiresIn < 60 && refreshTokenValue) {
             refreshToken(refreshTokenValue)
           }

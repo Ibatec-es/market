@@ -1,4 +1,4 @@
-import { ReactElement, ReactNode } from 'react'
+import { ReactElement, ReactNode, useState } from 'react'
 import { useDisconnect, useAccount } from 'wagmi'
 import styles from './Details.module.css'
 import Avatar from '@components/@shared/atoms/Avatar'
@@ -18,8 +18,13 @@ import {
   isVM3User,
   getLogoutRedirect,
   getVM3LogoutUrl,
-  getAuthMeta
+  getAuthMeta,
+  isVM3SessionActive,
+  saveVM3SessionData,
+  clearVM3Storage,
+  isMainOIDCSessionActive
 } from '@utils/logoutRouter'
+import { useAuthStore } from '@hooks/stores/authStore'
 
 interface DetailsProps {
   onRequestClose?: () => void
@@ -69,6 +74,7 @@ interface ActionButtonProps {
   description?: string
   onClick: () => void
   tone?: 'default' | 'danger'
+  isLoading?: boolean
 }
 
 function ActionButton({
@@ -76,7 +82,8 @@ function ActionButton({
   title,
   description,
   onClick,
-  tone = 'default'
+  tone = 'default',
+  isLoading = false
 }: ActionButtonProps): ReactElement {
   const isDanger = tone === 'danger'
   const hasDescription = Boolean(description)
@@ -88,6 +95,7 @@ function ActionButton({
         isDanger ? styles.actionButtonDanger : ''
       } ${!hasDescription ? styles.actionButtonCompact : ''}`}
       onClick={onClick}
+      disabled={isLoading}
     >
       <span
         className={`${styles.actionIconBadge} ${
@@ -95,7 +103,7 @@ function ActionButton({
         }`}
         aria-hidden="true"
       >
-        {icon}
+        {isLoading ? <span className={styles.spinner} /> : icon}
       </span>
       <span className={styles.actionContent}>
         <span className={styles.actionTitle}>{title}</span>
@@ -113,9 +121,11 @@ export default function Details({
   const { connector: activeConnector, address: accountId } = useAccount()
   const { disconnect } = useDisconnect()
   const { logout, isAuthenticated, user, authEnabled } = useAuth()
+  const storeLogout = useAuthStore((s) => s.logout)
   const { setOpen } = useModal()
   const router = useRouter()
   const { showOnboardingModule } = useUserPreferences()
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
 
   const {
     setSessionToken,
@@ -164,6 +174,9 @@ export default function Details({
   }
 
   const handleLogout = async () => {
+    if (isLoggingOut) return
+    setIsLoggingOut(true)
+
     try {
       if (isWalletConnected) {
         await handleDisconnectWallet()
@@ -177,34 +190,75 @@ export default function Details({
     const callbackUrl = getLogoutRedirect()
     const meta = getAuthMeta()
 
-    // Check if this is a VM3 user
     const isVm3 =
       meta?.issuer?.includes('vm3') ||
       meta?.upstream_idp?.toLowerCase?.().includes('vm3')
 
     if (isVm3) {
+      const sessionActive = await isVM3SessionActive()
+
+      if (!sessionActive) {
+        console.log('VM3 session already inactive, checking main OIDC session')
+        const mainSessionActive = await isMainOIDCSessionActive()
+
+        if (!mainSessionActive) {
+          console.log('Both sessions inactive, cleaning up locally')
+          localStorage.removeItem('oidc_session')
+          localStorage.removeItem('oidc_tokens')
+          localStorage.removeItem('auth_meta')
+          storeLogout()
+          onRequestClose?.()
+          router.replace('/auth/login')
+          setIsLoggingOut(false)
+          return
+        }
+
+        console.log(
+          'VM3 session inactive but main OIDC active, proceeding with OIDC logout'
+        )
+        sessionStorage.setItem('logout_flow', 'vm2')
+        await logout()
+        onRequestClose?.()
+        setIsLoggingOut(false)
+        return
+      }
+
       const vm3Url = getVM3LogoutUrl()
-
-      // Set marker to identify we're in VM3 logout flow
       sessionStorage.setItem('logout_flow', 'vm3')
+      saveVM3SessionData()
 
-      // Store the OIDC session data before redirecting
-      const oidcSession = localStorage.getItem('oidc_session')
-      const oidcTokens = localStorage.getItem('oidc_tokens')
+      const timeoutId = setTimeout(() => {
+        if (sessionStorage.getItem('logout_flow') === 'vm3') {
+          console.warn('VM3 logout timeout, forcing cleanup')
+          sessionStorage.setItem('vm3_logout_timeout', 'true')
+          window.location.href = callbackUrl
+        }
+      }, 5000)
 
-      if (oidcSession) sessionStorage.setItem('vm3_oidc_session', oidcSession)
-      if (oidcTokens) sessionStorage.setItem('vm3_oidc_tokens', oidcTokens)
-
+      sessionStorage.setItem('vm3_timeout_id', String(timeoutId))
       window.location.href = `${vm3Url}?post_logout_redirect_uri=${encodeURIComponent(
         callbackUrl
       )}`
       return
     }
 
-    // Normal OIDC logout (VM2)
+    const mainSessionActive = await isMainOIDCSessionActive()
+
+    if (!mainSessionActive) {
+      console.log('Main OIDC session already inactive, cleaning up locally')
+      localStorage.removeItem('oidc_session')
+      localStorage.removeItem('oidc_tokens')
+      storeLogout()
+      onRequestClose?.()
+      router.replace('/auth/login')
+      setIsLoggingOut(false)
+      return
+    }
+
     sessionStorage.setItem('logout_flow', 'vm2')
     await logout()
     onRequestClose?.()
+    setIsLoggingOut(false)
   }
 
   return (
@@ -278,6 +332,7 @@ export default function Details({
             }
             onClick={handleLogout}
             tone="danger"
+            isLoading={isLoggingOut}
           />
         )}
       </div>

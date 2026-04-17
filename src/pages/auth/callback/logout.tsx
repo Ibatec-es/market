@@ -2,6 +2,12 @@ import { useEffect } from 'react'
 import { useAuthStore } from '@hooks/stores/authStore'
 import { useAuth } from '@hooks/useAuth'
 import { useRouter } from 'next/router'
+import {
+  clearVM3Storage,
+  restoreVM3SessionData,
+  isVM3SessionActive,
+  isMainOIDCSessionActive
+} from '@utils/logoutRouter'
 
 export default function LogoutCallback() {
   const router = useRouter()
@@ -10,20 +16,43 @@ export default function LogoutCallback() {
 
   useEffect(() => {
     const flow = sessionStorage.getItem('logout_flow')
+    const isTimeout = sessionStorage.getItem('vm3_logout_timeout') === 'true'
+    const timeoutId = sessionStorage.getItem('vm3_timeout_id')
+
+    if (timeoutId) {
+      clearTimeout(parseInt(timeoutId))
+      sessionStorage.removeItem('vm3_timeout_id')
+    }
+
+    if (isTimeout) {
+      sessionStorage.removeItem('vm3_logout_timeout')
+    }
 
     const run = async () => {
-      if (flow === 'vm3') {
-        // We just completed VM3 logout, now clear VM3 marker
+      if (flow === 'vm3' || isTimeout) {
         sessionStorage.removeItem('logout_flow')
+        clearVM3Storage()
 
-        // Clear VM3 specific data
-        localStorage.removeItem('auth_meta')
-        localStorage.removeItem('oidc_auth_meta')
+        if (!isTimeout) {
+          const vm3SessionValid = await isVM3SessionActive()
+          if (vm3SessionValid) {
+            restoreVM3SessionData()
+          }
+        }
 
-        // Now call the normal OIDC logout for VM2
+        const mainSessionValid = await isMainOIDCSessionActive()
+
+        if (!mainSessionValid) {
+          console.log('Main OIDC session already inactive, cleaning up')
+          localStorage.removeItem('oidc_session')
+          localStorage.removeItem('oidc_tokens')
+          storeLogout()
+          router.replace('/auth/login')
+          return
+        }
+
         await logout()
       } else {
-        // Normal flow or after VM2 logout
         localStorage.removeItem('oidc_session')
         localStorage.removeItem('oidc_tokens')
         storeLogout()
