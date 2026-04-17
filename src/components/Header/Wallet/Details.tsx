@@ -177,20 +177,23 @@ export default function Details({
     const callbackUrl = getLogoutRedirect()
     const meta = getAuthMeta()
 
-    // Check if this is a VM3 user AND we're not already in a VM3 logout flow
+    // Check if this is a VM3 user
     const isVm3 =
-      (meta?.issuer?.includes('vm3') ||
-        meta?.upstream_idp?.toLowerCase?.().includes('vm3')) &&
-      sessionStorage.getItem('logout_flow') !== 'vm3_callback'
+      meta?.issuer?.includes('vm3') ||
+      meta?.upstream_idp?.toLowerCase?.().includes('vm3')
 
     if (isVm3) {
       const vm3Url = getVM3LogoutUrl()
 
-      // Set a different marker to avoid loops
-      sessionStorage.setItem('logout_flow', 'vm3_redirect')
+      // Set marker to identify we're in VM3 logout flow
+      sessionStorage.setItem('logout_flow', 'vm3')
 
-      // Store the current state before redirect
-      sessionStorage.setItem('vm3_logout_initiated', 'true')
+      // Store the OIDC session data before redirecting
+      const oidcSession = localStorage.getItem('oidc_session')
+      const oidcTokens = localStorage.getItem('oidc_tokens')
+
+      if (oidcSession) sessionStorage.setItem('vm3_oidc_session', oidcSession)
+      if (oidcTokens) sessionStorage.setItem('vm3_oidc_tokens', oidcTokens)
 
       window.location.href = `${vm3Url}?post_logout_redirect_uri=${encodeURIComponent(
         callbackUrl
@@ -198,10 +201,10 @@ export default function Details({
       return
     }
 
+    // Normal OIDC logout (VM2)
     sessionStorage.setItem('logout_flow', 'vm2')
     await logout()
     onRequestClose?.()
-    router.replace('/auth/login')
   }
 
   return (

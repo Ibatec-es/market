@@ -419,27 +419,35 @@ export const useAuth = () => {
     setLoading(true)
 
     try {
-      // Check if we're returning from VM3 logout
-      const isVm3Callback =
-        sessionStorage.getItem('logout_flow') === 'vm3_redirect' ||
-        sessionStorage.getItem('vm3_logout_initiated') === 'true'
+      // Check if we're coming from VM3 logout
+      const isVm3Callback = sessionStorage.getItem('logout_flow') === 'vm3'
 
       if (isVm3Callback) {
-        // Clear all markers
-        sessionStorage.removeItem('logout_flow')
-        sessionStorage.removeItem('vm3_logout_initiated')
+        // We just completed VM3 logout, now proceed with VM2 OIDC logout
+        // Restore OIDC session data if needed for VM2 logout
+        const savedSession = sessionStorage.getItem('vm3_oidc_session')
+        const savedTokens = sessionStorage.getItem('vm3_oidc_tokens')
 
-        // Force clear all OIDC storage
-        clearOidcStorage()
-        setLogoutPending(false)
-        storeLogout()
+        if (savedSession) localStorage.setItem('oidc_session', savedSession)
+        if (savedTokens) localStorage.setItem('oidc_tokens', savedTokens)
 
-        // Don't trigger OIDC logout again
-        router.replace('/auth/login')
-        setLoading(false)
-        return
+        // Clear temp storage
+        sessionStorage.removeItem('vm3_oidc_session')
+        sessionStorage.removeItem('vm3_oidc_tokens')
+
+        // Now perform OIDC logout for VM2
+        if (user?.authProvider === 'oidc') {
+          setLogoutPending(true)
+          localStorage.removeItem('oidc_session')
+          clearPendingAuthMode()
+          clearPendingCallbackUrl()
+          storeLogout()
+          await oidcProvider.logout()
+          return
+        }
       }
 
+      // Normal OIDC logout flow
       if (user?.authProvider === 'oidc') {
         setLogoutPending(true)
         localStorage.removeItem('oidc_session')
@@ -450,10 +458,10 @@ export const useAuth = () => {
         return
       }
 
+      // Fallback logout
       clearOidcStorage()
       setLogoutPending(false)
       storeLogout()
-
       router.replace('/auth/login')
     } catch (error) {
       setLogoutPending(false)
