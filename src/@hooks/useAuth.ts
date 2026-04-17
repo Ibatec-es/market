@@ -139,6 +139,31 @@ const clearOidcStorage = () => {
   clearPendingCallbackUrl()
 }
 
+const getUserDataFromIdToken = (idToken: string): User => {
+  const payload = JSON.parse(atob(idToken.split('.')[1]))
+
+  console.log('========== ID TOKEN PAYLOAD ==========')
+  console.log(payload)
+
+  console.log('ISSUER (MAIN OIDC):', payload.iss)
+  console.log('SUBJECT:', payload.sub)
+  console.log('EMAIL:', payload.email)
+  console.log('USERNAME:', payload.preferred_username || payload.username)
+  console.log('NAME:', payload.name)
+  console.log('AUDIENCE:', payload.aud)
+  console.log('CLAIM KEYS:', Object.keys(payload))
+
+  return {
+    id: payload.sub,
+    email: payload.email,
+    name: payload.name,
+    username: payload.preferred_username || payload.username,
+    avatar: `https://ui-avatars.com/api/?name=${payload.name}`,
+    isOnboarded: false,
+    authProvider: 'oidc'
+  }
+}
+
 const isOidcLogoutPending = () =>
   typeof window !== 'undefined' &&
   sessionStorage.getItem(OIDC_LOGOUT_PENDING_KEY) === 'true'
@@ -206,7 +231,34 @@ export const useAuth = () => {
     if (isOidcLogoutPending()) return
     try {
       const session = localStorage.getItem('oidc_session')
-      if (session) setUser(JSON.parse(session))
+      if (!session) return
+
+      const parsedSession = JSON.parse(session) as User
+
+      if (parsedSession.username) {
+        setUser(parsedSession)
+        return
+      }
+
+      const tokens = localStorage.getItem('oidc_tokens')
+      if (!tokens) {
+        setUser(parsedSession)
+        return
+      }
+
+      const parsedTokens = JSON.parse(tokens)
+      if (!parsedTokens.id_token) {
+        setUser(parsedSession)
+        return
+      }
+
+      const enrichedSession = {
+        ...parsedSession,
+        ...getUserDataFromIdToken(parsedTokens.id_token)
+      }
+
+      localStorage.setItem('oidc_session', JSON.stringify(enrichedSession))
+      setUser(enrichedSession)
     } catch {}
   }, [setUser])
 
@@ -255,14 +307,7 @@ export const useAuth = () => {
         localStorage.setItem('oidc_auth_meta', JSON.stringify(authMeta))
         localStorage.setItem('auth_meta', JSON.stringify(authMeta))
 
-        const userData: User = {
-          id: payload.sub,
-          email: payload.email,
-          name: payload.name,
-          avatar: `https://ui-avatars.com/api/?name=${payload.name}`,
-          isOnboarded: false,
-          authProvider: 'oidc'
-        }
+        const userData = getUserDataFromIdToken(tokens.id_token)
 
         localStorage.setItem('oidc_session', JSON.stringify(userData))
         localStorage.setItem('oidc_tokens', JSON.stringify(tokens))
