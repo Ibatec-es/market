@@ -170,7 +170,7 @@ export default function Details({
     // const vm3Logout = process.env.NEXT_PUBLIC_VM3_LOGOUT_URL
     // const callback = process.env.NEXT_PUBLIC_VM3_POST_LOGOUT_REDIRECT
     const vm3Logout =
-      'https://vm3.oceanenterprise.io/application/o/ocean-market/end-session/'
+      'https://ocean-node-vm3.oceanenterprise.io:8443/application/o/vm2-federation/end-session/'
     const callback =
       'https://market-git-feat-aa-auth-ocean-enterprise.vercel.app/auth/callback/logout'
 
