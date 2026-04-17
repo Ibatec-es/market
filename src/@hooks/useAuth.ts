@@ -35,7 +35,6 @@ class OIDCProvider {
   }
 
   async signup(): Promise<void> {
-    // Clear old session data before starting new signup
     this.clearSessionData()
 
     const config = this.getConfig()
@@ -59,7 +58,6 @@ class OIDCProvider {
   }
 
   async login(): Promise<void> {
-    // Clear old session data before starting new login
     this.clearSessionData()
 
     const config = this.getConfig()
@@ -114,7 +112,6 @@ class OIDCProvider {
   }
 
   private clearSessionData(): void {
-    // Clear any existing OIDC session data to prevent conflicts
     localStorage.removeItem('oidc_session')
     localStorage.removeItem('oidc_tokens')
     localStorage.removeItem('auth_meta')
@@ -283,9 +280,7 @@ export const useAuth = () => {
 
   const handleOIDCCallback = React.useCallback(
     async (code: string) => {
-      // Clear processing flag if it exists from previous failed attempt
       if (sessionStorage.getItem('oidc_processing')) {
-        console.log('Clearing stale oidc_processing flag')
         sessionStorage.removeItem('oidc_processing')
       }
 
@@ -353,7 +348,6 @@ export const useAuth = () => {
         })
       } catch (err) {
         console.error('OIDC callback error:', err)
-        // Clear all storage on error to start fresh
         clearOidcStorage()
         clearPendingAuthMode()
         clearPendingCallbackUrl()
@@ -385,7 +379,6 @@ export const useAuth = () => {
   }
 
   const beginOidcFlow = async (mode: PendingAuthMode) => {
-    // Clear any existing session data before starting new flow
     clearOidcStorage()
 
     const callbackUrl =
