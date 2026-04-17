@@ -35,6 +35,9 @@ class OIDCProvider {
   }
 
   async signup(): Promise<void> {
+    // Clear old session data before starting new signup
+    this.clearSessionData()
+
     const config = this.getConfig()
     const endpoints = getEndpoints(config.issuer)
     const codeVerifier = this.generateCodeVerifier()
@@ -56,6 +59,9 @@ class OIDCProvider {
   }
 
   async login(): Promise<void> {
+    // Clear old session data before starting new login
+    this.clearSessionData()
+
     const config = this.getConfig()
     const endpoints = getEndpoints(config.issuer)
     const codeVerifier = this.generateCodeVerifier()
@@ -105,6 +111,19 @@ class OIDCProvider {
       toast.error('Logout failed')
       throw err
     }
+  }
+
+  private clearSessionData(): void {
+    // Clear any existing OIDC session data to prevent conflicts
+    localStorage.removeItem('oidc_session')
+    localStorage.removeItem('oidc_tokens')
+    localStorage.removeItem('auth_meta')
+    localStorage.removeItem('oidc_auth_meta')
+    sessionStorage.removeItem('oidc_pkce_code_verifier')
+    sessionStorage.removeItem('oidc_processing')
+    sessionStorage.removeItem(OIDC_LOGOUT_STATE_KEY)
+    sessionStorage.removeItem(OIDC_LOGOUT_PENDING_KEY)
+    sessionStorage.removeItem(OIDC_LOGOUT_STARTED_AT_KEY)
   }
 
   private generateCodeVerifier(): string {
@@ -264,12 +283,25 @@ export const useAuth = () => {
 
   const handleOIDCCallback = React.useCallback(
     async (code: string) => {
-      if (sessionStorage.getItem('oidc_processing')) return
+      // Clear processing flag if it exists from previous failed attempt
+      if (sessionStorage.getItem('oidc_processing')) {
+        console.log('Clearing stale oidc_processing flag')
+        sessionStorage.removeItem('oidc_processing')
+      }
+
       sessionStorage.setItem('oidc_processing', 'true')
 
       try {
         const config = authConfig.oidc
         const endpoints = getEndpoints(config.issuer)
+        const codeVerifier = sessionStorage.getItem('oidc_pkce_code_verifier')
+
+        if (!codeVerifier) {
+          throw new Error(
+            'No code verifier found. Please try logging in again.'
+          )
+        }
+
         const res = await fetch(endpoints.token, {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -279,8 +311,7 @@ export const useAuth = () => {
             client_secret: config.clientSecret || '',
             code,
             redirect_uri: config.redirectUri,
-            code_verifier:
-              sessionStorage.getItem('oidc_pkce_code_verifier') || ''
+            code_verifier: codeVerifier
           })
         })
 
@@ -322,9 +353,11 @@ export const useAuth = () => {
         })
       } catch (err) {
         console.error('OIDC callback error:', err)
+        // Clear all storage on error to start fresh
+        clearOidcStorage()
         clearPendingAuthMode()
         clearPendingCallbackUrl()
-        toast.error('Login failed')
+        toast.error('Login failed. Please try again.')
         router.replace('/auth/login')
       } finally {
         sessionStorage.removeItem('oidc_processing')
@@ -352,6 +385,9 @@ export const useAuth = () => {
   }
 
   const beginOidcFlow = async (mode: PendingAuthMode) => {
+    // Clear any existing session data before starting new flow
+    clearOidcStorage()
+
     const callbackUrl =
       typeof router.query.callbackUrl === 'string'
         ? router.query.callbackUrl
