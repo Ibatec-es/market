@@ -332,6 +332,7 @@ export const useAuth = () => {
         console.log(authMeta)
 
         localStorage.setItem('oidc_auth_meta', JSON.stringify(authMeta))
+        localStorage.setItem('auth_meta', JSON.stringify(authMeta))
 
         const userData: User = {
           id: payload.sub,

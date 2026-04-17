@@ -14,6 +14,11 @@ import { useAuth } from '@hooks/useAuth'
 import { useModal } from 'connectkit'
 import { useRouter } from 'next/router'
 import { useUserPreferences } from '@context/UserPreferences'
+import {
+  isVM3User,
+  getLogoutRedirect,
+  getVM3LogoutUrl
+} from '@utils/logoutRouter'
 
 interface DetailsProps {
   onRequestClose?: () => void
@@ -167,15 +172,13 @@ export default function Details({
     } catch (error) {
       console.error('Error disconnecting wallet/SSI:', error)
     }
-    // const vm3Logout = process.env.NEXT_PUBLIC_VM3_LOGOUT_URL
-    // const callback = process.env.NEXT_PUBLIC_VM3_POST_LOGOUT_REDIRECT
-    const vm3Logout =
-      'https://ocean-node-vm3.oceanenterprise.io:8443/application/o/vm2-federation/end-session/'
-    const callback =
-      'https://market-git-feat-aa-auth-ocean-enterprise.vercel.app/auth/callback/logout'
 
-    if (vm3Logout && callback) {
-      window.location.href = `${vm3Logout}?post_logout_redirect_uri=${encodeURIComponent(
+    const callback = getLogoutRedirect()
+
+    if (isVM3User()) {
+      const vm3 = getVM3LogoutUrl()
+
+      window.location.href = `${vm3}?post_logout_redirect_uri=${encodeURIComponent(
         callback
       )}`
       return
