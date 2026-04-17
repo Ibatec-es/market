@@ -1,5 +1,3 @@
-import { authConfig } from 'src/config/auth.config'
-
 export const getAuthMeta = () => {
   try {
     return JSON.parse(localStorage.getItem('auth_meta') || '{}')
@@ -52,70 +50,4 @@ export const restoreVM3SessionData = () => {
 
   if (savedSession) localStorage.setItem('oidc_session', savedSession)
   if (savedTokens) localStorage.setItem('oidc_tokens', savedTokens)
-}
-
-export const checkVM3Session = async (): Promise<boolean> => {
-  try {
-    const tokens = localStorage.getItem('oidc_tokens')
-    if (!tokens) return false
-
-    const tokenData = JSON.parse(tokens)
-    const accessToken = tokenData.access_token
-
-    if (!accessToken) return false
-
-    const userInfoUrl =
-      'https://ocean-node-vm3.oceanenterprise.io:8443/application/o/userinfo/'
-
-    const response = await fetch(userInfoUrl, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`
-      },
-      signal: AbortSignal.timeout(5000)
-    })
-
-    return response.ok
-  } catch (error) {
-    console.error('VM3 session check failed:', error)
-    return false
-  }
-}
-
-export const checkMainOIDCSession = async (): Promise<boolean> => {
-  try {
-    const tokens = localStorage.getItem('oidc_tokens')
-    if (!tokens) return false
-
-    const tokenData = JSON.parse(tokens)
-    const accessToken = tokenData.access_token
-
-    if (!accessToken) return false
-
-    const meta = getAuthMeta()
-    const issuer = meta?.main_oidc || authConfig.oidc.issuer
-
-    const userInfoUrl = `${issuer.replace(/\/$/, '')}/userinfo/`
-
-    const response = await fetch(userInfoUrl, {
-      headers: {
-        Authorization: `Bearer ${accessToken}`
-      },
-      signal: AbortSignal.timeout(5000)
-    })
-
-    return response.ok
-  } catch (error) {
-    console.error('Main OIDC session check failed:', error)
-    return false
-  }
-}
-
-export const isVM3SessionActive = async (): Promise<boolean> => {
-  const isVm3 = isVM3User()
-  if (!isVm3) return false
-  return await checkVM3Session()
-}
-
-export const isMainOIDCSessionActive = async (): Promise<boolean> => {
-  return await checkMainOIDCSession()
 }

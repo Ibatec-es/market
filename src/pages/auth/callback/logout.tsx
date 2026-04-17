@@ -2,12 +2,7 @@ import { useEffect } from 'react'
 import { useAuthStore } from '@hooks/stores/authStore'
 import { useAuth } from '@hooks/useAuth'
 import { useRouter } from 'next/router'
-import {
-  clearVM3Storage,
-  restoreVM3SessionData,
-  isVM3SessionActive,
-  isMainOIDCSessionActive
-} from '@utils/logoutRouter'
+import { clearVM3Storage, restoreVM3SessionData } from '@utils/logoutRouter'
 
 export default function LogoutCallback() {
   const router = useRouter()
@@ -34,21 +29,7 @@ export default function LogoutCallback() {
         clearVM3Storage()
 
         if (!isTimeout) {
-          const vm3SessionValid = await isVM3SessionActive()
-          if (vm3SessionValid) {
-            restoreVM3SessionData()
-          }
-        }
-
-        const mainSessionValid = await isMainOIDCSessionActive()
-
-        if (!mainSessionValid) {
-          console.log('Main OIDC session already inactive, cleaning up')
-          localStorage.removeItem('oidc_session')
-          localStorage.removeItem('oidc_tokens')
-          storeLogout()
-          router.replace('/auth/login')
-          return
+          restoreVM3SessionData()
         }
 
         await logout()

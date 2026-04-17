@@ -11,7 +11,6 @@ import {
   setPendingCallbackUrl,
   type PendingAuthMode
 } from '@utils/authFlow'
-import { isMainOIDCSessionActive } from '@utils/logoutRouter'
 
 const OIDC_LOGOUT_PENDING_KEY = 'oidc_logout_pending'
 const OIDC_LOGOUT_STATE_KEY = 'oidc_logout_state'
@@ -332,18 +331,6 @@ export const useAuth = () => {
         sessionStorage.removeItem('vm3_logout_timeout')
 
         if (user?.authProvider === 'oidc') {
-          const sessionActive = await isMainOIDCSessionActive()
-
-          if (!sessionActive) {
-            console.log('Main OIDC session already inactive, skipping logout')
-            clearOidcStorage()
-            setLogoutPending(false)
-            storeLogout()
-            router.replace('/auth/login')
-            setLoading(false)
-            return
-          }
-
           setLogoutPending(true)
           localStorage.removeItem('oidc_session')
           clearPendingAuthMode()
@@ -355,18 +342,6 @@ export const useAuth = () => {
       }
 
       if (user?.authProvider === 'oidc') {
-        const sessionActive = await isMainOIDCSessionActive()
-
-        if (!sessionActive) {
-          console.log('Main OIDC session already inactive, cleaning up locally')
-          clearOidcStorage()
-          setLogoutPending(false)
-          storeLogout()
-          router.replace('/auth/login')
-          setLoading(false)
-          return
-        }
-
         setLogoutPending(true)
         localStorage.removeItem('oidc_session')
         clearPendingAuthMode()

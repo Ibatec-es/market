@@ -15,14 +15,10 @@ import { useModal } from 'connectkit'
 import { useRouter } from 'next/router'
 import { useUserPreferences } from '@context/UserPreferences'
 import {
-  isVM3User,
   getLogoutRedirect,
   getVM3LogoutUrl,
   getAuthMeta,
-  isVM3SessionActive,
-  saveVM3SessionData,
-  clearVM3Storage,
-  isMainOIDCSessionActive
+  saveVM3SessionData
 } from '@utils/logoutRouter'
 import { useAuthStore } from '@hooks/stores/authStore'
 
@@ -195,34 +191,6 @@ export default function Details({
       meta?.upstream_idp?.toLowerCase?.().includes('vm3')
 
     if (isVm3) {
-      const sessionActive = await isVM3SessionActive()
-
-      if (!sessionActive) {
-        console.log('VM3 session already inactive, checking main OIDC session')
-        const mainSessionActive = await isMainOIDCSessionActive()
-
-        if (!mainSessionActive) {
-          console.log('Both sessions inactive, cleaning up locally')
-          localStorage.removeItem('oidc_session')
-          localStorage.removeItem('oidc_tokens')
-          localStorage.removeItem('auth_meta')
-          storeLogout()
-          onRequestClose?.()
-          router.replace('/auth/login')
-          setIsLoggingOut(false)
-          return
-        }
-
-        console.log(
-          'VM3 session inactive but main OIDC active, proceeding with OIDC logout'
-        )
-        sessionStorage.setItem('logout_flow', 'vm2')
-        await logout()
-        onRequestClose?.()
-        setIsLoggingOut(false)
-        return
-      }
-
       const vm3Url = getVM3LogoutUrl()
       sessionStorage.setItem('logout_flow', 'vm3')
       saveVM3SessionData()
@@ -239,19 +207,6 @@ export default function Details({
       window.location.href = `${vm3Url}?post_logout_redirect_uri=${encodeURIComponent(
         callbackUrl
       )}`
-      return
-    }
-
-    const mainSessionActive = await isMainOIDCSessionActive()
-
-    if (!mainSessionActive) {
-      console.log('Main OIDC session already inactive, cleaning up locally')
-      localStorage.removeItem('oidc_session')
-      localStorage.removeItem('oidc_tokens')
-      storeLogout()
-      onRequestClose?.()
-      router.replace('/auth/login')
-      setIsLoggingOut(false)
       return
     }
 
