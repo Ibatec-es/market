@@ -177,25 +177,30 @@ export default function Details({
     const callbackUrl = getLogoutRedirect()
     const meta = getAuthMeta()
 
+    // Check if this is a VM3 user AND we're not already in a VM3 logout flow
     const isVm3 =
-      meta?.issuer?.includes('vm3') ||
-      meta?.upstream_idp?.toLowerCase?.().includes('vm3')
+      (meta?.issuer?.includes('vm3') ||
+        meta?.upstream_idp?.toLowerCase?.().includes('vm3')) &&
+      sessionStorage.getItem('logout_flow') !== 'vm3_callback'
 
     if (isVm3) {
       const vm3Url = getVM3LogoutUrl()
 
-      sessionStorage.setItem('logout_flow', 'vm3')
+      // Set a different marker to avoid loops
+      sessionStorage.setItem('logout_flow', 'vm3_redirect')
+
+      // Store the current state before redirect
+      sessionStorage.setItem('vm3_logout_initiated', 'true')
 
       window.location.href = `${vm3Url}?post_logout_redirect_uri=${encodeURIComponent(
         callbackUrl
       )}`
       return
     }
-    sessionStorage.setItem('logout_flow', 'vm2')
 
+    sessionStorage.setItem('logout_flow', 'vm2')
     await logout()
     onRequestClose?.()
-
     router.replace('/auth/login')
   }
 

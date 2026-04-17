@@ -419,6 +419,27 @@ export const useAuth = () => {
     setLoading(true)
 
     try {
+      // Check if we're returning from VM3 logout
+      const isVm3Callback =
+        sessionStorage.getItem('logout_flow') === 'vm3_redirect' ||
+        sessionStorage.getItem('vm3_logout_initiated') === 'true'
+
+      if (isVm3Callback) {
+        // Clear all markers
+        sessionStorage.removeItem('logout_flow')
+        sessionStorage.removeItem('vm3_logout_initiated')
+
+        // Force clear all OIDC storage
+        clearOidcStorage()
+        setLogoutPending(false)
+        storeLogout()
+
+        // Don't trigger OIDC logout again
+        router.replace('/auth/login')
+        setLoading(false)
+        return
+      }
+
       if (user?.authProvider === 'oidc') {
         setLogoutPending(true)
         localStorage.removeItem('oidc_session')
