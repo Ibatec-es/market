@@ -1,6 +1,5 @@
 import { createRequire } from 'module'
 const require = createRequire(import.meta.url)
-import withTM from 'next-transpile-modules'
 
 const nextConfig = () => {
   /**
@@ -14,6 +13,11 @@ const nextConfig = () => {
     },
     webpack: (config, options) => {
       const { isServer } = options
+
+      config.resolve.alias = {
+        ...(config.resolve.alias || {}),
+        'rdf-canonize-native': false
+      }
 
       if (!isServer) {
         config.resolve.fallback.fs = false
@@ -93,7 +97,7 @@ const nextConfig = () => {
     }
   }
 
-  return withTM(['@oceanprotocol/lib', '@oceanprotocol/ddo-js'])(config)
+  return config
 }
 
 export default nextConfig
