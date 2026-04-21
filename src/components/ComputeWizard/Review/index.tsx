@@ -222,7 +222,8 @@ export default function Review({
     Record<string, string>
   >({})
   const [isOecFeesLoading, setIsOecFeesLoading] = useState(false)
-  const { setFieldValue, values } = useFormikContext<FormComputeData>()
+  const { setFieldValue, setFieldTouched, values } =
+    useFormikContext<FormComputeData>()
   const [verificationQueue, setVerificationQueue] = useState<
     VerificationItem[]
   >([])
@@ -254,16 +255,18 @@ export default function Review({
 
   const handleTermsChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
+      setFieldTouched('termsAndConditions', true, false)
       setFieldValue('termsAndConditions', event.target.checked, true)
     },
-    [setFieldValue]
+    [setFieldTouched, setFieldValue]
   )
 
   const handleLicenseChange = useCallback(
     (event: ChangeEvent<HTMLInputElement>) => {
+      setFieldTouched('acceptPublishingLicense', true, false)
       setFieldValue('acceptPublishingLicense', event.target.checked, true)
     },
-    [setFieldValue]
+    [setFieldTouched, setFieldValue]
   )
 
   const selectedEnvId =
@@ -1137,8 +1140,6 @@ export default function Review({
               datasetFeeDecimals
             )
           )
-      setDatasetProviderFee(datasetProviderFeeProp || datasetProviderFee)
-
       const algoToken = resolveSymbol(
         details?.baseToken?.symbol ||
           getBaseTokenSymbol(selectedAlgorithmAsset, serviceIndex) ||
@@ -1273,12 +1274,11 @@ export default function Review({
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
-    if (datasetProviderFeeProp) setDatasetProviderFee(datasetProviderFeeProp)
+    setDatasetProviderFee(datasetProviderFeeProp ?? null)
   }, [datasetProviderFeeProp])
 
   useEffect(() => {
-    if (algorithmProviderFeeProp)
-      setAlgorithmProviderFee(algorithmProviderFeeProp)
+    setAlgorithmProviderFee(algorithmProviderFeeProp ?? null)
   }, [algorithmProviderFeeProp])
 
   useEffect(() => {
@@ -2064,16 +2064,19 @@ export default function Review({
   const currentVerificationItem = verificationQueue[currentVerificationIndex]
   const assetRows = verificationQueue
 
-  function getAlgorithmAsset(algo: string): {
+  function getAlgorithmAsset(
+    algo: string,
+    selectedServiceId?: string
+  ): {
     algorithmAsset: AssetExtended | null
     serviceIndexAlgo: number | null
   } {
     let algorithmId = algo
-    let serviceId = ''
+    let serviceId = selectedServiceId || ''
     try {
       const parsed = JSON.parse(algo)
       algorithmId = parsed?.algoDid || algo
-      serviceId = parsed?.serviceId || ''
+      serviceId = selectedServiceId || parsed?.serviceId || ''
     } catch {
       algorithmId = algo
     }
@@ -2103,6 +2106,9 @@ export default function Review({
 
     const algoId = values.algorithm as string | undefined
     const fallbackAlgo = values.algorithms as AssetExtended | undefined
+    const selectedServiceId = values.algorithms?.services?.find(
+      (service) => service.checked
+    )?.id
 
     if (!algoId && fallbackAlgo) {
       if (fallbackAlgo.serviceIndex !== undefined) {
@@ -2118,7 +2124,10 @@ export default function Review({
       return
     }
 
-    const { algorithmAsset, serviceIndexAlgo } = getAlgorithmAsset(algoId)
+    const { algorithmAsset, serviceIndexAlgo } = getAlgorithmAsset(
+      algoId,
+      selectedServiceId
+    )
     if (!algorithmAsset) {
       setAlgoLoadError('Algorithm asset not found for review.')
       return

@@ -12,12 +12,19 @@ import { ResourceType } from 'src/@types/ResourceType'
 import { useChainId } from 'wagmi'
 import StepTitle from '@shared/StepTitle'
 import Input from '@components/@shared/FormInput'
-import { FormComputeData } from '../_types'
+import Tooltip from '@shared/atoms/Tooltip'
+import { FormComputeData, QueueWaitTimeUnit } from '../_types'
 import { useProfile } from '@context/Profile'
 import styles from './index.module.css'
 import { useEthersSigner } from '@hooks/useEthersSigner'
 import Decimal from 'decimal.js'
 import { MAX_DECIMALS } from '@utils/constants'
+import { truncateDid } from '@utils/string'
+import { LAST_TRACKED_COMPLETION_STEP } from '../_steps'
+import {
+  getComputeResourceLimits,
+  getDefaultComputeResourceValue
+} from '../computeEnvironmentDefaults'
 import OutputStorageSection from './OutputStorageSection'
 
 interface ResourceValues {
@@ -26,6 +33,12 @@ interface ResourceValues {
   disk: number
   gpu: number
   jobDuration: number
+}
+
+function hasStoredResourceValue(
+  value: number | undefined | null
+): value is number {
+  return typeof value === 'number'
 }
 
 type ComputeEnvResource = NonNullable<ComputeEnvironment['resources']>[number]
@@ -39,6 +52,7 @@ interface ResourceRowProps {
   label: string
   unit: string
   isFree: boolean
+  isActive: boolean
   freeValues: ResourceValues
   paidValues: ResourceValues
   getLimits: (
@@ -77,6 +91,101 @@ function SectionRadioOption({
       <label htmlFor={id} className={styles.sectionTitle}>
         {label}
       </label>
+    </div>
+  )
+}
+
+function QueueWaitSection({
+  enabled,
+  queueMaxWaitTime,
+  queueMaxWaitTimeUnit,
+  error,
+  onToggle,
+  onChange,
+  onUnitChange
+}: {
+  enabled: boolean
+  queueMaxWaitTime: number | null | undefined
+  queueMaxWaitTimeUnit: QueueWaitTimeUnit
+  error?: string
+  onToggle: (checked: boolean) => void
+  onChange: (value: string) => void
+  onUnitChange: (value: QueueWaitTimeUnit) => void
+}): ReactElement {
+  return (
+    <div className={styles.queueSection}>
+      <div className={styles.queueToggleRow}>
+        <label
+          htmlFor="queue-waiting-enabled"
+          className={styles.queueToggleLabel}
+        >
+          <input
+            id="queue-waiting-enabled"
+            type="checkbox"
+            checked={enabled}
+            onChange={(e) => onToggle(e.target.checked)}
+            className={styles.queueCheckbox}
+          />
+          <span>Allow job to be queued</span>
+        </label>
+        <Tooltip
+          placement="top"
+          content={
+            <div className={styles.queueTooltipContent}>
+              If not enough compute resources are currently available, the job
+              will wait in queue until resources become available.
+            </div>
+          }
+        />
+      </div>
+
+      {enabled && (
+        <div className={styles.queueSettings}>
+          <label
+            htmlFor="queue-max-wait-time"
+            className={styles.queueInputLabel}
+          >
+            Maximum waiting time in queue
+          </label>
+          <div className={styles.queueInputRow}>
+            <input
+              id="queue-max-wait-time"
+              type="number"
+              min={1}
+              step={1}
+              value={queueMaxWaitTime ?? ''}
+              onChange={(e) => onChange(e.target.value)}
+              className={`${styles.input} ${styles.inputSmall} ${
+                error ? styles.inputError : ''
+              }`}
+              aria-invalid={Boolean(error)}
+              aria-describedby={
+                error ? 'queue-max-wait-time-error' : 'queue-max-wait-time-help'
+              }
+            />
+            <select
+              value={queueMaxWaitTimeUnit}
+              onChange={(e) =>
+                onUnitChange(e.target.value as QueueWaitTimeUnit)
+              }
+              className={`${styles.input} ${styles.inputSmall} ${styles.queueUnitSelect}`}
+              aria-label="Maximum waiting time unit"
+            >
+              <option value="seconds">Seconds</option>
+              <option value="minutes">Minutes</option>
+              <option value="hours">Hours</option>
+            </select>
+          </div>
+          <p id="queue-max-wait-time-help" className={styles.queueInputHint}>
+            Enter at least 1 {queueMaxWaitTimeUnit.slice(0, -1)}.
+          </p>
+          {error && (
+            <p id="queue-max-wait-time-error" className={styles.queueError}>
+              {error}
+            </p>
+          )}
+        </div>
+      )}
     </div>
   )
 }
@@ -120,6 +229,7 @@ function ResourceRow({
   label,
   unit,
   isFree,
+  isActive,
   freeValues,
   paidValues,
   getLimits,
@@ -181,7 +291,9 @@ function ResourceRow({
   return (
     <div
       key={`${resourceId}-${isFree ? 'free' : 'paid'}`}
-      className={styles.resourceRow}
+      className={`${styles.resourceRow} ${
+        !isActive ? styles.resourceRowInactive : ''
+      }`}
     >
       <div
         className={styles.labelContainer}
@@ -215,6 +327,7 @@ function ResourceRow({
               )
             }
             className={styles.customSlider}
+            disabled={!isActive}
           />
           <div className={styles.sliderLine}></div>
         </div>
@@ -241,6 +354,7 @@ function ResourceRow({
             error ? styles.inputError : ''
           }`}
           placeholder="value..."
+          disabled={!isActive}
         />
         <span className={styles.unit}>{unit}</span>
       </div>
@@ -262,6 +376,7 @@ function ResourceRow({
             className={`${styles.input} ${styles.inputSmall}`}
             placeholder="value..."
             readOnly
+            disabled={!isActive}
             value={fee?.prices?.find((p) => p.id === resourceId)?.price ?? 0}
           />
         </div>
@@ -275,12 +390,14 @@ export default function ConfigureEnvironment({
   setAllResourceValues,
   baseTokenAddress,
   setBaseTokenAddress,
+  showEnvironmentSummary = false,
   stepMode = 'resources'
 }: {
   allResourceValues?: ResourceValueMap
   setAllResourceValues?: React.Dispatch<React.SetStateAction<ResourceValueMap>>
   baseTokenAddress: string
   setBaseTokenAddress: React.Dispatch<React.SetStateAction<string>>
+  showEnvironmentSummary?: boolean
   stepMode?: 'resources' | 'storage'
 }): ReactElement {
   const { values, setFieldValue } = useFormikContext<FormComputeData>()
@@ -288,6 +405,9 @@ export default function ConfigureEnvironment({
   const { escrowFundsByToken } = useProfile()
   const walletClient = useEthersSigner()
   const [symbolMap, setSymbolMap] = useState<Record<string, string>>({})
+  const { queueMaxWaitTime } = values
+  const queueMaxWaitTimeUnit = values.queueMaxWaitTimeUnit || 'minutes'
+  const queueWaitingEnabled = Boolean(values.queueWaitingEnabled)
 
   const gpuAvailable = useMemo(
     () => hasGPUResource(values.computeEnv),
@@ -368,6 +488,12 @@ export default function ConfigureEnvironment({
   )
 
   useEffect(() => {
+    if (!values.computeEnv?.free && mode !== 'paid') {
+      setMode('paid')
+    }
+  }, [mode, values.computeEnv])
+
+  useEffect(() => {
     setFieldValue('mode', mode)
   }, [mode, setFieldValue])
 
@@ -398,40 +524,49 @@ export default function ConfigureEnvironment({
       const envResourceValues = allResourceValues?.[`${envId}_${modeKey}`]
 
       return {
-        cpu: isFree
-          ? envResourceValues?.cpu ?? 0
-          : envResourceValues?.cpu && envResourceValues.cpu > 0
+        cpu: hasStoredResourceValue(envResourceValues?.cpu)
           ? envResourceValues.cpu
-          : env.resources?.find((r) => r.id === 'cpu')?.min ?? 1,
-        ram: isFree
-          ? envResourceValues?.ram ?? 0
-          : envResourceValues?.ram && envResourceValues.ram > 0
+          : getDefaultComputeResourceValue(
+              env,
+              'cpu',
+              isFree,
+              queueWaitingEnabled
+            ),
+        ram: hasStoredResourceValue(envResourceValues?.ram)
           ? envResourceValues.ram
-          : env.resources?.find((r) => r.id === 'ram')?.min ?? 1,
-        disk: isFree
-          ? envResourceValues?.disk ?? 0
-          : envResourceValues?.disk && envResourceValues.disk > 0
+          : getDefaultComputeResourceValue(
+              env,
+              'ram',
+              isFree,
+              queueWaitingEnabled
+            ),
+        disk: hasStoredResourceValue(envResourceValues?.disk)
           ? envResourceValues.disk
-          : env.resources?.find((r) => r.id === 'disk')?.min ?? 0,
-        gpu: isFree
-          ? envResourceValues?.gpu ?? 0
-          : envResourceValues?.gpu && envResourceValues.gpu > 0
+          : getDefaultComputeResourceValue(
+              env,
+              'disk',
+              isFree,
+              queueWaitingEnabled
+            ),
+        gpu: hasStoredResourceValue(envResourceValues?.gpu)
           ? envResourceValues.gpu
-          : (() => {
-              const source = isFree ? env.free?.resources : env.resources
-              const gpuResource = source?.find(
-                (r) => r.type === 'gpu' || r.id?.toLowerCase().includes('gpu')
-              )
-              return gpuResource?.min ?? 0
-            })(),
-        jobDuration: isFree
-          ? envResourceValues?.jobDuration ?? 0
-          : envResourceValues?.jobDuration && envResourceValues.jobDuration > 0
+          : getDefaultComputeResourceValue(
+              env,
+              'gpu',
+              isFree,
+              queueWaitingEnabled
+            ),
+        jobDuration: hasStoredResourceValue(envResourceValues?.jobDuration)
           ? envResourceValues.jobDuration
-          : 1
+          : getDefaultComputeResourceValue(
+              env,
+              'jobDuration',
+              isFree,
+              queueWaitingEnabled
+            )
       }
     },
-    [values.computeEnv, allResourceValues]
+    [values.computeEnv, allResourceValues, queueWaitingEnabled]
   )
 
   const [freeValues, setFreeValues] = useState<ResourceValues>(() =>
@@ -451,42 +586,12 @@ export default function ConfigureEnvironment({
     new Decimal(v).toDecimalPlaces(3, Decimal.ROUND_UP).toNumber()
 
   const getLimits = (id: string, isFree: boolean) => {
-    const env = values.computeEnv
-    if (!env) return { minValue: 0, maxValue: 0 }
-
-    if (id === 'jobDuration') {
-      const maxDuration = isFree ? env.free?.maxJobDuration : env.maxJobDuration
-      return {
-        minValue: 1,
-        maxValue: Math.floor((maxDuration ?? 3600) / 60),
-        step: 1
-      }
-    }
-
-    const resourceLimits = isFree ? env.free?.resources : env.resources
-    if (!resourceLimits) return { minValue: 0, maxValue: 0 }
-
-    let resource
-    if (id === 'gpu') {
-      resource = resourceLimits.find(
-        (r) => r.type === 'gpu' || r.id?.toLowerCase().includes('gpu')
-      )
-    } else {
-      resource = resourceLimits.find((r) => r.id === id)
-    }
-
-    if (!resource) return { minValue: 0, maxValue: 0 }
-
-    const available = Math.max(
-      0,
-      ((resource.max || resource.total) ?? 0) - (resource.inUse ?? 0)
+    return getComputeResourceLimits(
+      values.computeEnv,
+      id as ResourceValueKey,
+      isFree,
+      queueWaitingEnabled
     )
-
-    return {
-      minValue: resource.min ?? 0,
-      maxValue: available,
-      step: id === 'ram' || id === 'disk' ? 0.1 : 1
-    }
   }
 
   const calculatePrice = useCallback(() => {
@@ -661,49 +766,39 @@ export default function ConfigureEnvironment({
     const paidEnvValues = getEnvResourceValues(false)
 
     const freeRaw = {
-      cpu:
-        freeExistingValues?.cpu && freeExistingValues.cpu > 0
-          ? freeExistingValues.cpu
-          : freeEnvValues.cpu,
-      ram:
-        freeExistingValues?.ram && freeExistingValues.ram > 0
-          ? freeExistingValues.ram
-          : freeEnvValues.ram,
-      disk:
-        freeExistingValues?.disk && freeExistingValues.disk > 0
-          ? freeExistingValues.disk
-          : freeEnvValues.disk,
-      gpu:
-        freeExistingValues?.gpu && freeExistingValues.gpu > 0
-          ? freeExistingValues.gpu
-          : freeEnvValues.gpu,
-      jobDuration:
-        freeExistingValues?.jobDuration && freeExistingValues.jobDuration > 0
-          ? freeExistingValues.jobDuration
-          : freeEnvValues.jobDuration
+      cpu: hasStoredResourceValue(freeExistingValues?.cpu)
+        ? freeExistingValues.cpu
+        : freeEnvValues.cpu,
+      ram: hasStoredResourceValue(freeExistingValues?.ram)
+        ? freeExistingValues.ram
+        : freeEnvValues.ram,
+      disk: hasStoredResourceValue(freeExistingValues?.disk)
+        ? freeExistingValues.disk
+        : freeEnvValues.disk,
+      gpu: hasStoredResourceValue(freeExistingValues?.gpu)
+        ? freeExistingValues.gpu
+        : freeEnvValues.gpu,
+      jobDuration: hasStoredResourceValue(freeExistingValues?.jobDuration)
+        ? freeExistingValues.jobDuration
+        : freeEnvValues.jobDuration
     }
 
     const paidRaw = {
-      cpu:
-        paidExistingValues?.cpu && paidExistingValues.cpu > 0
-          ? paidExistingValues.cpu
-          : paidEnvValues.cpu,
-      ram:
-        paidExistingValues?.ram && paidExistingValues.ram > 0
-          ? paidExistingValues.ram
-          : paidEnvValues.ram,
-      disk:
-        paidExistingValues?.disk && paidExistingValues.disk > 0
-          ? paidExistingValues.disk
-          : paidEnvValues.disk,
-      gpu:
-        paidExistingValues?.gpu && paidExistingValues.gpu > 0
-          ? paidExistingValues.gpu
-          : paidEnvValues.gpu,
-      jobDuration:
-        paidExistingValues?.jobDuration && paidExistingValues.jobDuration > 0
-          ? paidExistingValues.jobDuration
-          : paidEnvValues.jobDuration
+      cpu: hasStoredResourceValue(paidExistingValues?.cpu)
+        ? paidExistingValues.cpu
+        : paidEnvValues.cpu,
+      ram: hasStoredResourceValue(paidExistingValues?.ram)
+        ? paidExistingValues.ram
+        : paidEnvValues.ram,
+      disk: hasStoredResourceValue(paidExistingValues?.disk)
+        ? paidExistingValues.disk
+        : paidEnvValues.disk,
+      gpu: hasStoredResourceValue(paidExistingValues?.gpu)
+        ? paidExistingValues.gpu
+        : paidEnvValues.gpu,
+      jobDuration: hasStoredResourceValue(paidExistingValues?.jobDuration)
+        ? paidExistingValues.jobDuration
+        : paidEnvValues.jobDuration
     }
 
     const freeLimits = {
@@ -755,6 +850,13 @@ export default function ConfigureEnvironment({
     })
   }, [values.computeEnv, allResourceValues, getEnvResourceValues])
 
+  const resetCurrentStorageStepCompletion = useCallback(() => {
+    const currentStep = values.user.stepCurrent
+    if (currentStep <= LAST_TRACKED_COMPLETION_STEP) {
+      setFieldValue(`step${currentStep}Completed`, false)
+    }
+  }, [setFieldValue, values.user.stepCurrent])
+
   if (stepMode === 'storage') {
     return (
       <div className={`${styles.container} ${styles.storageContainer}`}>
@@ -763,14 +865,20 @@ export default function ConfigureEnvironment({
           <SectionRadioOption
             id="store-on-node"
             checked={!values.outputStorageEnabled}
-            onChange={() => setFieldValue('outputStorageEnabled', false)}
+            onChange={() => {
+              resetCurrentStorageStepCompletion()
+              setFieldValue('outputStorageEnabled', false)
+            }}
             label="Store the job results on the node"
           />
 
           <SectionRadioOption
             id="store-on-remote"
             checked={Boolean(values.outputStorageEnabled)}
-            onChange={() => setFieldValue('outputStorageEnabled', true)}
+            onChange={() => {
+              resetCurrentStorageStepCompletion()
+              setFieldValue('outputStorageEnabled', true)
+            }}
             label="Store the job results on node and on a remote storage"
           />
         </div>
@@ -819,7 +927,7 @@ export default function ConfigureEnvironment({
     const validatedValue = clamp(Number(value), minValue, maxValue)
 
     const adjustedValue =
-      step && (type === 'ram' || type === 'disk' || type === 'gpu')
+      step && type === 'disk'
         ? Number(validatedValue.toFixed(1))
         : Math.floor(validatedValue)
 
@@ -851,9 +959,139 @@ export default function ConfigureEnvironment({
     return freeResource?.description
   }
 
+  const formatLimitValue = (value: number): string =>
+    Number.isInteger(value) ? value.toString() : value.toFixed(1)
+
+  const formatLimitRange = (
+    id: ResourceValueKey,
+    unit: string,
+    isFree: boolean
+  ): string => {
+    const { minValue, maxValue } = getLimits(id, isFree)
+    return `${formatLimitValue(minValue)} - ${formatLimitValue(
+      maxValue
+    )} ${unit}`
+  }
+
+  const environmentTechnicalRows = [
+    {
+      label: 'CPU',
+      freeValue: freeAvailable ? formatLimitRange('cpu', 'units', true) : null,
+      paidValue: formatLimitRange('cpu', 'units', false)
+    },
+    ...(gpuAvailable
+      ? [
+          {
+            label: 'GPU',
+            freeValue: freeAvailable
+              ? formatLimitRange('gpu', 'units', true)
+              : null,
+            paidValue: formatLimitRange('gpu', 'units', false)
+          }
+        ]
+      : []),
+    {
+      label: 'RAM',
+      freeValue: freeAvailable ? formatLimitRange('ram', 'GB', true) : null,
+      paidValue: formatLimitRange('ram', 'GB', false)
+    },
+    {
+      label: 'DISK',
+      freeValue: freeAvailable ? formatLimitRange('disk', 'GB', true) : null,
+      paidValue: formatLimitRange('disk', 'GB', false)
+    },
+    {
+      label: 'JOB DURATION',
+      freeValue: freeAvailable
+        ? formatLimitRange('jobDuration', 'min', true)
+        : null,
+      paidValue: formatLimitRange('jobDuration', 'min', false)
+    }
+  ]
+
+  const queueWaitTimeError = !queueWaitingEnabled
+    ? undefined
+    : queueMaxWaitTime === null || queueMaxWaitTime === undefined
+    ? 'Enter a maximum waiting time.'
+    : !Number.isFinite(Number(queueMaxWaitTime))
+    ? 'Enter a valid waiting time.'
+    : Number(queueMaxWaitTime) < 1
+    ? 'Maximum waiting time must be at least 1.'
+    : undefined
+
+  const queueWaitTimeLabel =
+    queueWaitingEnabled && !queueWaitTimeError && queueMaxWaitTime
+      ? `${queueMaxWaitTime} ${queueMaxWaitTimeUnit}`
+      : 'the configured queue max wait time'
+
   return (
     <div className={styles.container}>
       <StepTitle title="C2D Environment Configuration" />
+
+      {showEnvironmentSummary && (
+        <details className={styles.environmentSummaryCard}>
+          <summary className={styles.environmentSummaryToggle}>
+            <div className={styles.environmentSummaryHeading}>
+              <span className={styles.environmentSummaryEyebrow}>
+                Selected environment
+              </span>
+              <div className={styles.environmentSummaryContent}>
+                <h3 className={styles.environmentSummaryTitle} title={env.id}>
+                  {truncateDid(env.id)}
+                </h3>
+                {env.description && (
+                  <p
+                    className={styles.environmentSummaryDescription}
+                    title={env.description}
+                  >
+                    {env.description}
+                  </p>
+                )}
+              </div>
+            </div>
+            <span className={styles.environmentSummaryAction}>
+              More details
+            </span>
+          </summary>
+
+          <div className={styles.environmentSummaryDetails}>
+            <div className={styles.environmentDetailsTable}>
+              <div className={styles.environmentDetailsTableHeader}>
+                <span className={styles.environmentDetailsTableLabel}>
+                  Resource
+                </span>
+                {freeAvailable && (
+                  <span className={styles.environmentDetailsTableLabel}>
+                    Free
+                  </span>
+                )}
+                <span className={styles.environmentDetailsTableLabel}>
+                  Paid
+                </span>
+              </div>
+
+              {environmentTechnicalRows.map((row) => (
+                <div
+                  key={row.label}
+                  className={styles.environmentDetailsTableRow}
+                >
+                  <span className={styles.environmentDetailLabel}>
+                    {row.label}
+                  </span>
+                  {freeAvailable && (
+                    <span className={styles.environmentDetailValue}>
+                      {row.freeValue}
+                    </span>
+                  )}
+                  <span className={styles.environmentDetailValue}>
+                    {row.paidValue}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </details>
+      )}
 
       <Field
         label="Price Token"
@@ -878,6 +1116,31 @@ export default function ConfigureEnvironment({
         disabled={isTokenListLoading}
       />
 
+      <QueueWaitSection
+        enabled={queueWaitingEnabled}
+        queueMaxWaitTime={queueMaxWaitTime}
+        queueMaxWaitTimeUnit={queueMaxWaitTimeUnit}
+        error={queueWaitTimeError}
+        onToggle={(checked) => {
+          setFieldValue('queueWaitingEnabled', checked)
+          if (checked && (!queueMaxWaitTime || Number(queueMaxWaitTime) < 1)) {
+            setFieldValue('queueMaxWaitTime', 1)
+            setFieldValue('queueMaxWaitTimeUnit', 'minutes')
+          }
+        }}
+        onChange={(value) => {
+          const parsedValue = value === '' ? null : Number(value)
+          const normalizedValue =
+            parsedValue === null || Number.isFinite(parsedValue)
+              ? parsedValue
+              : null
+          setFieldValue('queueMaxWaitTime', normalizedValue)
+        }}
+        onUnitChange={(value) => {
+          setFieldValue('queueMaxWaitTimeUnit', value)
+        }}
+      />
+
       {freeAvailable && (
         <div className={styles.resourceSection}>
           <SectionRadioOption
@@ -893,6 +1156,7 @@ export default function ConfigureEnvironment({
               label="CPU"
               unit="Units"
               isFree={true}
+              isActive={mode === 'free'}
               freeValues={freeValues}
               paidValues={paidValues}
               getLimits={getLimits}
@@ -906,6 +1170,7 @@ export default function ConfigureEnvironment({
                 label="GPU"
                 unit="Units"
                 isFree={true}
+                isActive={mode === 'free'}
                 freeValues={freeValues}
                 paidValues={paidValues}
                 getLimits={getLimits}
@@ -919,6 +1184,7 @@ export default function ConfigureEnvironment({
               label="RAM"
               unit="GB"
               isFree={true}
+              isActive={mode === 'free'}
               freeValues={freeValues}
               paidValues={paidValues}
               getLimits={getLimits}
@@ -930,6 +1196,7 @@ export default function ConfigureEnvironment({
               label="DISK"
               unit="GB"
               isFree={true}
+              isActive={mode === 'free'}
               freeValues={freeValues}
               paidValues={paidValues}
               getLimits={getLimits}
@@ -941,6 +1208,7 @@ export default function ConfigureEnvironment({
               label="JOB DURATION"
               unit="Minutes"
               isFree={true}
+              isActive={mode === 'free'}
               freeValues={freeValues}
               paidValues={paidValues}
               getLimits={getLimits}
@@ -965,6 +1233,7 @@ export default function ConfigureEnvironment({
             label="CPU"
             unit="Units"
             isFree={false}
+            isActive={mode === 'paid'}
             freeValues={freeValues}
             paidValues={paidValues}
             getLimits={getLimits}
@@ -978,6 +1247,7 @@ export default function ConfigureEnvironment({
               label="GPU"
               unit="Units"
               isFree={false}
+              isActive={mode === 'paid'}
               freeValues={freeValues}
               paidValues={paidValues}
               getLimits={getLimits}
@@ -991,6 +1261,7 @@ export default function ConfigureEnvironment({
             label="RAM"
             unit="GB"
             isFree={false}
+            isActive={mode === 'paid'}
             freeValues={freeValues}
             paidValues={paidValues}
             getLimits={getLimits}
@@ -1002,6 +1273,7 @@ export default function ConfigureEnvironment({
             label="DISK"
             unit="GB"
             isFree={false}
+            isActive={mode === 'paid'}
             freeValues={freeValues}
             paidValues={paidValues}
             getLimits={getLimits}
@@ -1013,6 +1285,7 @@ export default function ConfigureEnvironment({
             label="JOB DURATION"
             unit="Minutes"
             isFree={false}
+            isActive={mode === 'paid'}
             freeValues={freeValues}
             paidValues={paidValues}
             getLimits={getLimits}
@@ -1032,22 +1305,34 @@ export default function ConfigureEnvironment({
             className={`${styles.input} ${styles.inputLarge}`}
             placeholder="0"
           />
-          <div className={styles.priceInfo}>
-            <span>
-              Calculated based on the unit price for each resource and the Job
-              duration selected
-            </span>
-          </div>
+          {mode === 'paid' && (
+            <div className={styles.priceInfo}>
+              <span>
+                Calculated based on the unit price for each resource and the Job
+                duration selected
+              </span>
+            </div>
+          )}
         </div>
       </div>
 
-      {(isGpuSelected || mode === 'paid') && (
+      {(queueWaitingEnabled || isGpuSelected || mode === 'paid') && (
         <div className={styles.messagesContainer}>
+          {queueWaitingEnabled && (
+            <div className={styles.queueNotice}>
+              The C2D job is placed in a waiting queue until adequate processing
+              resources are allocated, with a maximum wait duration of{' '}
+              {queueWaitTimeLabel}. Ensure that, upon expiration of this
+              interval, your access entitlements for all job-related assets
+              remain valid.
+            </div>
+          )}
+
           {isGpuSelected && (
             <div className={styles.gpuWarning}>
               <div className={styles.gpuWarningIcon}>⚠️</div>
               <div className={styles.gpuWarningContent}>
-                <strong>Please Attention!.</strong> You selected an environment
+                <strong>Please Attention!</strong> You selected an environment
                 with allocated GPU units. Ensure the GPU type is compatible with
                 the GPU libraries used in the algorithm`s Docker image.
               </div>
@@ -1067,7 +1352,9 @@ export default function ConfigureEnvironment({
                         .toDecimalPlaces(3, Decimal.ROUND_UP)
                         .toFixed(3)
                   return (
-                    <div className={styles.insufficientEscrow}>
+                    <div
+                      className={`${styles.queueNotice} ${styles.insufficientEscrow}`}
+                    >
                       <p>
                         Insufficient escrow balance. An additional{' '}
                         <strong>

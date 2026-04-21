@@ -34,6 +34,7 @@ type InitializeParams = {
   algoIndex: number
   paymentTokenAddress: string
   computeOutput?: ComputeOutput
+  queueMaxWaitTime?: number
   algoParams?: Record<string, any>
   datasetParams?: Record<string, any>
   accountId?: string
@@ -130,6 +131,18 @@ export function useComputeInitialization({
   const [initError, setInitError] = useState<string>()
   const lastEscrowDepositKey = useRef<string | null>(null)
 
+  const resetInitializationState = useCallback(() => {
+    setInitializedProviderResponse(undefined)
+    setDatasetProviderFee(null)
+    setAlgorithmProviderFee(null)
+    setDatasetProviderFees([])
+    setAlgorithmProviderFees(null)
+    setExtraFeesLoaded(false)
+    setIsInitLoading(false)
+    setInitError(undefined)
+    lastEscrowDepositKey.current = null
+  }, [])
+
   const initializePricingAndProvider = useCallback(
     async ({
       datasetsForProvider,
@@ -143,6 +156,7 @@ export function useComputeInitialization({
       algoIndex,
       paymentTokenAddress,
       computeOutput,
+      queueMaxWaitTime,
       algoParams,
       datasetParams,
       accountId,
@@ -162,6 +176,7 @@ export function useComputeInitialization({
           algoIndex,
           paymentTokenAddress,
           computeOutput,
+          queueMaxWaitTime,
           algoParams,
           datasetParams
         )
@@ -317,6 +332,7 @@ export function useComputeInitialization({
 
   return {
     initializePricingAndProvider,
+    resetInitializationState,
     initializedProviderResponse,
     datasetProviderFee,
     algorithmProviderFee,

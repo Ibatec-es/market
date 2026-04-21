@@ -13,7 +13,7 @@ import Decimal from 'decimal.js'
 import MarketMetadataProvider from '@context/MarketMetadata'
 import { WagmiProvider } from 'wagmi'
 import { ConnectKitProvider } from 'connectkit'
-import { connectKitTheme, wagmiConfig } from '@utils/wallet'
+import { connectKitTheme, createWagmiConfig } from '@utils/wallet'
 import { FilterProvider } from '@context/Filter'
 import { SsiWalletProvider } from '@context/SsiWallet'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -23,6 +23,7 @@ import AuthGuard from '@components/Auth/AuthGuard/AuthGuard'
 const queryClient = new QueryClient()
 function MyApp({ Component, pageProps }: AppProps): ReactElement {
   const [mounted, setMounted] = useState(false)
+  const [wagmiConfig] = useState(() => createWagmiConfig())
 
   useEffect(() => {
     setMounted(true)

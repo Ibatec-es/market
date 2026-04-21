@@ -24,7 +24,7 @@ import { Asset } from 'src/@types/Asset'
 import { AssetExtended } from 'src/@types/AssetExtended'
 import { Service } from 'src/@types/ddo/Service'
 import { ResourceType } from 'src/@types/ResourceType'
-import { ComputeFlow, FormComputeData } from './_types'
+import { ComputeFlow, FormComputeData, QueueWaitTimeUnit } from './_types'
 import { AssetSelectionAsset } from '@shared/FormInput/InputElement/AssetSelection'
 import Title from './Title'
 import Navigation from './Navigation'
@@ -33,7 +33,7 @@ import SuccessState from './SuccessState'
 import SectionContainer from '../@shared/SectionContainer/SectionContainer'
 import WizardActions from '@shared/WizardActions'
 import { LoadingState, ErrorState } from './WizardState'
-import { createInitialValues } from './_steps'
+import { createInitialValues, getComputeWizardStepNumbers } from './_steps'
 import { validationSchema } from './_validation'
 import { CredentialDialogProvider } from '../Asset/AssetActions/Compute/CredentialDialogProvider'
 import { useAsset } from '@context/Asset'
@@ -56,6 +56,7 @@ import { useComputeJobs } from './hooks/useComputeJobs'
 import { useComputeSubmission } from './hooks/useComputeSubmission'
 import { getSelectedComputeEnvAndResources } from './hooks/computeEnvSelection'
 import { resetCredentialCache } from './hooks/resetCredentialCache'
+import { resolveVerifierSessionId } from '@utils/verifierSession'
 import { useMarketMetadata } from '@context/MarketMetadata'
 import appConfig from 'app.config.cjs'
 import { ComputeRerunConfig } from '@utils/computeRerun'
@@ -63,6 +64,7 @@ import {
   createComputeOutput,
   getOutputStorageValidationMessage
 } from './outputStorage'
+import { isComputeEnvironmentConfigured } from './stepCompletion'
 
 type ParamValue = string | number | boolean | undefined
 
@@ -214,6 +216,81 @@ function resolveRerunEnvironment(
   return computeEnvs.find((env) => env.id === prefix)
 }
 
+function convertQueueWaitTimeToSeconds(
+  value?: number | null,
+  unit: QueueWaitTimeUnit = 'minutes'
+): number | undefined {
+  if (!Number.isFinite(Number(value)) || Number(value) < 1) return undefined
+
+  const numericValue = Number(value)
+  switch (unit) {
+    case 'hours':
+      return numericValue * 60 * 60
+    case 'minutes':
+      return numericValue * 60
+    case 'seconds':
+    default:
+      return numericValue
+  }
+}
+
+function ReviewExitResetWatcher({
+  currentStep,
+  reviewStep,
+  credentialsVerified,
+  onReset,
+  setFieldValue
+}: {
+  currentStep: number
+  reviewStep: number
+  credentialsVerified: boolean
+  onReset: () => void
+  setFieldValue: (
+    field: string,
+    value: unknown,
+    shouldValidate?: boolean
+  ) => void
+}): null {
+  const previousStep = useRef<number>()
+
+  useEffect(() => {
+    if (previousStep.current === undefined) {
+      previousStep.current = currentStep
+      return
+    }
+
+    const leftReviewStep =
+      previousStep.current === reviewStep && currentStep !== reviewStep
+
+    previousStep.current = currentStep
+
+    if (!leftReviewStep) return
+
+    if (credentialsVerified) {
+      setFieldValue('credentialsVerified', false, false)
+    }
+
+    onReset()
+  }, [currentStep, reviewStep, credentialsVerified, onReset, setFieldValue])
+
+  return null
+}
+
+function ComputeEnvironmentLoadWatcher({
+  shouldLoad,
+  onLoad
+}: {
+  shouldLoad: boolean
+  onLoad: () => void
+}): null {
+  useEffect(() => {
+    if (!shouldLoad) return
+    onLoad()
+  }, [shouldLoad, onLoad])
+
+  return null
+}
+
 export default function ComputeWizardController({
   accountId,
   signer,
@@ -252,9 +329,12 @@ export default function ComputeWizardController({
 
     const rerunDatasets = rerunConfig.datasets || []
     const withoutDataset = rerunDatasets.length === 0
+    const stepNumbers = getComputeWizardStepNumbers(
+      Boolean(service.consumerParameters?.length),
+      withoutDataset
+    )
     const { datasetPairs, datasets } =
       buildRerunDatasetsFromConfig(rerunDatasets)
-    const stepCurrent = withoutDataset ? 3 : 5
 
     return {
       ...baseInitialFormValues,
@@ -263,7 +343,7 @@ export default function ComputeWizardController({
       datasets,
       user: {
         ...baseInitialFormValues.user,
-        stepCurrent
+        stepCurrent: stepNumbers.selectEnvironment
       },
       serviceSelected: !withoutDataset,
       step1Completed: true,
@@ -271,7 +351,7 @@ export default function ComputeWizardController({
       step3Completed: true,
       step4Completed: true
     }
-  }, [baseInitialFormValues, isAlgorithmFlow, rerunConfig])
+  }, [baseInitialFormValues, isAlgorithmFlow, rerunConfig, service])
   const formikRef = useRef<FormikProps<FormComputeData>>(null)
   const hasAppliedRerunConfigRef = useRef(false)
   const tokenSymbolMap = useMemo(() => {
@@ -312,12 +392,17 @@ export default function ComputeWizardController({
 
   const [isConsumablePrice, setIsConsumablePrice] = useState(true)
   const [providerFeesSymbol, setProviderFeesSymbol] = useState('')
+  const [shouldLoadComputeEnvs, setShouldLoadComputeEnvs] = useState(
+    Boolean(rerunConfig)
+  )
   const { computeEnvs, computeEnvsError } = useComputeEnvironments({
     serviceEndpoint: service?.serviceEndpoint,
-    chainId: asset.credentialSubject?.chainId
+    chainId: asset.credentialSubject?.chainId,
+    enabled: shouldLoadComputeEnvs || Boolean(rerunConfig)
   })
   const {
     initializePricingAndProvider,
+    resetInitializationState,
     datasetProviderFee,
     algorithmProviderFee,
     datasetProviderFees,
@@ -338,6 +423,7 @@ export default function ComputeWizardController({
     asset,
     service,
     ownerAddress: address,
+    signer,
     chainIds,
     cancelTokenFactory: newCancelToken
   })
@@ -367,6 +453,13 @@ export default function ComputeWizardController({
     [envId: string]: ResourceType
   }>({})
 
+  const resetComputedFeeState = useCallback(() => {
+    setDatasetOrderPriceAndFees(undefined)
+    setAlgoOrderPriceAndFees(undefined)
+    setIsBalanceSufficient(true)
+    resetInitializationState()
+  }, [resetInitializationState])
+
   useEffect(() => {
     if (!isAlgorithmFlow || !rerunConfig || hasAppliedRerunConfigRef.current)
       return
@@ -377,6 +470,10 @@ export default function ComputeWizardController({
 
     const rerunDatasets = rerunConfig.datasets || []
     const withoutDataset = rerunDatasets.length === 0
+    const stepNumbers = getComputeWizardStepNumbers(
+      Boolean(formik.values.isUserParameters),
+      withoutDataset
+    )
 
     if (!withoutDataset && (!datasetList || datasetList.length === 0)) return
 
@@ -400,7 +497,7 @@ export default function ComputeWizardController({
       formik.setFieldValue('computeEnv', selectedEnvironment)
     }
 
-    formik.setFieldValue('user.stepCurrent', withoutDataset ? 3 : 5)
+    formik.setFieldValue('user.stepCurrent', stepNumbers.selectEnvironment)
 
     hasAppliedRerunConfigRef.current = true
   }, [isAlgorithmFlow, rerunConfig, datasetList, computeEnvs])
@@ -412,8 +509,12 @@ export default function ComputeWizardController({
     if (!computeEnvs || computeEnvs.length === 0) return
 
     const currentStep = Number(formik.values?.user?.stepCurrent || 1)
+    const stepNumbers = getComputeWizardStepNumbers(
+      Boolean(formik.values?.isUserParameters),
+      Boolean(formik.values?.withoutDataset)
+    )
     const hasComputeEnv = Boolean(formik.values?.computeEnv)
-    if (hasComputeEnv || currentStep < 5) return
+    if (hasComputeEnv || currentStep < stepNumbers.selectEnvironment) return
 
     const selectedEnvironment = resolveRerunEnvironment(
       rerunConfig.computeEnv,
@@ -493,6 +594,15 @@ export default function ComputeWizardController({
       setSvcIndex(selectedAlgorithmAsset?.serviceIndex)
     }
   }, [selectedAlgorithmAsset])
+
+  useEffect(() => {
+    setShouldLoadComputeEnvs(Boolean(rerunConfig))
+  }, [rerunConfig, asset?.id, service?.id])
+
+  useEffect(() => {
+    if (!showSuccess) return
+    resetComputedFeeState()
+  }, [showSuccess, resetComputedFeeState])
 
   async function checkAssetDTBalance(algoAsset: AssetExtended | undefined) {
     try {
@@ -576,14 +686,19 @@ export default function ComputeWizardController({
             asset,
             service,
             accessDetails: asset.accessDetails[datasetIndex],
-            sessionId: lookupVerifierSessionId(asset.id, service.id)
+            sessionId: resolveVerifierSessionId(
+              asset.id,
+              service.id,
+              lookupVerifierSessionId(asset.id, service.id)
+            )
           }
         }
       )
 
-      const algoSessionId = lookupVerifierSessionId(
+      const algoSessionId = resolveVerifierSessionId(
         actualAlgorithmAsset.id,
-        actualAlgoService.id
+        actualAlgoService.id,
+        lookupVerifierSessionId(actualAlgorithmAsset.id, actualAlgoService.id)
       )
       const groupedParams = formValues?.updatedGroupedUserParameters
       const algoParams: Record<string, ParamValue> = {}
@@ -631,6 +746,12 @@ export default function ComputeWizardController({
         algoIndex: actualSvcIndex,
         paymentTokenAddress,
         computeOutput: output,
+        queueMaxWaitTime: formValues?.queueWaitingEnabled
+          ? convertQueueWaitTimeToSeconds(
+              formValues.queueMaxWaitTime,
+              formValues.queueMaxWaitTimeUnit
+            )
+          : undefined,
         algoParams,
         datasetParams,
         accountId,
@@ -845,7 +966,13 @@ export default function ComputeWizardController({
         computeServiceEndpoint: service.serviceEndpoint,
         computeOutput: output,
         computeOutputEncryptionKey: encryptionKey,
-        computeOutputStorage: formikValues?.outputStorage
+        computeOutputStorage: formikValues?.outputStorage,
+        queueMaxWaitTime: formikValues?.queueWaitingEnabled
+          ? convertQueueWaitTimeToSeconds(
+              formikValues.queueMaxWaitTime,
+              formikValues.queueMaxWaitTimeUnit
+            )
+          : undefined
         // oceanTokenAddress --- IGNORE ---
       })
 
@@ -911,6 +1038,17 @@ export default function ComputeWizardController({
       )
       if (outputStorageError) {
         toast.error(outputStorageError)
+        return
+      }
+
+      if (
+        values.queueWaitingEnabled &&
+        !convertQueueWaitTimeToSeconds(
+          values.queueMaxWaitTime,
+          values.queueMaxWaitTimeUnit
+        )
+      ) {
+        toast.error('Please enter a valid maximum waiting time.')
         return
       }
 
@@ -1080,8 +1218,20 @@ export default function ComputeWizardController({
         const { values, setFieldValue } = formikContext
 
         const hasUserParamsStep = Boolean(values.isUserParameters)
-        const computeStep = hasUserParamsStep ? 5 : 4
-        const storageStep = computeStep + 2
+        const stepNumbers = getComputeWizardStepNumbers(
+          hasUserParamsStep,
+          Boolean(values.withoutDataset)
+        )
+        const isOnPrimarySelectionStep = values.user.stepCurrent === 1
+        const isOnServiceSelectionStep = values.user.stepCurrent === 2
+        const isOnC2DEnvironmentSelectionStep =
+          values.user.stepCurrent === stepNumbers.selectEnvironment
+        const isOnC2DEnvironmentConfigurationStep =
+          values.user.stepCurrent === stepNumbers.configureEnvironment
+        const isOnUserParametersStep =
+          values.user.stepCurrent === stepNumbers.userParameters
+        const isOnJobResultsStorageStep =
+          values.user.stepCurrent === stepNumbers.jobResultsStorage
         const hasMissingRequiredDefaults =
           Array.isArray(values.userUpdatedParameters) &&
           values.userUpdatedParameters.some((entry) =>
@@ -1101,21 +1251,29 @@ export default function ComputeWizardController({
           values.outputStorage
         )
 
-        const isContinueDisabled = isAlgorithmFlow
-          ? (values.user.stepCurrent === 1 &&
-              !(values.datasets?.length > 0 || values.withoutDataset)) ||
-            (values.user.stepCurrent === 2 &&
-              !(values.serviceSelected || values.withoutDataset)) ||
-            (values.user.stepCurrent === computeStep && !values.computeEnv) ||
-            (values.user.stepCurrent === 4 && hasMissingRequiredDefaults) ||
-            (values.user.stepCurrent === storageStep &&
-              Boolean(outputStorageError))
-          : (values.user.stepCurrent === 1 && !values.algorithm) ||
-            (values.user.stepCurrent === computeStep && !values.computeEnv) ||
-            (values.user.stepCurrent === 2 && !values.serviceSelected) ||
-            (values.user.stepCurrent === 4 && hasMissingRequiredDefaults) ||
-            (values.user.stepCurrent === storageStep &&
-              Boolean(outputStorageError))
+        const isPrimarySelectionIncomplete = isAlgorithmFlow
+          ? !(values.datasets?.length > 0 || values.withoutDataset)
+          : !values.algorithm
+        const isServiceSelectionIncomplete = isAlgorithmFlow
+          ? !(values.serviceSelected || values.withoutDataset)
+          : !values.serviceSelected
+        const isEnvironmentSelectionIncomplete =
+          isOnC2DEnvironmentSelectionStep && !values.computeEnv
+        const isEnvironmentConfigurationIncomplete =
+          isOnC2DEnvironmentConfigurationStep &&
+          !isComputeEnvironmentConfigured(values)
+        const isUserParametersIncomplete =
+          isOnUserParametersStep && hasMissingRequiredDefaults
+        const isJobResultsStorageIncomplete =
+          isOnJobResultsStorageStep && Boolean(outputStorageError)
+
+        const isContinueDisabled =
+          (isOnPrimarySelectionStep && isPrimarySelectionIncomplete) ||
+          (isOnServiceSelectionStep && isServiceSelectionIncomplete) ||
+          isEnvironmentSelectionIncomplete ||
+          isEnvironmentConfigurationIncomplete ||
+          isUserParametersIncomplete ||
+          isJobResultsStorageIncomplete
 
         const selectedAlgoAssetForDisplay = isAlgorithmFlow
           ? asset
@@ -1138,6 +1296,19 @@ export default function ComputeWizardController({
           <div className={styles.containerOuter}>
             <Title flow={flow} asset={asset} service={service} />
             <Form className={styles.form}>
+              <ReviewExitResetWatcher
+                currentStep={values.user.stepCurrent}
+                reviewStep={stepNumbers.review}
+                credentialsVerified={Boolean(values.credentialsVerified)}
+                onReset={resetComputedFeeState}
+                setFieldValue={setFieldValue}
+              />
+              <ComputeEnvironmentLoadWatcher
+                shouldLoad={
+                  values.user.stepCurrent >= stepNumbers.selectEnvironment
+                }
+                onLoad={() => setShouldLoadComputeEnvs(true)}
+              />
               <Navigation flow={flow} />
               <SectionContainer className={styles.container}>
                 {showSuccess ? (

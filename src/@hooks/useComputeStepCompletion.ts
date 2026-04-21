@@ -2,6 +2,7 @@ import { useFormikContext } from 'formik'
 import { FormComputeData } from '@components/ComputeWizard/_types'
 import { getDatasetSteps } from '@components/ComputeWizard/_steps'
 import { getOutputStorageValidationMessage } from '@components/ComputeWizard/outputStorage'
+import { isComputeEnvironmentConfigured } from '@components/ComputeWizard/stepCompletion'
 
 type StepCompletedKey = Extract<keyof FormComputeData, `step${number}Completed`>
 
@@ -14,12 +15,7 @@ export function useComputeStepCompletion() {
   function getSuccessClass(step: number): boolean {
     const stepTitle = steps.find((item) => item.step === step)?.title
     const environmentSelected = Boolean(values.computeEnv)
-    const configSet =
-      Number(values.cpu) > 0 &&
-      Number(values.ram) > 0 &&
-      Number(values.disk) > 0 &&
-      Number(values.gpu) >= 0 &&
-      Number(values.jobDuration) > 0
+    const configSet = isComputeEnvironmentConfigured(values)
     const outputStorageConfigured = !getOutputStorageValidationMessage(
       values.outputStorageEnabled,
       values.outputStorage
@@ -27,6 +23,7 @@ export function useComputeStepCompletion() {
     const agreementsChecked = Boolean(
       values.termsAndConditions && values.acceptPublishingLicense
     )
+    const credentialsVerified = Boolean(values.credentialsVerified)
     const stepKey = `step${step}Completed` as StepCompletedKey
     const explicitStepComplete = Boolean(values[stepKey])
 
@@ -47,7 +44,7 @@ export function useComputeStepCompletion() {
       case 'Select C2D Environment':
         return Boolean(explicitStepComplete || environmentSelected)
       case 'C2D Environment Configuration':
-        return Boolean(explicitStepComplete || configSet)
+        return explicitStepComplete
       case 'Job Results Storage':
         return explicitStepComplete
       case 'Review':
@@ -56,7 +53,8 @@ export function useComputeStepCompletion() {
             (environmentSelected &&
               configSet &&
               outputStorageConfigured &&
-              agreementsChecked)
+              agreementsChecked &&
+              credentialsVerified)
         )
       default:
         return false
