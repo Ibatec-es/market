@@ -158,17 +158,6 @@ const clearOidcStorage = () => {
 const getUserDataFromIdToken = (idToken: string): User => {
   const payload = JSON.parse(atob(idToken.split('.')[1]))
 
-  console.log('========== ID TOKEN PAYLOAD ==========')
-  console.log(payload)
-
-  console.log('ISSUER (MAIN OIDC):', payload.iss)
-  console.log('SUBJECT:', payload.sub)
-  console.log('EMAIL:', payload.email)
-  console.log('USERNAME:', payload.preferred_username || payload.username)
-  console.log('NAME:', payload.name)
-  console.log('AUDIENCE:', payload.aud)
-  console.log('CLAIM KEYS:', Object.keys(payload))
-
   return {
     id: payload.sub,
     email: payload.email,
