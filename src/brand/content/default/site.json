@@ -1,5 +1,6 @@
 {
   "siteTitle": "Agrospai Market",
+  "siteTagline": "Marketplace de datos empresariales. Accede, publica y monetiza datasets con soberanía total.",
   "menu": [
     { "name": "Catálogo", "link": "/search" },
     { "name": "Publicar", "link": "/publish/1" },

@@ -1,0 +1,80 @@
+/* src/brand/components/Landing/ValueProps.module.css */
+
+.section {
+  padding: var(--space-20) 0;
+  background-color: var(--color-bg-secondary);
+}
+
+.inner {
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: 0 var(--container-pad);
+}
+
+.header {
+  text-align: center;
+  margin-bottom: var(--space-12);
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-6);
+}
+
+.card {
+  background-color: var(--color-bg-primary);
+  border: var(--card-border);
+  border-radius: var(--card-radius);
+  padding: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  transition: border-color var(--transition-base);
+}
+
+.card:hover {
+  border-color: var(--color-border-strong);
+}
+
+.icon {
+  font-size: var(--text-2xl);
+  line-height: 1;
+  /* En producción, sustituir emoji por componente de icono SVG */
+}
+
+.cardTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.cardDescription {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  line-height: var(--leading-relaxed);
+  margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}

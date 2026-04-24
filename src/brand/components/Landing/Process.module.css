@@ -1,0 +1,106 @@
+/* src/brand/components/Landing/Process.module.css */
+
+.section {
+  padding: var(--space-20) 0;
+  background-color: var(--color-bg-primary);
+}
+
+.inner {
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: 0 var(--container-pad);
+}
+
+.header {
+  text-align: center;
+  margin-bottom: var(--space-12);
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-8);
+  position: relative;
+}
+
+/* Línea conectora entre pasos — solo desktop */
+.steps::before {
+  content: '';
+  position: absolute;
+  top: 20px; /* Alineado al centro del número */
+  left: calc(50% / 3);
+  right: calc(50% / 3);
+  height: 1px;
+  background-color: var(--color-border);
+  z-index: 0;
+}
+
+.step {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  position: relative;
+  z-index: 1;
+}
+
+.stepNumber {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-bg-primary);
+  border: 2px solid var(--color-action-primary);
+  color: var(--color-action-primary);
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-semibold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.stepTitle {
+  font-family: var(--font-display);
+  font-size: var(--text-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.stepDescription {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  line-height: var(--leading-relaxed);
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .steps {
+    grid-template-columns: 1fr;
+    gap: var(--space-6);
+  }
+
+  .steps::before {
+    display: none;
+  }
+
+  .step {
+    flex-direction: row;
+    align-items: flex-start;
+    gap: var(--space-4);
+  }
+
+  .stepContent {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+}

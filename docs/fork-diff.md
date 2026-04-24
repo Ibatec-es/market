@@ -42,3 +42,13 @@ Mantenerlo actualizado facilita futuros merges con `OceanProtocolEnterprise/mark
 **Motivo:** Permitir personalización de textos, menú y footer por cliente sin editar el site.json base  
 **Riesgo de conflicto en merge:** Medio. Si upstream cambia la estructura del contexto, adaptar la lógica de merge al nuevo patrón.  
 **Acción en merge:** Mantener la lógica de deepMerge. Verificar que `baseSiteContent` sigue siendo el tipo correcto.
+
+## MOD-005 — `src/pages/index.tsx`
+
+**Tipo:** Condicional de renderizado  
+**Cambio:** Si `NEXT_PUBLIC_BRAND_ID` está activo, renderiza `brand/components/Landing` en lugar del `Home` del core  
+**Comportamiento sin brand:** El `Home` del core renderiza normalmente  
+**Comportamiento con brand:** La landing corporativa reemplaza la home  
+**Motivo:** Separar la landing de marca de la implementación demo del core  
+**Riesgo de conflicto en merge:** Medio. Si upstream modifica `pages/index.tsx`, revisar que el condicional sigue aplicándose correctamente sobre la nueva implementación del core.  
+**Acción en merge:** Mantener el bloque condicional. Aplicar cambios del upstream en el bloque `else` (fallback al core).

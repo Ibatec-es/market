@@ -22,6 +22,8 @@ import SsiWalletManager from '@components/Header/SsiWallet/SsiWalletManager'
 import contentPurgatory from '../../../content/purgatory.json'
 import styles from './index.module.css'
 
+const BRAND_ID = process.env.NEXT_PUBLIC_BRAND_ID || 'default'
+
 export default function App({
   children
 }: {
@@ -155,7 +157,7 @@ export default function App({
         <AnnouncementBanner text={siteContent.announcement} />
       )}
 
-      {!isRoot && <Header />}
+      {(!isRoot || BRAND_ID !== '') && <Header />}
 
       <NetworkWarningModal
         chainId={chainId}

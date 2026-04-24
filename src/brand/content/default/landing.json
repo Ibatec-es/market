@@ -1,0 +1,72 @@
+{
+  "hero": {
+    "badge": "Marketplace de datos empresariales",
+    "headline": "Accede, publica y monetiza datos con total soberanía",
+    "subheadline": "Plataforma descentralizada para el intercambio seguro de datasets, APIs y modelos de datos entre empresas.",
+    "ctaPrimary": {
+      "label": "Explorar datasets",
+      "href": "/search"
+    },
+    "ctaSecondary": {
+      "label": "Publicar datos",
+      "href": "/publish"
+    }
+  },
+  "valueProps": {
+    "title": "Por qué Ibatec Market",
+    "items": [
+      {
+        "id": "ownership",
+        "icon": "🔐",
+        "title": "Soberanía de datos",
+        "description": "Controla quién accede a tus datos y en qué condiciones. Sin intermediarios que custodien tu información."
+      },
+      {
+        "id": "interop",
+        "icon": "🔗",
+        "title": "Interoperabilidad",
+        "description": "Compatible con los principales estándares de datos y blockchain. Integra con tus sistemas existentes."
+      },
+      {
+        "id": "monetize",
+        "icon": "💰",
+        "title": "Monetización directa",
+        "description": "Define el precio y las condiciones de acceso a tus datasets. Los ingresos van directamente a tu wallet."
+      },
+      {
+        "id": "audit",
+        "icon": "📋",
+        "title": "Trazabilidad completa",
+        "description": "Registro inmutable de cada acceso y transacción. Cumplimiento normativo sin esfuerzo adicional."
+      }
+    ]
+  },
+  "process": {
+    "title": "Cómo funciona",
+    "steps": [
+      {
+        "number": 1,
+        "title": "Conecta tu wallet",
+        "description": "Usa tu wallet Web3 para identificarte de forma segura. Sin registro, sin contraseñas."
+      },
+      {
+        "number": 2,
+        "title": "Explora o publica",
+        "description": "Navega el catálogo de datasets disponibles o publica los tuyos con tus condiciones de acceso."
+      },
+      {
+        "number": 3,
+        "title": "Accede con confianza",
+        "description": "Las transacciones se ejecutan en blockchain. El acceso a los datos se verifica automáticamente."
+      }
+    ]
+  },
+  "cta": {
+    "headline": "Empieza a trabajar con datos de calidad",
+    "subheadline": "Sin contratos largos. Sin gestión de infraestructura. Solo datos.",
+    "cta": {
+      "label": "Explorar el marketplace",
+      "href": "/search"
+    }
+  }
+}
