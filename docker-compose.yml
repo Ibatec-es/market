@@ -1,7 +1,7 @@
-version: '3.8'
 services:
   ocean-market:
     image: oceanenterprise/market:latest
+    platform: linux/amd64
     container_name: ocean-market
     ports:
       - '8008:8008'
