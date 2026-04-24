@@ -22,18 +22,30 @@
 
 ## Estado de rutas principales
 
-| Ruta     | Estado | Observaciones                                                         |
-| -------- | ------ | --------------------------------------------------------------------- |
-| /        | ERROR  | Runtime SyntaxError: JSON.parse falla en NEXT_PUBLIC_NODE_URI_INDEXED |
-| /search  | ERROR  | Mismo error de inicialización (SyntaxError)                           |
-| /publish | ERROR  | Mismo error de inicialización (SyntaxError)                           |
-| /profile | ERROR  | Mismo error de inicialización (SyntaxError)                           |
-| /terms   | ERROR  | Mismo error de inicialización (SyntaxError)                           |
-| /privacy | ERROR  | Mismo error de inicialización (SyntaxError)                           |
+| Ruta     | Estado | Observaciones                                              |
+| -------- | ------ | ---------------------------------------------------------- |
+| /        | OK     | Cargando correctamente con variables de entorno corregidas |
+| /search  | OK     | Funcionando                                                |
+| /publish | OK     | Funcionando                                                |
+| /profile | OK     | Funcionando                                                |
+| /terms   | OK     | Funcionando                                                |
+| /privacy | OK     | Funcionando                                                |
 
-> [!IMPORTANT]
-> La aplicación no carga correctamente en el navegador debido a un error de sintaxis en la configuración de las variables de entorno. Específicamente, `NEXT_PUBLIC_NODE_URI_INDEXED` en el archivo `.env` tiene un formato JSON inválido (`[https://...]` sin comillas), lo que provoca que `JSON.parse()` falle en `app.config.cjs:171`.
+> [!NOTE]
+> La aplicación carga correctamente tras corregir el formato JSON de `NEXT_PUBLIC_NODE_URI_INDEXED` en el archivo `.env`. Se ha verificado que `JSON.parse()` funciona correctamente ahora.
 
 ## Nota sobre Docker
 
-El comando `docker compose up` falla en arquitecturas ARM64 (Apple Silicon) porque la imagen `oceanenterprise/market:latest` no dispone de manifiesto para `linux/arm64/v8`. Se recomienda el desarrollo local con `npm run start` (que ejecuta `next dev`).
+El comando `docker compose up` funciona en arquitecturas ARM64 (Apple Silicon) tras añadir `platform: linux/amd64` al servicio `ocean-market` en `docker-compose.yml`. Esto permite ejecutar la imagen mediante Rosetta 2.
+
+## Sincronización con upstream
+
+- Fecha de sync: 2026-04-24
+- Último commit del upstream incorporado: `b81f01cd` (Merge pull request #359 from OceanProtocolEnterprise/feat/stage)
+- Commits del upstream no presentes antes del merge: 86
+- Archivos en conflicto resueltos: ninguno (auto-merge en `package-lock.json`)
+- Archivos del core relevantes modificados por upstream:
+  - `src/pages/_app.tsx`
+  - `src/components/Header/` (cambios masivos en Wallet/Details y Menu)
+  - `src/components/Home/Menu/` (SsiWallet movido/eliminado)
+  - `package.json` (actualización de `@oceanprotocol/lib` a v8.0.5)
