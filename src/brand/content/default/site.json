@@ -1,1 +1,33 @@
-{}
+{
+  "siteTitle": "Agrospai Market",
+  "menu": [
+    { "name": "Catálogo", "link": "/search" },
+    { "name": "Publicar", "link": "/publish/1" },
+    { "name": "Portal", "link": "https://agrospai.es", "external": true }
+  ],
+  "footer": {
+    "tagline": "Marketplace de datos para empresas",
+    "social": {
+      "twitter": "https://twitter.com/ibatec",
+      "linkedin": "https://linkedin.com/company/ibatec",
+      "github": "https://github.com/Ibatec-es"
+    },
+    "columns": [
+      {
+        "title": "Producto",
+        "links": [
+          { "label": "Explorar datos", "href": "/search" },
+          { "label": "Publicar dataset", "href": "/publish" }
+        ]
+      },
+      {
+        "title": "Legal",
+        "links": [
+          { "label": "Privacidad", "href": "/privacy" },
+          { "label": "Términos", "href": "/terms" }
+        ]
+      }
+    ],
+    "copyright": "© 2026 Ibatec. Todos los derechos reservados."
+  }
+}

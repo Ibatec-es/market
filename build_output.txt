@@ -1,0 +1,634 @@
+
+> @OceanProtocolEnterprise/market@1.2.0 build
+> npm run pregenerate && next build
+
+
+> @OceanProtocolEnterprise/market@1.2.0 pregenerate
+> bash scripts/pregenerate.sh
+
+ ⚠ The "experimental.esmExternals" option has been modified. experimental.esmExternals is not recommended to be modified as it may disrupt module resolution. It should be removed from your next.config.js.
+   ▲ Next.js 15.5.12
+   - Environments: .env.local, .env
+   - Experiments (use with caution):
+     · esmExternals: "loose"
+
+   Linting and checking validity of types ...
+
+ ⚠ The Next.js plugin was not detected in your ESLint configuration. See https://nextjs.org/docs/app/api-reference/config/eslint#migrating-existing-config
+
+Failed to compile.
+
+./src/@context/Asset.tsx
+161:5  Warning: React Hook useCallback has a missing dependency: 'isDDOWhitelisted'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+190:6  Warning: React Hook useCallback has missing dependencies: 'accountId' and 'newCancelToken'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/@context/MarketMetadata/index.tsx
+134:23  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/@context/Profile/index.tsx
+347:6  Warning: React Hook useEffect has a missing dependency: 'getEscrowFunds'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/@hooks/useBalance.tsx
+71:21  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/@hooks/useCredentials.ts
+15:26  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+16:24  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+20:21  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/@hooks/useEnterpriseFeeCollector.ts
+12:39  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+104:23  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+131:21  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/@hooks/useEthersSigner.ts
+10:51  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/@hooks/useNftFactory.ts
+18:17  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/@hooks/useSessionPersistence.ts
+69:6  Warning: React Hook useEffect has a missing dependency: 'refreshToken'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/@hooks/useTokenApproval.ts
+44:19  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/@types/AssetExtended.ts
+27:16  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+29:14  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/@types/Compute.d.ts
+12:14  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+13:17  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+14:15  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+27:9  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/@types/S3File.ts
+15:18  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/@types/SsiWallet.ts
+33:39  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/@types/aquarius/BaseQueryParams.d.ts
+12:10  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/@types/aquarius/PagedAssets.d.ts
+6:17  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/@types/ddo/AdditionalVerifiableCredentials.ts
+3:9  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/@types/ddo/Credentials.ts
+24:16  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+30:43  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+38:13  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+41:33  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+46:21  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+47:24  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/@utils/accessDetailsAndPricing.ts
+171:20  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/@utils/aquarius/index.ts
+273:12  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+276:35  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+409:43  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+427:32  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+428:38  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+441:36  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+466:15  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+468:32  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+475:33  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+588:43  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+700:47  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+732:72  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+892:35  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/@utils/assetConverter.ts
+154:12  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+156:24  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+192:46  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+210:21  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+243:27  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/@utils/compute.ts
+225:3  Warning: '_cancelToken' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/@utils/ddo.ts
+108:11  Warning: 'FileExtended' is defined but never used.  @typescript-eslint/no-unused-vars
+120:3  Warning: '_chainId' is defined but never used.  @typescript-eslint/no-unused-vars
+131:26  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/@utils/getBaseTokenSymbol.ts
+16:62  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/@utils/index.ts
+21:32  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+25:49  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/@utils/ipfs.ts
+16:9  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+52:42  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/@utils/markdownPages.tsx
+14:33  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+54:24  Warning: Found readFileSync from package "fs" with non literal argument at index 0  security/detect-non-literal-fs-filename
+55:21  Warning: Found statSync from package "fs" with non literal argument at index 0  security/detect-non-literal-fs-filename
+68:17  Warning: Found readdirSync from package "fs" with non literal argument at index 0  security/detect-non-literal-fs-filename
+
+./src/@utils/nft.ts
+99:19  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+108:3  Warning: 'signal' is defined but never used.  @typescript-eslint/no-unused-vars
+119:17  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+127:33  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+149:3  Warning: 'signal' is defined but never used.  @typescript-eslint/no-unused-vars
+160:17  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+193:33  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/@utils/ocean/index.ts
+74:57  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/@utils/order.ts
+79:19  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+108:15  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+160:28  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+161:23  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+173:23  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+182:27  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+231:25  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+232:23  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+245:23  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+246:21  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+266:23  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+295:76  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+313:21  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+314:23  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+350:19  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+351:21  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+393:45  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+420:15  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+546:24  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+558:19  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/@utils/provider.ts
+62:31  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+63:34  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+150:10  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+158:37  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+240:23  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+258:23  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+275:23  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+294:23  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+314:23  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+357:21  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/@utils/wallet/index.ts
+108:33  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+114:53  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+147:15  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+190:33  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/@utils/wallet/ssiWallet.ts
+25:40  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+45:43  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+96:19  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+184:12  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+246:27  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/@utils/yup.ts
+20:27  Warning: '_isEdit' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/brand/components/Header/index.tsx
+17:68  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+19:27  Error: Delete `,`  prettier/prettier
+
+./src/components/@shared/AssetListTitle/index.test.tsx
+11:69  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/components/@shared/ConsumerParametersSection/index.tsx
+60:27  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+61:27  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/components/@shared/FormInput/Error.tsx
+8:24  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+15:58  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+16:35  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+20:20  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+22:35  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/components/@shared/FormInput/InputElement/ConsumerParameters/OptionsInput.tsx
+11:45  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/components/@shared/FormInput/InputElement/ConsumerParameters/_validation.ts
+3:3  Warning: 'FormPublishData' is defined but never used.  @typescript-eslint/no-unused-vars
+4:3  Warning: 'FormPublishService' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/@shared/FormInput/InputElement/ConsumerParameters/index.tsx
+37:6  Warning: React Hook useEffect has missing dependencies: 'field.value.length' and 'helpers'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/components/@shared/FormInput/InputElement/Datatoken/index.tsx
+27:6  Warning: React Hook useEffect has a missing dependency: 'generateName'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/components/@shared/FormInput/InputElement/EnvironmentSelection/index.tsx
+119:32  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/components/@shared/FormInput/InputElement/FilesInput/Info.tsx
+20:14  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/components/@shared/FormInput/InputElement/FilesInput/index.tsx
+23:14  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+24:44  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+28:69  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+81:6  Warning: React Hook useEffect has missing dependencies: 'field.value' and 'helpers'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+269:23  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+345:21  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+492:38  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+494:41  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+502:69  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+531:40  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+533:46  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+541:42  Warning: 'formikField' is defined but never used.  @typescript-eslint/no-unused-vars
+541:61  Warning: 'meta' is defined but never used.  @typescript-eslint/no-unused-vars
+541:69  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+606:57  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+612:65  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/components/@shared/FormInput/InputElement/KeyValueInput/FormAlignedKeyValue.tsx
+87:6  Warning: React Hook useEffect has missing dependencies: 'field.name' and 'form'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/components/@shared/FormInput/InputElement/KeyValueInput/index.tsx
+88:6  Warning: React Hook useEffect has missing dependencies: 'field.name' and 'form'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/components/@shared/FormInput/InputElement/Nft/index.tsx
+23:6  Warning: React Hook useEffect has a missing dependency: 'refreshNftMetadata'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/components/@shared/FormInput/InputElement/URLInput/index.tsx
+63:33  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+92:6  Warning: React Hook useEffect has missing dependencies: 'checkUrl' and 'storageType'. Either include them or remove the dependency array. If 'setIsButtonDisabled' needs the current value of 'checkUrl', you can also switch to useReducer instead of useState and read 'checkUrl' in the reducer.  react-hooks/exhaustive-deps
+165:56  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+166:32  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+167:68  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+168:32  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/components/@shared/FormInput/InputElement/index.tsx
+145:23  Warning: '_type' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+174:21  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+175:34  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+225:23  Warning: '_type' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/@shared/FormInput/index.tsx
+46:28  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+48:17  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+72:27  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+73:10  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+123:27  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+123:55  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+175:6  Warning: React Hook useEffect has missing dependencies: 'disclaimer', 'disclaimerValues', and 'field?.name'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+212:69  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+213:35  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+214:68  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+215:32  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/components/@shared/Onboarding/Main.tsx
+55:6  Warning: React Hook useEffect has a missing dependency: 'transRef'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/components/@shared/Onboarding/Steps/ConnectAccount.tsx
+14:5  Warning: 'subtitle' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/@shared/Onboarding/Steps/DownloadMetamask.tsx
+13:42  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/components/@shared/Onboarding/Steps/Faucet/Faucet.tsx
+17:38  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+29:19  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+93:55  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+125:19  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+253:46  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+257:41  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/components/@shared/Onboarding/Steps/ImportCustomTokens.tsx
+26:19  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/components/@shared/Onboarding/Steps/SSI/Ssi.tsx
+11:28  Warning: 'body' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/@shared/PolicyEditor/PolicyBlocks/AllowedIssuer.tsx
+15:11  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/components/@shared/PolicyEditor/PolicyBlocks/Custom.tsx
+15:11  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/components/@shared/PolicyEditor/PolicyBlocks/CustomUrl.tsx
+14:11  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/components/@shared/PolicyEditor/index.tsx
+151:6  Warning: React Hook useEffect has missing dependencies: 'credentials' and 'setCredentials'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+187:10  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+200:10  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+356:6  Warning: React Hook useEffect has missing dependencies: 'credentials' and 'setCredentials'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+506:29  Warning: '_vpPolicies' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+621:27  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+626:12  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+631:50  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+639:22  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+651:6  Warning: React Hook useEffect has missing dependencies: 'credentials' and 'setCredentials'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+666:6  Warning: React Hook useEffect has missing dependencies: 'credentials' and 'setCredentials'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+694:6  Warning: React Hook useEffect has a missing dependency: 'credentials'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/components/@shared/PolicyEditor/types.ts
+74:5  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/components/@shared/PolicyEditor/utils.ts
+12:31  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+63:41  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+75:29  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+98:32  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+106:33  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+115:28  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+124:29  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+128:43  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/components/@shared/SSIPoliciesSection/index.tsx
+78:23  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+79:23  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+80:23  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+82:47  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+91:6  Warning: React Hook useEffect has a missing dependency: 'credentials'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+92:5  Warning: React Hook useEffect has a complex expression in the dependency array. Extract it to a separate variable so it can be statically checked.  react-hooks/exhaustive-deps
+92:21  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+93:5  Warning: React Hook useEffect has a complex expression in the dependency array. Extract it to a separate variable so it can be statically checked.  react-hooks/exhaustive-deps
+93:21  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+94:5  Warning: React Hook useEffect has a complex expression in the dependency array. Extract it to a separate variable so it can be statically checked.  react-hooks/exhaustive-deps
+94:21  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+95:5  Warning: React Hook useEffect has a complex expression in the dependency array. Extract it to a separate variable so it can be statically checked.  react-hooks/exhaustive-deps
+95:21  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/components/@shared/WizardActions/index.tsx
+13:27  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/components/@shared/atoms/StatusTag/index.tsx
+19:10  Warning: 'tooltipPosition' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/@shared/atoms/Table/HistoryTable.tsx
+21:26  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+40:16  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+64:20  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/components/@shared/atoms/Table/index.tsx
+12:26  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+35:20  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/components/Asset/AssetActions/CheckCredentials/checkCredentialsAlgo.tsx
+70:22  Warning: '_credentialError' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+72:28  Warning: '_isCheckingCredentials' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+94:6  Warning: React Hook useEffect has a missing dependency: 'setCheckCredentialState'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+241:38  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+243:57  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+247:38  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+338:23  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+355:6  Warning: React Hook useEffect has missing dependencies: 'accountId', 'asset', 'cacheVerifierSessionId', 'cachedCredentials', 'exchangeStateData', 'handleResetWalletCache', 'onError', 'onVerified', 'selectedWallet.id', 'service.id', 'sessionToken.token', 'setCachedCredentials', 'setCheckCredentialState', 'setCredentialError', 'setExchangeStateData', 'setIsCheckingCredentials', 'setRequiredCredentials', 'setShowDidDialog', 'setShowVpDialog', and 'ssiWalletCache'. Either include them or remove the dependency array. If 'onVerified' changes too often, find the parent component that defines it and wrap that definition in useCallback.  react-hooks/exhaustive-deps
+357:65  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/components/Asset/AssetActions/CheckCredentials/errorUtils.ts
+35:34  Warning: Found non-literal argument to RegExp Constructor  security/detect-non-literal-regexp
+
+./src/components/Asset/AssetActions/CheckCredentials/index.tsx
+385:6  Warning: React Hook useEffect has missing dependencies: 'cacheVerifierSessionId', 'cachedCredentials', 'exchangeStateData', 'handleResetWalletCache', 'onError', 'onVerified', 'service', 'setCachedCredentials', and 'ssiWalletCache'. Either include them or remove the dependency array. If 'onVerified' changes too often, find the parent component that defines it and wrap that definition in useCallback.  react-hooks/exhaustive-deps
+
+./src/components/Asset/AssetActions/ConsumerParameters/FormConsumerParameters.tsx
+97:28  Warning: '_paramDefault' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/Asset/AssetActions/ConsumerParameters/index.tsx
+62:37  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/components/Asset/AssetActions/DidSelector/index.tsx
+36:38  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/components/Asset/AssetActions/Download/index.tsx
+352:43  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+483:8  Warning: React Hook useEffect has unnecessary dependencies: 'orderPriceAndFees', 'price.tokenSymbol', and 'tokenInfoProviderFee.symbol'. Either exclude them or remove the dependency array. Outer scope values like 'orderPriceAndFees' aren't valid dependencies because mutating them doesn't re-render the component.  react-hooks/exhaustive-deps
+
+./src/components/Asset/AssetActions/VpSelector/index.tsx
+40:11  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+191:54  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/components/Asset/AssetActions/index.tsx
+75:9  Warning: The 'ethersProvider' conditional could make the dependencies of useEffect Hook (at line 202) change on every render. Move it inside the useEffect callback. Alternatively, wrap the initialization of 'ethersProvider' in its own useMemo() Hook.  react-hooks/exhaustive-deps
+133:76  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+191:67  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+241:6  Warning: React Hook useEffect has a missing dependency: 'service'. Either include it or remove the dependency array. If 'setIsAccountIdWhitelisted' needs the current value of 'service', you can also switch to useReducer instead of useState and read 'service' in the reducer.  react-hooks/exhaustive-deps
+454:35  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+482:33  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/components/Asset/AssetContent/SampleFilesDropdown.tsx
+3:10  Warning: 'IpfsRemoteSource' is defined but never used.  @typescript-eslint/no-unused-vars
+4:10  Warning: 'RemoteObject' is defined but never used.  @typescript-eslint/no-unused-vars
+38:10  Warning: 'getFormattedFileSize' is defined but never used.  @typescript-eslint/no-unused-vars
+43:10  Warning: 'getFormattedFileType' is defined but never used.  @typescript-eslint/no-unused-vars
+48:10  Warning: 'getFileTypePillLabel' is defined but never used.  @typescript-eslint/no-unused-vars
+63:44  Warning: 'key' is defined but never used.  @typescript-eslint/no-unused-vars
+77:49  Warning: 'key' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/Asset/Edit/AddService.tsx
+316:31  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/components/Asset/Edit/DebugEditMetadata.tsx
+82:27  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/components/Asset/Edit/EditMetadata.tsx
+175:31  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+194:39  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/components/Asset/Edit/EditService.tsx
+62:9  Warning: '_publicClient' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+263:31  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/components/Asset/Edit/FormAddService.tsx
+97:35  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/components/Asset/Edit/FormEditComputeService.tsx
+60:37  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+69:18  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+72:18  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+75:18  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/components/Asset/Edit/FormEditService.tsx
+127:35  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/components/Asset/Edit/_constants.ts
+85:38  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+167:25  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+182:63  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+198:10  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+207:35  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+209:45  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+237:14  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+246:12  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+360:48  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+447:14  Warning: 'key' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/Asset/Edit/_validation.ts
+108:28  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+110:28  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+149:42  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+151:13  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+344:41  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/components/Asset/Edit/useEditMetadata.ts
+13:3  Warning: 'createEmptyUrlFileInfo' is defined but never used.  @typescript-eslint/no-unused-vars
+180:17  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+220:6  Warning: React Hook useEffect has a missing dependency: 'updateLicenseDocuments'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+428:16  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/components/ComputeWizard/ComputeWizardController.tsx
+847:6  Warning: React Hook useEffect has a missing dependency: 'tokenSymbolMap'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/components/ComputeWizard/ConfigureEnvironment/index.tsx
+582:6  Warning: React Hook useMemo has missing dependencies: 'freeValues' and 'paidValues'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+642:6  Warning: React Hook useEffect has missing dependencies: 'freeValues' and 'paidValues'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+737:6  Warning: React Hook useEffect has missing dependencies: 'freeValues' and 'paidValues'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+851:6  Warning: React Hook useEffect has a missing dependency: 'getLimits'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/components/ComputeWizard/SelectEnvironment/index.tsx
+113:5  Warning: React Hook useCallback has a missing dependency: 'stepNumbers.jobResultsStorage'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/components/ComputeWizard/SelectServicesStep/index.tsx
+26:20  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+550:33  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+551:37  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+551:62  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/components/ComputeWizard/_types.ts
+44:15  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+45:16  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+46:13  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+60:16  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+74:26  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+75:34  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+85:23  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+86:26  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+87:23  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+88:28  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/components/ComputeWizard/hooks/useComputeInitialization.ts
+38:31  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+39:34  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+114:18  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/components/ComputeWizard/hooks/useComputeJobs.ts
+28:36  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/components/ComputeWizard/hooks/useComputeSubmission.ts
+32:23  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+32:29  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+33:23  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+34:16  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+118:41  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+352:31  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+360:76  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+375:31  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/components/Header/Wallet/Details.tsx
+120:9  Warning: 'storeLogout' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/Header/Wallet/index.tsx
+12:29  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/components/Privacy/CookieModule.tsx
+23:6  Warning: React Hook useEffect has missing dependencies: 'cookieName' and 'setConsentStatus'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/components/Profile/History/ComputeJobs/Details.tsx
+296:24  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+297:21  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+350:40  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+352:46  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+368:42  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+370:48  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/components/Profile/History/ComputeJobs/Results.tsx
+81:33  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+105:21  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/components/Profile/History/ComputeJobs/index.tsx
+31:17  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+157:30  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+158:35  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+174:30  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+175:35  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/components/Profile/History/HistoryData.tsx
+99:7  Warning: 'buildRevenueByToken' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+304:5  Warning: React Hook useCallback has a missing dependency: 'activeChainIds'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+322:6  Warning: React Hook useEffect has missing dependencies: 'activeChainIds.length' and 'filters'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/components/Profile/History/PublishedList.tsx
+74:6  Warning: React Hook useEffect has missing dependencies: 'filters' and 'validatedSupportedChains'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/components/Profile/History/index.tsx
+26:19  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/components/Publish/AccessPolicies/AccessRulesSection/index.tsx
+25:54  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+61:6  Warning: React Hook useEffect has a missing dependency: 'fieldPrefix'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+73:6  Warning: React Hook useEffect has a missing dependency: 'fieldPrefix'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/components/Publish/Actions/index.tsx
+32:26  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/components/Publish/AvailableNetworks/Network.tsx
+16:11  Warning: '_networkNode' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/Publish/Debug/index.tsx
+34:6  Warning: React Hook useEffect has missing dependencies: 'newCancelToken' and 'signer'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/components/Publish/Navigation/index.tsx
+37:6  Warning: React Hook useEffect has a missing dependency: 'handleStepClick'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/components/Publish/Preview/index.tsx
+57:6  Warning: React Hook useEffect has a missing dependency: 'signer'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/components/Publish/Pricing/Fixed.tsx
+11:12  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/components/Publish/Pricing/Free.tsx
+7:54  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/components/Publish/Pricing/Price.tsx
+16:13  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/components/Publish/Services/index.tsx
+3:44  Warning: 'useState' is defined but never used.  @typescript-eslint/no-unused-vars
+106:6  Warning: React Hook useEffect has a missing dependency: 'values.services'. Either include it or remove the dependency array.  react-hooks/exhaustive-deps
+106:7  Warning: React Hook useEffect has a complex expression in the dependency array. Extract it to a separate variable so it can be statically checked.  react-hooks/exhaustive-deps
+
+./src/components/Publish/_types.ts
+49:42  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/components/Publish/_utils.ts
+80:35  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+246:49  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+417:31  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+419:55  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+420:71  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+445:35  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+458:43  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+722:19  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/components/Publish/_validation.ts
+99:20  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+
+./src/components/Search/Filter.tsx
+45:12  Warning: Unexpected any. Specify a different type.  @typescript-eslint/no-explicit-any
+87:9  Warning: 'supportedBlockchainValues' is assigned a value but never used.  @typescript-eslint/no-unused-vars
+100:6  Warning: React Hook useEffect has missing dependencies: 'filters', 'parsedUrl', and 'setFilters'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/components/Search/index.tsx
+1:58  Warning: 'useMemo' is defined but never used.  @typescript-eslint/no-unused-vars
+
+./src/components/Search/sort.tsx
+57:6  Warning: React Hook useEffect has missing dependencies: 'parsedUrl', 'setSort', and 'sort'. Either include them or remove the dependency array.  react-hooks/exhaustive-deps
+
+./src/components/Search/utils.ts
+23:17  Warning: Found non-literal argument to RegExp Constructor  security/detect-non-literal-regexp
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules

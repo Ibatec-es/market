@@ -13,11 +13,11 @@
 
 // --- Header ---
 // Cuando exista src/brand/components/Header/index.tsx, cambiar este import.
-export { default as BrandHeader } from '../components/Header'
+export { default as BrandHeader } from './components/Header'
 // export { default as BrandHeader } from './components/Header'  // ← activar cuando esté listo
 
 // --- Footer ---
-export { default as BrandFooter } from '../components/Footer/Footer'
+export { default as BrandFooter } from './components/Footer'
 // export { default as BrandFooter } from './components/Footer'
 
 // --- Logo ---
