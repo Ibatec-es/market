@@ -36,7 +36,7 @@ function formatProviderLabel(providerUrl: string): string {
   return providerWithoutProtocol.slice(0, 10)
 }
 
-interface FilterStructure {
+export interface FilterStructure {
   id: string
   label: string
   type: string
@@ -66,6 +66,100 @@ export function getInitialFilters(
   )
 
   return initialFilters as Filters
+}
+
+export function useFilterList(showTime?: boolean): FilterStructure[] {
+  const { validatedSupportedChains } = useMarketMetadata()
+  return [
+    {
+      id: 'serviceType',
+      label: 'Service Type',
+      type: 'filterList',
+      options: [
+        { label: 'datasets', value: FilterByTypeOptions.Data },
+        { label: 'algorithms', value: FilterByTypeOptions.Algorithm }
+      ]
+    },
+    {
+      id: 'accessType',
+      label: 'Access Type',
+      type: 'filterList',
+      options: [
+        { label: 'download', value: FilterByAccessOptions.Download },
+        { label: 'compute', value: FilterByAccessOptions.Compute }
+      ]
+    },
+    {
+      id: 'assetState',
+      label: 'Asset State',
+      type: 'filterList',
+      options: [
+        { label: 'Active', value: State.Active },
+        {
+          label: 'TemporaryDisabled',
+          value: State.OrderingIsTemporaryDisabled
+        },
+        { label: 'Unlisted', value: State.Unlisted }
+      ]
+    },
+    ...(validatedSupportedChains.length > 1
+      ? [
+          {
+            id: 'supportedBlockchain',
+            label: 'Blockchain',
+            type: 'filterList',
+            options: validatedSupportedChains.map((chainId: number) => {
+              const network = getNetworkDataById(networkdata, chainId)
+
+              return {
+                label: getNetworkDisplayName(network),
+                value: String(chainId)
+              }
+            })
+          }
+        ]
+      : []),
+    ...(showTime
+      ? [
+          {
+            id: 'filterTime',
+            label: 'Time',
+            type: 'filterList',
+            options: [
+              {
+                label: 'last 3 months',
+                value: FilterByTimeOptions.Last3Months
+              },
+              {
+                label: 'last 6 months',
+                value: FilterByTimeOptions.Last6Months
+              },
+              { label: 'last year', value: FilterByTimeOptions.LastYear }
+            ]
+          }
+        ]
+      : []),
+    ...(Array.isArray(nodeUriIndex) && nodeUriIndex.length > 1
+      ? [
+          {
+            id: 'nodeUriIndex',
+            label: 'Provider URL',
+            type: 'filterList',
+            options: nodeUriIndex.map((nodeUri: string) => ({
+              label: formatProviderLabel(nodeUri),
+              value: nodeUri,
+              title: nodeUri
+            }))
+          }
+        ]
+      : []),
+    ...(Array.isArray(customFilters?.filters) &&
+    customFilters?.filters?.length > 0 &&
+    customFilters?.filters.some((filter) => filter !== undefined)
+      ? // eslint-disable-next-line no-unsafe-optional-chaining
+        customFilters?.filters
+      : [])
+  ]
 }
 
 export default function Filter({
@@ -152,99 +246,7 @@ export default function Filter({
     router.push(urlLocation)
   }
 
-  const filterList: FilterStructure[] = [
-    {
-      id: 'serviceType',
-      label: 'Service Type',
-      type: 'filterList',
-      options: [
-        { label: 'datasets', value: FilterByTypeOptions.Data },
-        { label: 'algorithms', value: FilterByTypeOptions.Algorithm }
-      ]
-    },
-    {
-      id: 'accessType',
-      label: 'Access Type',
-      type: 'filterList',
-      options: [
-        { label: 'download', value: FilterByAccessOptions.Download },
-        { label: 'compute', value: FilterByAccessOptions.Compute }
-      ]
-    },
-    {
-      id: 'assetState',
-      label: 'Asset State',
-      type: 'filterList',
-      options: [
-        { label: 'Active', value: State.Active },
-        // { label: 'EndOfLife', value: State.EndOfLife },
-        // { label: 'Deprecated', value: State.Deprecated },
-        // { label: 'RevokedByPublisher', value: State.RevokedByPublisher },
-        {
-          label: 'TemporaryDisabled',
-          value: State.OrderingIsTemporaryDisabled
-        },
-        { label: 'Unlisted', value: State.Unlisted }
-      ]
-    },
-    ...(validatedSupportedChains.length > 1
-      ? [
-          {
-            id: 'supportedBlockchain',
-            label: 'Blockchain',
-            type: 'filterList',
-            options: validatedSupportedChains.map((chainId: number) => {
-              const network = getNetworkDataById(networkdata, chainId)
-
-              return {
-                label: getNetworkDisplayName(network),
-                value: String(chainId)
-              }
-            })
-          }
-        ]
-      : []),
-    ...(showTime
-      ? [
-          {
-            id: 'filterTime',
-            label: 'Time',
-            type: 'filterList',
-            options: [
-              {
-                label: 'last 3 months',
-                value: FilterByTimeOptions.Last3Months
-              },
-              {
-                label: 'last 6 months',
-                value: FilterByTimeOptions.Last6Months
-              },
-              { label: 'last year', value: FilterByTimeOptions.LastYear }
-            ]
-          }
-        ]
-      : []),
-    ...(Array.isArray(nodeUriIndex) && nodeUriIndex.length > 1
-      ? [
-          {
-            id: 'nodeUriIndex',
-            label: 'Provider URL',
-            type: 'filterList',
-            options: nodeUriIndex.map((nodeUri: string) => ({
-              label: formatProviderLabel(nodeUri),
-              value: nodeUri,
-              title: nodeUri
-            }))
-          }
-        ]
-      : []),
-    ...(Array.isArray(customFilters?.filters) &&
-    customFilters?.filters?.length > 0 &&
-    customFilters?.filters.some((filter) => filter !== undefined)
-      ? // eslint-disable-next-line no-unsafe-optional-chaining
-        customFilters?.filters
-      : [])
-  ]
+  const filterList = useFilterList(showTime)
 
   const styleClasses = cx({
     filterList: true,

@@ -28,7 +28,6 @@ export default function Header({ className }: HeaderProps) {
         <div className={styles.logoArea}>
           <Link href="/" aria-label="Ir a inicio">
             <BrandLogo
-              src="/brand/assets/default/logo.svg"
               alt={siteContent?.siteTitle ?? 'Market'}
               width={120}
               height={32}

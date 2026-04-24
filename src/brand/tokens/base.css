@@ -224,3 +224,603 @@ kbd {
   --transition-colors: color var(--transition-base),
     background-color var(--transition-base), border-color var(--transition-base);
 }
+
+/* ============================================================
+   OVERRIDES PUNTUALES — componentes del core con valores hardcodeados
+   Usar solo cuando el componente no responde a tokens CSS.
+   Cada override está comentado con el componente y propiedad afectada.
+   Ref: docs/token-exceptions.md
+   ============================================================ */
+
+/* --- AssetTeaser (tarjetas de resultados) ---
+   Hardcoded: border-radius: 20px, box-shadow literal, colores de texto fijos
+   Fix: alinear al sistema de tokens (borde, radio, tipografía) */
+[class*='teaser'] [class*='link'],
+[class*='AssetTeaser'] [class*='link'] {
+  border-radius: var(--card-radius) !important;
+  box-shadow: none !important;
+  border: var(--card-border) !important;
+  transition: border-color var(--transition-base) !important;
+}
+
+[class*='teaser'] [class*='link']:hover,
+[class*='AssetTeaser'] [class*='link']:hover {
+  box-shadow: none !important;
+  border-color: var(--border-color) !important;
+}
+
+[class*='teaser'] [class*='title'],
+[class*='AssetTeaser'] [class*='title'] {
+  font-family: var(--font-family-heading) !important;
+  color: var(--font-color-heading) !important;
+  font-size: var(--font-size-base) !important;
+}
+
+[class*='teaser'] [class*='content'] p,
+[class*='AssetTeaser'] [class*='content'] p {
+  font-family: var(--font-family-base) !important;
+  color: var(--font-color-text) !important;
+}
+
+/* --- SearchSection (barra de búsqueda de la vista catálogo) ---
+   Hardcoded: font-family Helvetica, background #fff, box-shadow,
+              color botón #fdd655 / #0a4b70
+   Fix: eliminar sombra, usar fuente y colores corporativos */
+[class*='searchContainer'] {
+  box-shadow: none !important;
+  border: var(--card-border) !important;
+  border-radius: var(--radius-md) !important;
+  background-color: var(--background-content) !important;
+}
+
+[class*='searchContainer'] [class*='search'] {
+  font-family: var(--font-family-base) !important;
+  color: var(--font-color-text) !important;
+  border-radius: var(--radius-md) 0 0 var(--radius-md) !important;
+}
+
+[class*='searchContainer'] [class*='search']::placeholder {
+  font-family: var(--font-family-base) !important;
+  color: var(--font-color-light) !important;
+}
+
+[class*='searchContainer'] [class*='searchButton'] {
+  background-color: var(--color-primary) !important;
+  border-radius: 0 var(--radius-md) var(--radius-md) 0 !important;
+}
+
+[class*='searchContainer'] [class*='searchButton']:hover {
+  background-color: var(--brand-blue-light) !important;
+  box-shadow: none !important;
+}
+
+[class*='searchContainer'] [class*='searchButtonText'] {
+  font-family: var(--font-family-base) !important;
+  color: var(--brand-white) !important;
+}
+
+[class*='searchContainer'] [class*='searchIcon'] {
+  fill: var(--brand-white) !important;
+}
+
+/* --- Search Filter / sidebar ---
+   Fix: usar tokens semánticos corporativos */
+[class*='filterTypeLabel'],
+[class*='sortList'] div h5 {
+  font-family: var(--font-family-heading) !important;
+  color: var(--font-color-text) !important;
+  font-weight: var(--font-weight-semibold) !important;
+}
+
+[class*='filterContainer'] {
+  border-right-color: var(--border-color) !important;
+}
+
+[class*='filterContainer'] > div {
+  border-bottom-color: var(--border-color) !important;
+}
+
+[class*='compactFilterContainer'] {
+  border-color: var(--border-color) !important;
+  border-radius: var(--radius-md) !important;
+}
+
+/* ============================================================
+   VISTA DE DETALLE DE ASSET
+   Hardcoded: border-radius: 20px/10px, box-shadow literal,
+   background: #fff, colores: #303031, #00adb2, #fdd655, #0a4b70
+   ============================================================ */
+
+/* --- AssetContent (contenedor principal del detalle) ---
+   Hardcoded: border-radius 20px, box-shadow, background #fff, color #303031 */
+[class*='AssetContent'] [class*='wrapper'],
+[class*='assetContent'] [class*='wrapper'] {
+  border-radius: var(--card-radius) !important;
+  box-shadow: none !important;
+  background-color: var(--background-content) !important;
+  border: var(--card-border) !important;
+}
+
+[class*='AssetContent'] [class*='assetType'],
+[class*='AssetContent'] [class*='title'],
+[class*='assetContent'] [class*='title'] {
+  color: var(--font-color-heading) !important;
+  font-family: var(--font-family-heading) !important;
+}
+
+/* --- AssetActions / AssetInteractionPanel (panel lateral) ---
+   Hardcoded: border-radius 20px, box-shadow, background #fff */
+[class*='AssetInteractionPanel'],
+[class*='assetInteractionPanel'] {
+  border-radius: var(--card-radius) !important;
+  box-shadow: none !important;
+  background-color: var(--background-content) !important;
+  border: var(--card-border) !important;
+}
+
+/* Panel contenedor de acciones */
+[class*='AssetActions'] [class*='stickyContainer'],
+[class*='assetActions'] [class*='stickyContainer'] {
+  border-radius: var(--card-radius) !important;
+  box-shadow: none !important;
+  background-color: var(--background-content) !important;
+}
+
+/* --- ButtonBuy (botón de compra/acceso) ---
+   Hardcoded: border-radius var(--radius-xl), box-shadow literal */
+[class*='ButtonBuy'] button,
+[class*='buttonBuy'],
+[class*='buyButton'] {
+  border-radius: var(--radius-md) !important;
+  box-shadow: none !important;
+  font-weight: var(--font-weight-semibold) !important;
+}
+
+/* --- ServiceCard (tarjeta de servicios del asset) ---
+   Hardcoded: border-radius 20px, box-shadow, background #fff,
+              color #303031, #00adb2, #fdd655, #0a4b70 */
+[class*='ServiceCard'],
+[class*='serviceCard'] {
+  border-radius: var(--card-radius) !important;
+  box-shadow: none !important;
+  background-color: var(--background-content) !important;
+  border: var(--card-border) !important;
+}
+
+[class*='ServiceCard'] [class*='title'],
+[class*='serviceCard'] [class*='title'],
+[class*='ServiceCard'] [class*='name'],
+[class*='serviceCard'] [class*='name'] {
+  color: var(--font-color-heading) !important;
+  font-family: var(--font-family-heading) !important;
+}
+
+/* Botón "Download sample" / "Try it" en ServiceCard — eliminar color #fdd655 */
+[class*='ServiceCard'] [class*='downloadButton'],
+[class*='serviceCard'] [class*='downloadButton'],
+[class*='ServiceCard'] button[class*='accent'],
+[class*='serviceCard'] button[class*='accent'] {
+  border-radius: var(--radius-md) !important;
+  box-shadow: none !important;
+  background: var(--color-primary) !important;
+  color: var(--brand-white) !important;
+}
+
+/* Tag de tipo de servicio en ServiceCard — eliminar #00adb2 */
+[class*='ServiceCard'] [class*='type'],
+[class*='serviceCard'] [class*='type'],
+[class*='ServiceCard'] [class*='serviceType'],
+[class*='serviceCard'] [class*='serviceType'] {
+  color: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
+  border-radius: var(--radius-sm) !important;
+}
+
+/* --- StatusTag (estado del asset: published, end-of-life, etc.) ---
+   Hardcoded: border #00adb2, border-radius 20px, box-shadow, color #8b5cf6 */
+[class*='StatusTag'],
+[class*='statusTag'] {
+  border-radius: var(--radius-sm) !important;
+  box-shadow: none !important;
+}
+
+/* Tooltip de StatusTag */
+[class*='StatusTag'] [class*='tooltip'],
+[class*='statusTag'] [class*='tooltip'] {
+  border-radius: var(--radius-md) !important;
+  box-shadow: var(--shadow-md) !important;
+}
+
+/* --- AssetTags (tags/categorías del asset) ---
+   Hardcoded: color #4ca3d3, color #303031 */
+[class*='AssetTags'] [class*='tag'],
+[class*='assetTags'] [class*='tag'] {
+  color: var(--color-primary) !important;
+  border-radius: var(--radius-sm) !important;
+}
+
+[class*='AssetTags'] [class*='more'],
+[class*='assetTags'] [class*='more'] {
+  color: var(--font-color-text) !important;
+}
+
+/* --- MetaItem y MetaFull (metadata del asset) ---
+   Hardcoded: color #303031, código con background #1f2937 (dark tooltip) */
+[class*='MetaItem'] [class*='value'],
+[class*='metaItem'] [class*='value'],
+[class*='MetaFull'] [class*='value'],
+[class*='metaFull'] [class*='value'] {
+  color: var(--font-color-text) !important;
+  font-family: var(--font-family-base) !important;
+}
+
+[class*='MetaFull'] [class*='label'],
+[class*='metaFull'] [class*='label'],
+[class*='MetaItem'] [class*='label'],
+[class*='metaItem'] [class*='label'] {
+  color: var(--font-color-light) !important;
+  font-family: var(--font-family-heading) !important;
+  font-weight: var(--font-weight-semibold) !important;
+}
+
+/* Datos en formato monospace dentro del detalle (hashes, DIDs, CIDs) */
+[class*='Asset'] code,
+[class*='asset'] code,
+[class*='MetaFull'] code,
+[class*='metaFull'] code {
+  font-family: var(--font-family-monospace) !important;
+  font-size: 0.75em !important;
+  background-color: var(--background-highlight) !important;
+  border: var(--card-border) !important;
+  border-radius: var(--radius-sm) !important;
+  padding: 0.1em 0.4em !important;
+}
+
+/* Divisores internos en AssetContent */
+[class*='AssetContent'] [class*='divider'],
+[class*='assetContent'] [class*='divider'] {
+  border-bottom-color: var(--border-color) !important;
+}
+
+/* ============================================================
+   FORMULARIOS E INPUTS
+   ============================================================ */
+
+/* --- Input base --- */
+[class*='input'],
+[class*='Input'],
+input[type='text'],
+input[type='number'],
+input[type='email'],
+input[type='url'],
+input[type='password'],
+textarea,
+select {
+  border-radius: var(--radius-md) !important;
+  border: 1px solid var(--color-border) !important;
+  background-color: var(--background-content) !important;
+  color: var(--text-primary) !important;
+  font-family: var(--font-body) !important;
+  font-size: var(--text-sm) !important;
+  height: 40px;
+  padding: 0 var(--space-3) !important;
+  transition: border-color var(--transition-base) !important;
+}
+
+textarea {
+  height: auto !important;
+  padding: var(--space-3) !important;
+  resize: vertical;
+}
+
+/* Focus state — visible y con offset */
+input:focus,
+textarea:focus,
+select:focus,
+[class*='input']:focus,
+[class*='Input']:focus {
+  outline: 2px solid var(--color-primary) !important;
+  outline-offset: 2px !important;
+  border-color: var(--color-primary) !important;
+  box-shadow: none !important;
+}
+
+/* Error state */
+[class*='error'] input,
+[class*='Error'] input,
+input[aria-invalid='true'],
+textarea[aria-invalid='true'] {
+  border-color: var(--brand-error-red) !important;
+}
+
+[class*='errorMessage'],
+[class*='fieldError'],
+[class*='error-message'] {
+  color: var(--brand-error-red) !important;
+  font-size: var(--text-xs) !important;
+  margin-top: var(--space-1) !important;
+}
+
+/* Disabled state */
+input:disabled,
+textarea:disabled,
+select:disabled {
+  opacity: 0.5 !important;
+  cursor: not-allowed !important;
+  background-color: var(--background-highlight) !important;
+}
+
+/* Placeholder */
+input::placeholder,
+textarea::placeholder {
+  color: var(--text-neutral) !important;
+}
+
+/* --- Labels --- */
+/* Los labels deben ser siempre visibles, nunca como placeholder sustituto */
+[class*='label'],
+[class*='Label'],
+label {
+  font-size: var(--text-sm) !important;
+  font-weight: var(--font-weight-medium) !important;
+  color: var(--text-primary) !important;
+  margin-bottom: var(--space-1) !important;
+  display: block !important;
+}
+
+/* --- Select --- */
+select {
+  appearance: none !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2364748b' d='M6 8L1 3h10z'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right var(--space-3) center !important;
+  padding-right: var(--space-8) !important;
+}
+
+/* --- Grupos de campo --- */
+[class*='fieldGroup'],
+[class*='formGroup'],
+[class*='field-group'] {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: var(--space-2) !important;
+  margin-bottom: var(--space-5) !important;
+}
+
+/* --- File upload --- */
+[class*='fileUpload'],
+[class*='FileUpload'],
+[class*='dropzone'],
+[class*='Dropzone'] {
+  border: 2px dashed var(--border-color) !important;
+  border-radius: var(--card-radius) !important;
+  background-color: var(--background-highlight) !important;
+  transition: border-color var(--transition-base) !important;
+}
+
+[class*='fileUpload']:hover,
+[class*='dropzone']:hover {
+  border-color: var(--color-primary) !important;
+  background-color: var(--brand-blue-lighter) !important;
+}
+
+/* --- Pasos del formulario multi-paso (stepper) --- */
+[class*='stepper'],
+[class*='Stepper'],
+[class*='steps'] {
+  gap: var(--space-4) !important;
+}
+
+[class*='step'][class*='active'],
+[class*='Step'][class*='active'] {
+  color: var(--color-primary) !important;
+}
+
+[class*='step'][class*='completed'],
+[class*='Step'][class*='completed'] {
+  color: var(--color-success) !important;
+}
+
+/* ============================================================
+   VISTAS SECUNDARIAS (PERFIL, HISTORIAL, MARKDOWN, MODALES)
+   ============================================================ */
+
+/* --- Perfil de usuario --- */
+/* Override para avatar circular */
+[class*='avatar'],
+[class*='Avatar'] {
+  border-radius: var(--radius-full) !important;
+  border: 2px solid var(--border-color) !important;
+}
+
+/* Tabs corporativos */
+[class*='profileTab'],
+[class*='ProfileTab'],
+[class*='tab'][role='tab'] {
+  font-size: var(--text-sm) !important;
+  font-weight: var(--font-weight-medium) !important;
+  color: var(--text-neutral) !important;
+  border-bottom: 2px solid transparent !important;
+  padding-bottom: var(--space-3) !important;
+  transition: var(--transition-colors) !important;
+}
+
+[class*='tab'][role='tab'][aria-selected='true'],
+[class*='tab--active'],
+[class*='tabActive'] {
+  color: var(--text-primary) !important;
+  border-bottom-color: var(--color-primary) !important;
+}
+
+/* Tabla de assets del usuario */
+[class*='userAssets'],
+[class*='publishedAssets'] {
+  border: var(--card-border) !important;
+  border-radius: var(--card-radius) !important;
+}
+
+/* ============================================================
+   HISTORIAL DE TRANSACCIONES
+   ============================================================ */
+
+/* Tabla de historial */
+[class*='history'],
+[class*='History'],
+[class*='transactions'] {
+  border: var(--card-border) !important;
+  border-radius: var(--card-radius) !important;
+  overflow: hidden !important;
+}
+
+/* Hashes de transacción */
+[class*='txHash'],
+[class*='transactionHash'],
+[class*='tx-hash'] {
+  font-family: var(--font-family-monospace) !important;
+  font-size: var(--text-xs) !important;
+}
+
+/* Badges de estado */
+[class*='statusBadge'][class*='success'],
+[class*='status--completed'] {
+  background-color: color-mix(
+    in srgb,
+    var(--color-success) 15%,
+    transparent
+  ) !important;
+  color: var(--color-success) !important;
+  border-radius: var(--radius-sm) !important;
+}
+
+[class*='statusBadge'][class*='pending'],
+[class*='status--pending'] {
+  background-color: color-mix(
+    in srgb,
+    var(--color-warning) 15%,
+    transparent
+  ) !important;
+  color: var(--color-warning) !important;
+  border-radius: var(--radius-sm) !important;
+}
+
+[class*='statusBadge'][class*='error'],
+[class*='status--failed'] {
+  background-color: color-mix(
+    in srgb,
+    var(--brand-error-red) 15%,
+    transparent
+  ) !important;
+  color: var(--brand-error-red) !important;
+  border-radius: var(--radius-sm) !important;
+}
+
+/* ============================================================
+   CONTENIDO MARKDOWN / PÁGINAS DE CONTENIDO
+   ============================================================ */
+
+[class*='markdownContent'],
+[class*='MarkdownContent'],
+[class*='prose'] {
+  font-family: var(--font-body) !important;
+  font-size: var(--text-base) !important;
+  color: var(--text-primary) !important;
+  line-height: var(--leading-relaxed) !important;
+  max-width: 72ch !important; /* Ancho óptimo de lectura */
+}
+
+[class*='markdownContent'] h1,
+[class*='prose'] h1 {
+  font-family: var(--font-family-heading) !important;
+  font-size: var(--text-3xl) !important;
+  font-weight: var(--font-weight-semibold) !important;
+  margin-bottom: var(--space-6) !important;
+}
+
+[class*='markdownContent'] h2,
+[class*='prose'] h2 {
+  font-family: var(--font-family-heading) !important;
+  font-size: var(--text-xl) !important;
+  font-weight: var(--font-weight-semibold) !important;
+  margin-top: var(--space-10) !important;
+  margin-bottom: var(--space-4) !important;
+}
+
+[class*='markdownContent'] a,
+[class*='prose'] a {
+  color: var(--color-primary) !important;
+  text-decoration: underline !important;
+  text-underline-offset: 2px !important;
+}
+
+[class*='markdownContent'] code,
+[class*='prose'] code {
+  font-family: var(--font-family-monospace) !important;
+  font-size: 0.875em !important;
+  background-color: var(--background-highlight) !important;
+  border: var(--card-border) !important;
+  border-radius: var(--radius-sm) !important;
+  padding: 0.1em 0.3em !important;
+}
+
+/* ============================================================
+   MODALES Y OVERLAYS
+   ============================================================ */
+
+[class*='modal'],
+[class*='Modal'],
+[role='dialog'] {
+  border-radius: var(--card-radius) !important;
+  box-shadow: var(--shadow-lg) !important;
+  border: var(--card-border) !important;
+}
+
+[class*='modalOverlay'],
+[class*='backdrop'] {
+  background-color: rgba(15, 23, 42, 0.6) !important; /* slate-900 al 60% */
+  backdrop-filter: blur(4px) !important;
+}
+
+[class*='modalHeader'],
+[class*='dialogHeader'] {
+  border-bottom: var(--card-border) !important;
+  padding: var(--space-5) var(--space-6) !important;
+}
+
+[class*='modalFooter'],
+[class*='dialogFooter'] {
+  border-top: var(--card-border) !important;
+  padding: var(--space-4) var(--space-6) !important;
+}
+
+/* ============================================================
+   TOASTS / NOTIFICACIONES
+   ============================================================ */
+
+/* Si usa react-toastify u otra librería */
+[class*='Toastify__toast'],
+.Toastify__toast {
+  border-radius: var(--radius-md) !important;
+  font-family: var(--font-body) !important;
+  font-size: var(--text-sm) !important;
+  box-shadow: var(--shadow-md) !important;
+}
+
+.Toastify__toast--success {
+  background-color: color-mix(
+    in srgb,
+    var(--color-success) 10%,
+    white
+  ) !important;
+  color: var(--color-success) !important;
+  border: 1px solid color-mix(in srgb, var(--color-success) 30%, transparent) !important;
+}
+
+.Toastify__toast--error {
+  background-color: color-mix(
+    in srgb,
+    var(--brand-error-red) 10%,
+    white
+  ) !important;
+  color: var(--brand-error-red) !important;
+  border: 1px solid color-mix(in srgb, var(--brand-error-red) 30%, transparent) !important;
+}

@@ -1,0 +1,10 @@
+src/brand/components/Catalog/AssetCard.tsx(18,36): error TS2339: Property 'stats' does not exist on type 'AssetExtended'.
+src/brand/components/Catalog/AssetCard.tsx(20,33): error TS2339: Property 'type' does not exist on type 'AccessDetails[]'.
+src/brand/components/Catalog/AssetCard.tsx(20,67): error TS2339: Property 'price' does not exist on type 'AccessDetails[]'.
+src/brand/components/Catalog/AssetCard.tsx(22,24): error TS2339: Property 'nft' does not exist on type 'AssetExtended'.
+src/brand/components/Catalog/AssetCard.tsx(49,35): error TS2339: Property 'price' does not exist on type 'AccessDetails[]'.
+src/brand/components/Catalog/AssetCard.tsx(49,66): error TS2339: Property 'token' does not exist on type 'AccessDetails[]'.
+src/brand/components/Catalog/AssetCardList.tsx(15,33): error TS2339: Property 'type' does not exist on type 'AccessDetails[]'.
+src/brand/components/Catalog/AssetCardList.tsx(15,67): error TS2339: Property 'price' does not exist on type 'AccessDetails[]'.
+src/brand/components/Catalog/AssetCardList.tsx(46,35): error TS2339: Property 'price' does not exist on type 'AccessDetails[]'.
+src/brand/components/Catalog/AssetCardList.tsx(46,66): error TS2339: Property 'token' does not exist on type 'AccessDetails[]'.

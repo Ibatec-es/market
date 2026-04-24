@@ -29,7 +29,6 @@ export default function Footer() {
           <div className={styles.brand}>
             <Link href="/" aria-label="Ir a inicio">
               <BrandLogo
-                src="/brand/assets/default/logo.svg"
                 alt={siteContent?.siteTitle ?? 'Market'}
                 width={100}
                 height={28}

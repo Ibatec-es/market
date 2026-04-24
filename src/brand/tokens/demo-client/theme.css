@@ -1,0 +1,20 @@
+/*
+  Demo Client — Tema de ejemplo
+  Verde oscuro + blanco roto
+  Para validar que el sistema multi-cliente funciona
+*/
+
+:root {
+  /* Primitivos específicos de este cliente */
+  --primitive-green-800: #166534;
+  --primitive-green-600: #16a34a;
+  --primitive-green-100: #dcfce7;
+  --primitive-green-50: #f0fdf4;
+  --primitive-slate-warm-50: #fafaf9;
+
+  /* Semánticos sobreescritos */
+  --color-bg-primary: var(--primitive-slate-warm-50);
+  --color-action-primary: var(--primitive-green-600);
+  --color-action-primary-hover: var(--primitive-green-800);
+  --color-action-primary-bg: var(--primitive-green-50);
+}

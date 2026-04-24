@@ -1,0 +1,32 @@
+{
+  "siteTitle": "Demo Client Market",
+  "siteTagline": "Marketplace de datos para Demo Corp",
+  "menu": [
+    { "label": "Explorar", "href": "/search" },
+    { "label": "Publicar", "href": "/publish" },
+    { "label": "Acerca de", "href": "/about" }
+  ],
+  "footer": {
+    "tagline": "Soluciones de datos para empresas innovadoras",
+    "social": {
+      "linkedin": "https://linkedin.com/company/demo-client"
+    },
+    "columns": [
+      {
+        "title": "Plataforma",
+        "links": [
+          { "label": "Catálogo", "href": "/search" },
+          { "label": "Publicar dataset", "href": "/publish" }
+        ]
+      },
+      {
+        "title": "Legal",
+        "links": [
+          { "label": "Privacidad", "href": "/privacy" },
+          { "label": "Términos", "href": "/terms" }
+        ]
+      }
+    ],
+    "copyright": "© 2026 Demo Client Corp. Todos los derechos reservados."
+  }
+}

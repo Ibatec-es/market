@@ -12,6 +12,11 @@ import Time from '../atoms/Time'
 import Loader from '../atoms/Loader'
 import { AssetExtended } from 'src/@types/AssetExtended'
 import Alert from '../atoms/Alert'
+import {
+  BrandAssetCard,
+  BrandAssetCardList,
+  getBrandCatalogConfig
+} from '../../../brand/resolver'
 
 const columns: TableOceanColumn<AssetExtended>[] = [
   {
@@ -117,6 +122,10 @@ export default function AssetList({
     onPageChange(selected + 1)
   }
 
+  const BRAND_ID = process.env.NEXT_PUBLIC_BRAND_ID || 'default'
+  const isBrandActive = BRAND_ID !== 'default'
+  const catalogConfig = getBrandCatalogConfig()
+
   const styleClasses = `${styles.assetList} ${className || ''}`
 
   return isLoading ? (
@@ -126,19 +135,50 @@ export default function AssetList({
       <div className={styleClasses}>
         {assets?.length > 0 && assets[0] !== undefined ? (
           <>
-            {activeAssetView === AssetViewOptions.List && (
-              <Table
-                columns={columns}
-                data={assets}
-                pagination={false}
-                paginationPerPage={assets?.length}
-                dense
-              />
-            )}
+            {activeAssetView === AssetViewOptions.List &&
+              (isBrandActive && catalogConfig ? (
+                <div
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: 'var(--space-4)'
+                  }}
+                >
+                  {assets?.map((asset) => {
+                    if (asset?.indexedMetadata && asset?.credentialSubject) {
+                      return (
+                        <BrandAssetCardList
+                          key={asset.id}
+                          asset={asset}
+                          config={catalogConfig.card}
+                        />
+                      )
+                    }
+                    return null
+                  })}
+                </div>
+              ) : (
+                <Table
+                  columns={columns}
+                  data={assets}
+                  pagination={false}
+                  paginationPerPage={assets?.length}
+                  dense
+                />
+              ))}
 
             {activeAssetView === AssetViewOptions.Grid &&
               assets?.map((asset) => {
                 if (asset?.indexedMetadata && asset?.credentialSubject) {
+                  if (isBrandActive && catalogConfig) {
+                    return (
+                      <BrandAssetCard
+                        asset={asset}
+                        key={asset.id}
+                        config={catalogConfig.card}
+                      />
+                    )
+                  }
                   return (
                     <AssetTeaser
                       asset={asset}

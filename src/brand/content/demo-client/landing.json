@@ -1,0 +1,58 @@
+{
+  "hero": {
+    "badge": "Demo Client — Marketplace de datos",
+    "headline": "Tu plataforma de datos empresariales",
+    "subheadline": "Accede a datasets de calidad para impulsar tus decisiones de negocio.",
+    "ctaPrimary": {
+      "label": "Ver catálogo",
+      "href": "/search"
+    }
+  },
+  "valueProps": {
+    "title": "Por qué Demo Client Market",
+    "items": [
+      {
+        "id": "quality",
+        "icon": "✅",
+        "title": "Datos verificados",
+        "description": "Cada dataset pasa por un proceso de validación antes de estar disponible."
+      },
+      {
+        "id": "speed",
+        "icon": "⚡",
+        "title": "Acceso inmediato",
+        "description": "Compra y descarga en segundos. Sin procesos de aprobación manuales."
+      },
+      {
+        "id": "support",
+        "icon": "🤝",
+        "title": "Soporte dedicado",
+        "description": "Equipo especializado disponible para ayudarte a encontrar los datos correctos."
+      }
+    ]
+  },
+  "process": {
+    "title": "Tres pasos para empezar",
+    "steps": [
+      {
+        "number": 1,
+        "title": "Regístrate",
+        "description": "Crea tu cuenta en menos de dos minutos."
+      },
+      {
+        "number": 2,
+        "title": "Explora",
+        "description": "Navega el catálogo y filtra por tu sector."
+      },
+      {
+        "number": 3,
+        "title": "Descarga",
+        "description": "Accede a los datos en el formato que necesitas."
+      }
+    ]
+  },
+  "cta": {
+    "headline": "Empieza a tomar mejores decisiones",
+    "cta": { "label": "Explorar datasets", "href": "/search" }
+  }
+}

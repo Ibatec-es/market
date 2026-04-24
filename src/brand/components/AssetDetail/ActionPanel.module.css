@@ -1,0 +1,137 @@
+.panel {
+  border: var(--card-border);
+  border-radius: var(--card-radius);
+  padding: var(--space-6);
+  background-color: var(--background-content);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.sidebarPanel {
+  position: sticky;
+  top: calc(64px + var(--space-6));
+  width: 300px;
+  flex-shrink: 0;
+}
+
+.priceSection {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.price {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.priceValue {
+  font-family: var(--font-display);
+  font-size: var(--text-2xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--font-color-heading);
+}
+
+.priceToken {
+  font-size: var(--text-sm);
+  color: var(--font-color-text);
+}
+
+.free {
+  font-size: var(--text-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-success);
+}
+
+.priceBreakdown {
+  border-top: var(--card-border);
+  padding-top: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.breakdownRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--text-xs);
+  color: var(--font-color-text);
+}
+
+.btnBuy {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--color-primary);
+  color: var(--background-body);
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  transition: background-color var(--transition-base);
+}
+
+.btnBuy:hover:not(:disabled) {
+  background-color: var(--brand-blue-dark);
+}
+
+.btnBuy:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btnAccess {
+  width: 100%;
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--background-body);
+  color: var(--font-color-heading);
+  border: var(--card-border);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  transition: var(--transition-base);
+}
+
+.btnAccess:hover:not(:disabled) {
+  border-color: var(--border-color);
+  background-color: var(--background-content);
+}
+
+.stat {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-sm);
+  color: var(--font-color-text);
+}
+
+.statValue {
+  font-weight: var(--font-weight-semibold);
+  color: var(--font-color-heading);
+}
+
+.publisher {
+  border-top: var(--card-border);
+  padding-top: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.publisherLabel {
+  font-size: var(--text-xs);
+  color: var(--text-neutral);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.publisherAddress {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--font-color-text);
+}

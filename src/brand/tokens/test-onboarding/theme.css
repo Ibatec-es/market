@@ -1,0 +1,6 @@
+:root {
+  /* Color principal de la marca — ajustar al color corporativo */
+  --color-action-primary: #ef4444;
+  --color-action-primary-hover: #dc2626;
+  --color-action-primary-bg: #fef2f2;
+}

@@ -1,0 +1,119 @@
+.layout {
+  display: flex;
+  gap: var(--space-8);
+  align-items: flex-start;
+  width: 100%;
+}
+
+.results {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: var(--space-3);
+  border-bottom: var(--card-border);
+}
+
+.total {
+  font-size: var(--text-sm);
+  color: var(--font-color-text);
+}
+
+.toolbarActions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(var(--cols-desktop, 3), 1fr);
+  gap: var(--space-5);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.loading {
+  display: grid;
+  grid-template-columns: repeat(var(--cols-desktop, 3), 1fr);
+  gap: var(--space-5);
+}
+
+.skeleton {
+  height: 220px;
+  background: linear-gradient(
+    90deg,
+    var(--background-body) 25%,
+    var(--background-content) 50%,
+    var(--background-body) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: var(--card-radius);
+  border: var(--card-border);
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+.empty {
+  padding: var(--space-16) var(--space-8);
+  text-align: center;
+  color: var(--font-color-text);
+  font-size: var(--text-sm);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.clearBtn {
+  background: none;
+  border: var(--card-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--text-sm);
+  cursor: pointer;
+  color: var(--font-color-heading);
+  transition: var(--transition-base);
+}
+
+.clearBtn:hover {
+  border-color: var(--border-color);
+  background-color: var(--background-body);
+}
+
+@media (max-width: 1024px) {
+  .grid,
+  .loading {
+    grid-template-columns: repeat(var(--cols-tablet, 2), 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .layout {
+    flex-direction: column;
+  }
+
+  .grid,
+  .loading {
+    grid-template-columns: 1fr;
+  }
+}

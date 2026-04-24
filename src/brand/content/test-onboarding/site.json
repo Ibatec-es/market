@@ -1,0 +1,14 @@
+{
+  "siteTitle": "Test Onboarding Market",
+  "siteTagline": "Marketplace de prueba",
+  "menu": [
+    { "label": "Explorar", "href": "/search" },
+    { "label": "Publicar", "href": "/publish" }
+  ],
+  "footer": {
+    "tagline": "Prueba de Onboarding",
+    "social": {},
+    "columns": [],
+    "copyright": "© 2026 Test. Todos los derechos reservados."
+  }
+}

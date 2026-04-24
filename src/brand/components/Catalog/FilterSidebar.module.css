@@ -1,0 +1,115 @@
+.sidebar {
+  width: 240px;
+  flex-shrink: 0;
+  border: var(--card-border);
+  border-radius: var(--card-radius);
+  background-color: var(--background-content);
+  height: fit-content;
+  position: sticky;
+  top: calc(64px + var(--space-6));
+  transition: width var(--transition-base);
+}
+
+.sidebar.collapsed {
+  width: 48px;
+  overflow: hidden;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4) var(--space-4);
+  border-bottom: var(--card-border);
+}
+
+.title {
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--font-color-heading);
+}
+
+.collapseBtn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--font-color-text);
+  font-size: var(--text-base);
+  padding: var(--space-1);
+  line-height: 1;
+}
+
+.groups {
+  padding: var(--space-2) 0;
+}
+
+.group {
+  border-bottom: var(--card-border);
+}
+
+.group:last-child {
+  border-bottom: none;
+}
+
+.groupHeader {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+}
+
+.groupLabel {
+  font-size: var(--text-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--font-color-text);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.groupChevron {
+  color: var(--text-neutral);
+  font-size: var(--text-sm);
+}
+
+.options {
+  padding: 0 var(--space-4) var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: pointer;
+}
+
+.input {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.optionLabel {
+  font-size: var(--text-sm);
+  color: var(--font-color-heading);
+  flex: 1;
+}
+
+.count {
+  font-size: var(--text-xs);
+  color: var(--text-neutral);
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    display: none;
+  }
+}

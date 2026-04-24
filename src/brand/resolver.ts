@@ -21,5 +21,13 @@ export { default as BrandFooter } from './components/Footer'
 // export { default as BrandFooter } from './components/Footer'
 
 // --- Logo ---
-export { default as BrandLogo } from '../components/@shared/atoms/Logo'
-// export { default as BrandLogo } from './components/Logo'
+export { default as BrandLogo } from './components/Logo'
+
+// --- Catalog ---
+export { AssetCard as BrandAssetCard } from './components/Catalog'
+export { AssetCardList as BrandAssetCardList } from './components/Catalog'
+export { getCatalogConfig as getBrandCatalogConfig } from './components/Catalog'
+export { default as BrandCatalogLayout } from './components/Catalog/CatalogLayout'
+
+// --- Asset Detail ---
+export { default as BrandAssetDetail } from './components/AssetDetail'

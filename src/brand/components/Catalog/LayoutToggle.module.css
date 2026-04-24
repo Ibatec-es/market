@@ -1,0 +1,33 @@
+.toggle {
+  display: flex;
+  border: var(--card-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text-neutral);
+  transition: var(--transition-base);
+}
+
+.btn:not(:first-child) {
+  border-left: var(--card-border);
+}
+
+.btn:hover {
+  color: var(--font-color-heading);
+  background-color: var(--background-body);
+}
+
+.btn.active {
+  color: var(--color-primary);
+  background-color: var(--brand-blue-lighter);
+}

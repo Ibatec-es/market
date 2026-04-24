@@ -20,7 +20,7 @@ mkdir -p src/brand/tokens/demo-client
 
 # Assets
 mkdir -p src/brand/assets/demo-client
-mkdir -p public/brand/assets/demo-client
+mkdir -p public/brand/assets/demo-clienta
 
 # Contenido
 mkdir -p src/brand/content/demo-client

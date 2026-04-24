@@ -1,5 +1,24 @@
 import { createRequire } from 'module'
+import fs from 'fs'
+import path from 'path'
+import { fileURLToPath } from 'url'
+
 const require = createRequire(import.meta.url)
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
+
+const BRAND_ID = process.env.NEXT_PUBLIC_BRAND_ID || 'default'
+const themeSource = path.join(
+  __dirname,
+  `src/brand/tokens/${BRAND_ID}/theme.css`
+)
+const themeDest = path.join(__dirname, `src/brand/tokens/active-theme.css`)
+
+if (fs.existsSync(themeSource)) {
+  fs.copyFileSync(themeSource, themeDest)
+} else {
+  fs.writeFileSync(themeDest, '/* No theme override for this brand */')
+}
 
 const nextConfig = () => {
   /**

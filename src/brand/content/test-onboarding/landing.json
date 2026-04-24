@@ -1,0 +1,22 @@
+{
+  "hero": {
+    "headline": "Hero de prueba",
+    "subheadline": "Subheadline de prueba",
+    "ctaPrimary": {
+      "label": "Ver",
+      "href": "/search"
+    }
+  },
+  "valueProps": {
+    "title": "Valor",
+    "items": []
+  },
+  "process": {
+    "title": "Proceso",
+    "steps": []
+  },
+  "cta": {
+    "headline": "Prueba final",
+    "cta": { "label": "Explorar", "href": "/search" }
+  }
+}
