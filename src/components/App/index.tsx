@@ -6,8 +6,11 @@ import { ToastContainer, toast } from 'react-toastify'
 import Alert from '@shared/atoms/Alert'
 import AnnouncementBanner from '@shared/AnnouncementBanner'
 import PrivacyPreferenceCenter from '../Privacy/PrivacyPreferenceCenter'
-import Header from '../Header'
-import Footer from '../Footer/Footer'
+import {
+  BrandHeader as Header,
+  BrandFooter as Footer
+} from '../../brand/resolver'
+// Brand shell resolution — DO NOT revert to direct imports
 import { useAccountPurgatory } from '@hooks/useAccountPurgatory'
 import { useMarketMetadata } from '@context/MarketMetadata'
 import useEnterpriseFeeCollector from '@hooks/useEnterpriseFeeCollector'

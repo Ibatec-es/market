@@ -8,7 +8,10 @@ import {
   useState
 } from 'react'
 import { MarketMetadataProviderValue, OpcFee } from './_types'
-import siteContent from '../../../content/site.json'
+import baseSiteContent from '../../../content/site.json'
+import { brandSiteContent } from '../../brand/content'
+import { deepMerge } from '../../brand/utils/deepMerge'
+
 import appConfig from '../../../app.config.cjs'
 import { useConnect, useChainId } from 'wagmi'
 import { getTokenInfo } from '@utils/wallet'
@@ -16,6 +19,8 @@ import useEnterpriseFeeColletor from '@hooks/useEnterpriseFeeCollector'
 import { useEthersSigner } from '@hooks/useEthersSigner'
 import useAllowedTokenAddresses from '@hooks/useAllowedTokenAddresses'
 import useValidatedSupportedChains from '@hooks/useValidatedSupportedChains'
+
+const siteContent = deepMerge(baseSiteContent, brandSiteContent)
 
 const MarketMetadataContext = createContext({} as MarketMetadataProviderValue)
 

@@ -9,6 +9,7 @@ import { SearchBarStatusProvider } from '@context/SearchBarStatus'
 import App from '../components/App'
 import '@oceanprotocol/typographies/css/ocean-typo.css'
 import '../stylesGlobal/styles.css'
+import '../brand/tokens/base.css' // Brand token overrides — DO NOT REMOVE
 import Decimal from 'decimal.js'
 import MarketMetadataProvider from '@context/MarketMetadata'
 import { WagmiProvider } from 'wagmi'
